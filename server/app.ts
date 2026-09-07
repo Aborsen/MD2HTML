@@ -1,7 +1,7 @@
 import { Hono } from 'hono';
 import { createMiddleware } from 'hono/factory';
-import { authProxy, currentUser, type SessionUser } from './auth';
-import { sql, type DocumentRow } from './db';
+import { authProxy, currentUser, type SessionUser } from './auth.js';
+import { sql, type DocumentRow } from './db.js';
 
 /** Server-side caps: a stored document is meant to be re-openable, not archival. */
 const MAX_MARKDOWN_BYTES = 1024 * 1024;
