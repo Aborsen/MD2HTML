@@ -66,9 +66,8 @@ step; a deployment made before them needs a redeploy to see them. The build is a
   arrive, separated by a rule; the same works on any selection in the history.
 - **Preview** — GitHub Flavored Markdown (tables, task lists, strikethrough,
   autolinks), sanitized with DOMPurify, styled with the design-system tokens.
-- **Two reading modes** — a single page, or a book spread: two columns of fixed height, paged
-  sideways with the buttons or the arrow keys. The spread is a way of reading in the app; the
-  downloaded file is always the plain document.
+- **Fullscreen reading** — the preview takes the whole screen, the sheet keeps a readable measure
+  and scrolls; Escape comes back.
 - **HTML source** tab — the exact standalone document that gets downloaded.
 - **Download / Copy** — self-contained `.html` with inline styles, print-ready.
 - **History** — signed in: stored in Neon (up to 200 documents, 1 MB of source

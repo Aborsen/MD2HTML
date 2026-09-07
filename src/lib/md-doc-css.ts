@@ -261,66 +261,40 @@ body {
 `;
 
 /**
- * Reading mode: the document laid out as an open book — two columns per view, paged sideways.
+ * The preview frame, and what fullscreen does to it.
  *
- * The height is fixed and the text flows into columns; anything past the second column becomes a
- * further pair, which the viewport scrolls to. Blocks that would read as nonsense split in half —
- * code, tables, images — are kept whole.
+ * Reading a long document inside a page that also has an app around it is cramped, so fullscreen
+ * hands the whole screen to the sheet: the frame becomes the page background, and the sheet itself
+ * takes the height and scrolls, keeping a readable measure rather than stretching lines across a
+ * 27-inch monitor.
  */
-export const MD_SPREAD_STYLE = `
-/* The frame does not scroll, so the gutter stays put while the pages turn under it. */
-.md-spread-frame {
-  position: relative;
+export const MD_PREVIEW_STYLE = `
+/* The sheet the document sits on — painted here so its padding is part of the page, not a gap. */
+.md-sheet {
   background: var(--md-card);
 }
 
-.md-spread-frame::before {
-  content: "";
-  position: absolute;
-  top: 8%;
-  bottom: 8%;
-  left: 50%;
-  width: 1px;
-  background: var(--md-stroke);
-  pointer-events: none;
-  z-index: 1;
+.md-preview-frame:fullscreen {
+  display: flex;
+  justify-content: center;
+  padding: 2rem 1.5rem;
+  background: var(--md-page);
+  overflow-y: auto;
 }
 
-/*
- * The columns element is also the scroller: in a multi-column box the overflow columns are only
- * reachable when the multicol container itself scrolls — put overflow on a wrapper instead and
- * scrollLeft simply does nothing.
- */
-.md-spread {
-  column-count: 2;
-  column-gap: 4rem;
-  column-fill: auto;
-  overflow-x: auto;
-  overflow-y: hidden;
+.md-preview-frame:fullscreen .md-sheet {
+  width: 100%;
+  max-width: 56rem;
+  height: max-content;
+  margin: 0 auto;
+  padding: 3rem 3.5rem;
+  border: 1px solid var(--md-stroke);
+  border-radius: 1rem;
 }
 
-.md-spread pre,
-.md-spread table,
-.md-spread img,
-.md-spread blockquote {
-  break-inside: avoid;
-}
-
-.md-spread h1,
-.md-spread h2,
-.md-spread h3,
-.md-spread h4 {
-  break-after: avoid;
-}
-
-@media (max-width: 768px) {
-  .md-spread {
-    column-count: 1;
-  }
-
-  .md-spread-frame::before {
-    display: none;
+@media (max-width: 640px) {
+  .md-preview-frame:fullscreen .md-sheet {
+    padding: 1.5rem 1.25rem;
   }
 }
 `;
-

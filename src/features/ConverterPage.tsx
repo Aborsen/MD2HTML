@@ -1,16 +1,18 @@
 import {
-  BookOpen,
   Check,
   Copy,
   Download,
   Eye,
   FileCode2,
   FileText,
+  Maximize2,
+  Minimize2,
   RotateCcw,
 } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { DocStats } from '@/components/DocStats';
-import { DocumentPreview, type PreviewMode } from '@/components/DocumentPreview';
+import { DocumentPreview } from '@/components/DocumentPreview';
+import { Hint } from '@/components/Hint';
 import { Dropzone } from '@/components/Dropzone';
 import { useTheme } from '@/lib/theme';
 import type { ConvertedDoc } from '@/lib/types';
@@ -20,17 +22,14 @@ import { Badge } from '@/ui/components/Badge';
 import { Button } from '@/ui/components/Button';
 import { Card } from '@/ui/components/Card';
 import {
-  SegmentedControl,
-  SegmentedControlList,
-  SegmentedControlTrigger,
-} from '@/ui/components/SegmentedControl';
-import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
 } from '@/ui/components/Tabs';
+import { IconButton } from '@/ui/components/IconButton';
 import { Typography } from '@/ui/components/Typography';
+import { cn } from '@/ui/lib/utils';
 import { toast } from '@/ui/components/Toast';
 
 interface ConverterPageProps {
@@ -47,8 +46,29 @@ export function ConverterPage({
   onReset,
 }: ConverterPageProps) {
   const [isCopied, setIsCopied] = useState(false);
-  const [previewMode, setPreviewMode] = useState<PreviewMode>('page');
   const [tab, setTab] = useState<'preview' | 'source'>('preview');
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const previewFrame = useRef<HTMLDivElement>(null);
+
+  // Escape and the browser's own chrome can leave fullscreen without us, so follow the event.
+  useEffect(() => {
+    const sync = () => setIsFullscreen(document.fullscreenElement !== null);
+
+    document.addEventListener('fullscreenchange', sync);
+
+    return () => document.removeEventListener('fullscreenchange', sync);
+  }, []);
+
+  const toggleFullscreen = () => {
+    if (document.fullscreenElement) {
+      void document.exitFullscreen();
+      return;
+    }
+
+    void previewFrame.current?.requestFullscreen().catch(() => {
+      toast.error('Fullscreen is not available here');
+    });
+  };
   const { theme } = useTheme();
 
   const standalone = useMemo(
@@ -230,35 +250,27 @@ export function ConverterPage({
           </TabsList>
 
           {tab === 'preview' && (
-            <SegmentedControl
-              size="sm"
-              value={previewMode}
-              onValueChange={(value) => setPreviewMode(value as PreviewMode)}
-            >
-              <SegmentedControlList>
-                <SegmentedControlTrigger value="page">
-                  <FileText />
-                  Page
-                </SegmentedControlTrigger>
-                <SegmentedControlTrigger value="spread">
-                  <BookOpen />
-                  Spread
-                </SegmentedControlTrigger>
-              </SegmentedControlList>
-            </SegmentedControl>
+            <Hint content={isFullscreen ? 'Exit fullscreen' : 'Read fullscreen'}>
+              <IconButton
+                variant="tertiary"
+                size="sm"
+                aria-label={isFullscreen ? 'Exit fullscreen' : 'Read fullscreen'}
+                onClick={toggleFullscreen}
+              >
+                {isFullscreen ? <Minimize2 /> : <Maximize2 />}
+              </IconButton>
+            </Hint>
           )}
         </div>
 
         <TabsContent value="preview" className="outline-none">
-          <div className="rounded-xl border border-stroke bg-surface-page p-3 sm:p-6">
+          <div
+            ref={previewFrame}
+            className="md-preview-frame rounded-xl border border-stroke bg-surface-page p-3 sm:p-6"
+          >
             <DocumentPreview
               html={doc.html}
-              mode={previewMode}
-              className={
-                previewMode === 'spread'
-                  ? 'mx-auto max-w-5xl rounded-lg border border-stroke px-6 py-8 shadow-rest sm:px-10'
-                  : 'mx-auto max-w-3xl rounded-lg border border-stroke p-6 shadow-rest sm:p-10'
-              }
+              className="mx-auto max-w-3xl rounded-lg border border-stroke p-6 shadow-rest sm:p-10"
             />
           </div>
         </TabsContent>
