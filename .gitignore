@@ -6,6 +6,3 @@ dist
 .env.*
 !.env.example
 *.local
-
-.vercel
-.env*.local

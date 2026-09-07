@@ -44,21 +44,20 @@ npm run auth:origin -- https://md-2-html.vercel.app
 npm run auth:origin -- http://127.0.0.1:5180       # for local work
 ```
 
-**Neon** → copy the pooled connection string → `npm run db:init` (idempotent; the schema lives in
-`db/schema.sql` and creates one table, `m2h_document`; users come from `neon_auth."user"`).
-
-**Vercel** → project settings → Environment Variables: add both variables, then redeploy. The build
-is auto-detected (Vite → `dist`) and `/api/*` is routed to the Hono function by `vercel.json`.
-
-If the values already live in another Vercel project that uses the same Neon database, they can be
-moved across without being pasted anywhere:
+**Neon** — M2H has its **own** Neon project (`m2h`): its own database and its own Neon Auth, with
+no accounts or tables shared with any other app. It was provisioned through the Vercel Marketplace,
+which also connects it and writes `DATABASE_URL` / `NEON_AUTH_BASE_URL` into the project:
 
 ```bash
-vercel link --project <the-other-project> --yes
+vercel integration add neon --name m2h
 vercel env pull .env.local --environment=production
-vercel link --project md-2-html --yes
-npm run env:setup -- --vercel      # keeps only this app's keys, pushes them, prints no values
+npm run env:setup          # prunes .env.local down to this app's two keys
+npm run db:init            # creates m2h_document
 ```
+
+**Vercel** — the variables above are set for production, preview and development by that connect
+step; a deployment made before them needs a redeploy to see them. The build is auto-detected
+(Vite → `dist`) and `/api/*` is routed to the Hono function by `vercel.json`.
 
 ## What it does
 
