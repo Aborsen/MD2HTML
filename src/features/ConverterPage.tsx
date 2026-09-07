@@ -1,4 +1,5 @@
 import {
+  BookOpen,
   Check,
   Copy,
   Download,
@@ -9,7 +10,7 @@ import {
 } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { DocStats } from '@/components/DocStats';
-import { DocumentPreview } from '@/components/DocumentPreview';
+import { DocumentPreview, type PreviewMode } from '@/components/DocumentPreview';
 import { Dropzone } from '@/components/Dropzone';
 import { useTheme } from '@/lib/theme';
 import type { ConvertedDoc } from '@/lib/types';
@@ -18,6 +19,11 @@ import { formatBytes, formatDateTime, toHtmlFileName } from '@/lib/format';
 import { Badge } from '@/ui/components/Badge';
 import { Button } from '@/ui/components/Button';
 import { Card } from '@/ui/components/Card';
+import {
+  SegmentedControl,
+  SegmentedControlList,
+  SegmentedControlTrigger,
+} from '@/ui/components/SegmentedControl';
 import {
   Tabs,
   TabsContent,
@@ -41,6 +47,8 @@ export function ConverterPage({
   onReset,
 }: ConverterPageProps) {
   const [isCopied, setIsCopied] = useState(false);
+  const [previewMode, setPreviewMode] = useState<PreviewMode>('page');
+  const [tab, setTab] = useState<'preview' | 'source'>('preview');
   const { theme } = useTheme();
 
   const standalone = useMemo(
@@ -204,23 +212,53 @@ export function ConverterPage({
         </div>
       </Card>
 
-      <Tabs defaultValue="preview" className="flex flex-col gap-4">
-        <TabsList>
-          <TabsTrigger value="preview">
-            <Eye className="size-4" />
-            Preview
-          </TabsTrigger>
-          <TabsTrigger value="source">
-            <FileCode2 className="size-4" />
-            HTML source
-          </TabsTrigger>
-        </TabsList>
+      <Tabs
+        value={tab}
+        onValueChange={(value) => setTab(value as 'preview' | 'source')}
+        className="flex flex-col gap-4"
+      >
+        <div className="flex flex-wrap items-end justify-between gap-3">
+          <TabsList>
+            <TabsTrigger value="preview">
+              <Eye className="size-4" />
+              Preview
+            </TabsTrigger>
+            <TabsTrigger value="source">
+              <FileCode2 className="size-4" />
+              HTML source
+            </TabsTrigger>
+          </TabsList>
+
+          {tab === 'preview' && (
+            <SegmentedControl
+              size="sm"
+              value={previewMode}
+              onValueChange={(value) => setPreviewMode(value as PreviewMode)}
+            >
+              <SegmentedControlList>
+                <SegmentedControlTrigger value="page">
+                  <FileText />
+                  Page
+                </SegmentedControlTrigger>
+                <SegmentedControlTrigger value="spread">
+                  <BookOpen />
+                  Spread
+                </SegmentedControlTrigger>
+              </SegmentedControlList>
+            </SegmentedControl>
+          )}
+        </div>
 
         <TabsContent value="preview" className="outline-none">
           <div className="rounded-xl border border-stroke bg-surface-page p-3 sm:p-6">
             <DocumentPreview
               html={doc.html}
-              className="mx-auto max-w-3xl rounded-lg border border-stroke p-6 shadow-rest sm:p-10"
+              mode={previewMode}
+              className={
+                previewMode === 'spread'
+                  ? 'mx-auto max-w-5xl rounded-lg border border-stroke px-6 py-8 shadow-rest sm:px-10'
+                  : 'mx-auto max-w-3xl rounded-lg border border-stroke p-6 shadow-rest sm:p-10'
+              }
             />
           </div>
         </TabsContent>

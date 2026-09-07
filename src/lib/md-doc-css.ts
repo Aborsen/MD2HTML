@@ -259,3 +259,68 @@ body {
   .md-footer { display: none; }
 }
 `;
+
+/**
+ * Reading mode: the document laid out as an open book — two columns per view, paged sideways.
+ *
+ * The height is fixed and the text flows into columns; anything past the second column becomes a
+ * further pair, which the viewport scrolls to. Blocks that would read as nonsense split in half —
+ * code, tables, images — are kept whole.
+ */
+export const MD_SPREAD_STYLE = `
+/* The frame does not scroll, so the gutter stays put while the pages turn under it. */
+.md-spread-frame {
+  position: relative;
+  background: var(--md-card);
+}
+
+.md-spread-frame::before {
+  content: "";
+  position: absolute;
+  top: 8%;
+  bottom: 8%;
+  left: 50%;
+  width: 1px;
+  background: var(--md-stroke);
+  pointer-events: none;
+  z-index: 1;
+}
+
+/*
+ * The columns element is also the scroller: in a multi-column box the overflow columns are only
+ * reachable when the multicol container itself scrolls — put overflow on a wrapper instead and
+ * scrollLeft simply does nothing.
+ */
+.md-spread {
+  column-count: 2;
+  column-gap: 4rem;
+  column-fill: auto;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.md-spread pre,
+.md-spread table,
+.md-spread img,
+.md-spread blockquote {
+  break-inside: avoid;
+}
+
+.md-spread h1,
+.md-spread h2,
+.md-spread h3,
+.md-spread h4 {
+  break-after: avoid;
+}
+
+@media (max-width: 768px) {
+  .md-spread {
+    column-count: 1;
+  }
+
+  .md-spread-frame::before {
+    display: none;
+  }
+}
+`;
+
