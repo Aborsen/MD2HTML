@@ -1,0 +1,776 @@
+@font-face {
+  font-family: "DM Sans";
+  font-style: normal;
+  font-weight: 100 1000;
+  font-display: swap;
+  src: url("/fonts/dm-sans-latin-normal.woff2") format("woff2");
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
+    U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193,
+    U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: "DM Sans";
+  font-style: italic;
+  font-weight: 100 1000;
+  font-display: swap;
+  src: url("/fonts/dm-sans-latin-italic.woff2") format("woff2");
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
+    U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193,
+    U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: "DM Sans";
+  font-style: normal;
+  font-weight: 100 1000;
+  font-display: swap;
+  src: url("/fonts/dm-sans-latin-ext-normal.woff2") format("woff2");
+  unicode-range:
+    U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF,
+    U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020,
+    U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+@font-face {
+  font-family: "DM Sans";
+  font-style: italic;
+  font-weight: 100 1000;
+  font-display: swap;
+  src: url("/fonts/dm-sans-latin-ext-italic.woff2") format("woff2");
+  unicode-range:
+    U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF,
+    U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020,
+    U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --white: 0 0% 100%;
+
+    /* ============================================================
+     * DESIGN SYSTEM v2 (redesign) — additive, not yet consumed.
+     * Legacy tokens above are FROZEN. Components migrate to these
+     * per-component in follow-up tickets.
+     * ============================================================ */
+    /* ===== Design System v2 — Layer 1: Primitives (theme-independent; --white reuses legacy --white) ===== */
+    --bg: var(--slate-50); /* #F8FAFC */
+    --brand-50: 193.8 39.4% 93.5%; /* #E8F2F5 */
+    --brand-100: 196 37% 84%; /* #C7DDE5 */
+    --brand-200: 189.1 32.5% 68%; /* #93C0C8 */
+    --brand-300: 186 30% 51%; /* #5DA0A8 */
+    --brand-400: 176.3 55% 41%; /* #2FA29B */
+    --brand-500: 179 75% 32%; /* #148F8D */
+    --brand-600: 179 89.6% 26.5%; /* #07807E */
+    --brand-700: 179.4 89.1% 21.6%; /* #066867 */
+    --brand-800: 192.4 42% 13.5%; /* #142B31 */
+    --brand-900: 194 51% 8%; /* #0A1A1F */
+    --brand-50-soft: 195 36.4% 95.7%; /* #F0F6F8 */
+    --brand-900-soft: 191 24.4% 8.8%; /* #111A1C */
+    --tertiary-50: 180 48.1% 94.7%; /* #EBF8F8 */
+    --tertiary-100: 178.5 54.1% 85.5%; /* #C6EEED */
+    --tertiary-200: 178.4 55.9% 73.3%; /* #95E1DF */
+    --tertiary-300: 179.5 54.8% 59.2%; /* #5ED0CF */
+    --tertiary-400: 182.4 62% 47.5%; /* #2EBEC4 */
+    --tertiary-500: 182.7 79.5% 38.2%; /* #14A8AF */
+    --tertiary-600: 183.9 84.1% 32.2%; /* #0D8E97 */
+    --tertiary-700: 185 80.7% 26.5%; /* #0D717A */
+    --tertiary-800: 187 75% 22%; /* #0E5862 */
+    --tertiary-900: 185.8 68.9% 17.6%; /* #0E464C */
+    --tertiary-950: 190.7 81.8% 10.8%; /* #052A32 */
+    --slate-50: 210 40% 98%; /* #F8FAFC */
+    --slate-100: 210 40% 96%; /* #F1F5F9 */
+    --slate-200: 214.3 31.8% 91.4%; /* #E2E8F0 */
+    --slate-300: 213 27% 84%; /* #CBD5E1 */
+    --slate-400: 215 20% 65%; /* #94A3B8 */
+    --slate-450: 215 17% 56%; /* #7C8CA2 */
+    --slate-500: 215.4 16.3% 46.9%; /* #64748B */
+    --slate-550: 214.7 17.4% 42.7%; /* #5A6A80 */
+    --slate-600: 215.3 19.3% 34.5%; /* #475569 */
+    --slate-700: 215.3 25% 26.7%; /* #334155 */
+    --slate-800: 217.2 32.6% 17.5%; /* #1E293B */
+    --slate-900: 222.2 47.4% 11.2%; /* #0F172A */
+    --slate-950: 229 84% 5%; /* #020617 */
+    --grey-50: 210 20% 98%; /* #F9FAFB */
+    --grey-100: 240 5% 96%; /* #F4F4F5 */
+    --grey-200: 220 13% 91%; /* #E5E7EB */
+    --grey-300: 216 12% 84%; /* #D1D5DB */
+    --grey-400: 217.9 10.6% 64.9%; /* #9CA3AF */
+    --grey-500: 220 9% 46%; /* #6B7280 */
+    --grey-600: 240 4% 33%; /* #525258 */
+    --grey-700: 250 13% 18%; /* #2A2834 */
+    --grey-800: 240 14% 15%; /* #21212C */
+    --grey-900: 240 13.2% 10.4%; /* #17171E */
+    --grey-950: 250 17.6% 6.7%; /* #0F0E14 */
+    --red-50: 0 85.7% 97.3%; /* #FEF2F2 */
+    --red-100: 0 93.3% 94.1%; /* #FEE2E2 */
+    --red-200: 0 96.3% 89.4%; /* #FECACA */
+    --red-300: 0 93.5% 81.8%; /* #FCA5A5 */
+    --red-400: 0 85.8% 64.1%; /* #F25555 */
+    --red-500: 0 84.2% 60.2%; /* #EF4444 */
+    --red-600: 0 72.2% 50.6%; /* #DC2626 */
+    --red-700: 0 73.7% 41.8%; /* #B91C1C */
+    --red-800: 0 70% 35.3%; /* #991B1B */
+    --red-850: 0 62.8% 30.6%; /* #7F1D1D */
+    --red-900: 0 74.7% 15.5%; /* #450A0A */
+    --red-950: 0 44.8% 11.4%; /* #2A1010 */
+    --orange-500: 24.7 100% 50%; /* #FF6900 */
+    --green-light-600: 160 100% 30%; /* #009966 */
+    --green-dark-500: 160.1 96.6% 34.9%; /* #03AF76 */
+    --chart-teal-600: 173 82.2% 30.8%; /* #0E8F80 */
+    --chart-teal-500: 175.6 80.7% 36.7%; /* #12A99E */
+    --chart-orange-700: 27 95% 39%; /* #C25A05 */
+    --chart-orange-600: 26.3 100% 42.5%; /* #D95F00 */
+    --chart-violet-600: 254.2 52.2% 55.7%; /* #6F53C9 */
+    --chart-violet-500: 254.6 61.5% 63.3%; /* #8468DB */
+    --chart-blue-600: 213.5 60.7% 46.9%; /* #2F6FC0 */
+    --chart-blue-500: 214.4 63.6% 55.9%; /* #4784D6 */
+    --black: 0 0% 0%; /* #000000 */
+
+    /* ===== Design System v2 — Layer 2: Semantic tokens ===== */
+    --tbl-header-bg: var(--slate-150); /* #EAEFF5 */
+    --brand-primary: var(--brand-600); /* #07807E */
+    --brand-secondary: var(--brand-700); /* #066867 */
+    --brand-tertiary: var(--tertiary-600); /* #0D8E97 */
+    --brand-hover: var(--brand-500); /* #148F8D — Brand/Primary_Hover */
+    --ink-primary: var(--slate-900); /* #0F172A */
+    --ink-body: var(--slate-700); /* #334155 */
+    --ink-secondary: var(--slate-550); /* #5A6A80 */
+    --ink-inactive: var(--slate-450); /* #7C8CA2 */
+    --ink-highlight: var(--brand-primary); /* #07807E */
+    --surface-card: var(--white); /* #FFFFFF */
+    --surface-card2: var(--slate-100); /* #F1F5F9 */
+    --surface-chips: var(--slate-50); /* #F8FAFC */
+    --surface-page: var(
+      --slate-50
+    ); /* #F8FAFC — page background (was legacy --background) */
+    /* Chat landing shell — radial tint + ambient glow (kit .cl-shell) */
+    --chat-shell-bg: radial-gradient(
+      at 50% 0%,
+      color-mix(
+        in srgb,
+        hsl(var(--brand-tertiary)) 2%,
+        hsl(var(--surface-page))
+      ),
+      hsl(var(--surface-page)) 55%
+    );
+    --chat-glow-fill: color-mix(
+      in srgb,
+      hsl(var(--brand-tertiary)) 8%,
+      transparent
+    );
+    --surface-accent: var(--brand-50-soft); /* #F0F6F8 (light) */
+    --stroke-border: var(--slate-200); /* #E2E8F0 */
+    --stroke-border-hover: var(--slate-300); /* #CBD5E1 */
+    --state-hover: var(--slate-100); /* #F1F5F9 */
+    --state-pressed: var(--brand-50); /* #E8F2F5 */
+    --state-disabled: var(--slate-200); /* #E2E8F0 */
+    --state-focus-ring: var(--slate-900); /* #0F172A */
+    --fb-red: var(--red-700); /* #B91C1C */
+    --fb-red-text: var(--red-700); /* #B91C1C */
+    --fb-error-hover: var(--red-800); /* #991B1B */
+    --fb-error-press: var(--red-850); /* #7F1D1D */
+    --fb-attention: var(--orange-500); /* #FF6900 */
+    --fb-green: var(--green-light-600); /* #009966 */
+    --chart-axis-title: var(--ink-primary);
+    --chart-axis-label: var(--ink-secondary);
+    --chart-grid: var(--stroke-border);
+    --chart-surface: var(--surface-card);
+    --chart-series-1: var(--chart-teal-600);
+    --chart-series-2: var(--chart-orange-700);
+    --chart-series-3: var(--chart-violet-600);
+    --chart-series-4: var(--green-light-600);
+    --chart-series-5: var(--chart-blue-600);
+    --chart-series-6: var(--red-700);
+    --logo-ink: var(--slate-900); /* #0F172A */
+    --logo-mark: var(--brand-600); /* #07807E */
+    --banner-grad-btn-text: var(--slate-900); /* #0F172A */
+
+    /* ===== Design System v2 — Layer 3: Component-scoped tokens ===== */
+    --btn-primary-bg: var(--brand-600); /* #07807E */
+    --btn-primary-bg-hover: var(--brand-700); /* #066867 */
+    --btn-primary-bg-press: var(--tertiary-800); /* #0E5862 */
+    --btn-primary-text: var(--white); /* #FFFFFF */
+    --btn-outline-destructive-border: var(--red-700); /* #B91C1C */
+    --btn-outline-destructive-border-hover: var(--red-800); /* #991B1B */
+    --btn-secondary-border: var(--slate-300); /* #CBD5E1 */
+    --btn-secondary-border-hover: var(--slate-400); /* #94A3B8 */
+    --btn-outline-destructive-bg-hover: color-mix(
+      in srgb,
+      hsl(var(--fb-red)) 6%,
+      transparent
+    );
+    --btn-outline-destructive-bg-press: color-mix(
+      in srgb,
+      hsl(var(--fb-red)) 8%,
+      transparent
+    );
+    --btn-secondary-bg-hover: color-mix(
+      in srgb,
+      hsl(var(--brand-primary)) 5%,
+      hsl(var(--surface-card))
+    ); /* ~5% brand over card */
+    --segctrl-btn-hover-bg: color-mix(
+      in srgb,
+      hsl(var(--surface-card)) 50%,
+      hsl(var(--surface-card2))
+    );
+    --segctrl-active-shadow:
+      inset 0 0 0 1px hsl(var(--stroke-border)), 0 1px 2px rgb(0 0 0 / 6%);
+    --segctrl-hover-shadow: inset 0 0 0 1px
+      color-mix(in srgb, hsl(var(--stroke-border)) 50%, transparent);
+    --content-on-solid: var(--white); /* #FFFFFF */
+    --focus-ring-brand: var(--brand-600); /* #07807E */
+    --input-focus: var(--slate-600); /* #475569 (light) — kit s-focus */
+    --field-border-hover: var(
+      --slate-450
+    ); /* #7C8CA2 (light) — form hover border */
+    --input-error: var(
+      --red-700
+    ); /* #B91C1C (light) — theme-adaptive error border */
+    --card-border-hover: color-mix(
+      in srgb,
+      hsl(var(--brand-primary)) 25%,
+      transparent
+    ); /* ~25% brand */
+    --card-border-press: color-mix(
+      in srgb,
+      hsl(var(--brand-primary)) 40%,
+      transparent
+    ); /* ~40% brand */
+    --dropzone-border: var(--slate-300); /* #CBD5E1 */
+    --dropzone-border-active: color-mix(
+      in srgb,
+      hsl(var(--brand-primary)) 45%,
+      hsl(var(--dropzone-border))
+    ); /* #94A3B8 */
+    --dropzone-bg-active: color-mix(
+      in srgb,
+      hsl(var(--brand-primary)) 4%,
+      hsl(var(--surface-card2))
+    ); /* #F1F5F9 */
+    --badge-primary-bg: var(--brand-50); /* #E8F2F5 (light) */
+    --badge-primary-text: var(--brand-secondary); /* #066867 */
+    --badge-secondary-bg: var(--surface-card2); /* #F1F5F9 */
+    --badge-secondary-text: var(--ink-body); /* #334155 */
+    --badge-chip-bg: var(--surface-chips); /* #F8FAFC */
+    --badge-chip-text: var(--ink-body); /* #334155 */
+    --switch-off-bg: var(--slate-300); /* #CBD5E1 (light) */
+    --switch-off-bg-hover: var(--slate-400); /* #94A3B8 (light) */
+    --btn-secondary-border-hover: var(--slate-400); /* #94A3B8 */
+    --toast-bg-success: color-mix(
+      in srgb,
+      hsl(var(--fb-green)) 5%,
+      hsl(var(--surface-card))
+    );
+    --toast-bg-info: color-mix(
+      in srgb,
+      hsl(var(--brand-primary)) 5%,
+      hsl(var(--surface-card))
+    );
+    --toast-bg-warning: color-mix(
+      in srgb,
+      hsl(var(--fb-attention)) 5%,
+      hsl(var(--surface-card))
+    );
+    --toast-bg-error: color-mix(
+      in srgb,
+      hsl(var(--fb-red-text)) 5%,
+      hsl(var(--surface-card))
+    );
+    --toast-border-success: color-mix(
+      in srgb,
+      hsl(var(--fb-green)) 30%,
+      transparent
+    );
+    --toast-border-info: color-mix(
+      in srgb,
+      hsl(var(--brand-primary)) 30%,
+      transparent
+    );
+    --toast-border-warning: color-mix(
+      in srgb,
+      hsl(var(--fb-attention)) 30%,
+      transparent
+    );
+    --toast-border-error: color-mix(
+      in srgb,
+      hsl(var(--fb-red-text)) 30%,
+      transparent
+    );
+    --shadow-rest: 0 1px 2px 0 rgba(15, 23, 42, 0.03); /* flat-card rest elevation */
+    --shadow-card-hover:
+      0 2px 6px -1px rgba(15, 23, 42, 0.08), 0 1px 2px 0 rgba(15, 23, 42, 0.04);
+    /* SegmentedControl — component-scoped state recipes (light) */
+    --segctrl-btn-hover-bg: color-mix(
+      in srgb,
+      hsl(var(--surface-card)) 50%,
+      hsl(var(--surface-card2))
+    ); /* half-step lift between slot and pill */
+    --segctrl-hover-shadow: inset 0 0 0 1px
+      color-mix(in srgb, hsl(var(--stroke-border)) 50%, transparent);
+    --segctrl-active-shadow:
+      inset 0 0 0 1px hsl(var(--stroke-border)), 0 1px 2px rgba(0, 0, 0, 0.06);
+    /* Table — canonical row state bgs (light) */
+    --tbl-row-hover: var(--slate-50); /* #F8FAFC */
+    --tbl-row-pressed: var(
+      --slate-100
+    ); /* #F1F5F9 — selected + transient press */
+    --tbl-row-selected-hover: color-mix(
+      in srgb,
+      hsl(var(--brand-primary)) 10%,
+      hsl(var(--tbl-row-pressed))
+    );
+    /* Dropdown / menu surface elevation */
+    --shadow-dropdown:
+      0 6px 16px -4px rgba(0, 0, 0, 0.12), 0 2px 4px -2px rgba(0, 0, 0, 0.06);
+
+    /* --- Legacy tokens (FROZEN during redesign; do not use in new code) --- */
+    --primary: 192 89% 21%;
+    --secondary: 193 85% 35%;
+    --text-primary: 222 47% 11%;
+    --text-secondary: 216 17% 47%;
+    --text-light: 213 9% 64%;
+    --text-body: 216 24% 28%;
+    --card: 0 0% 100%;
+    --hover: 198 67% 96%;
+    --background: 210 40% 98%;
+    --accent: 179 94% 26%;
+    --border: 214 32% 91%;
+    --success: 150 100% 38% / 0.9;
+    --chip: 210 20% 96%;
+    --green: 160 100% 30%;
+    --red: 357 100% 38%;
+    --orange: 30 79% 44%;
+    --attention: 24 100% 50%;
+    /* Legacy alias → v2 page background (metrics feature uses bg-surface-bg) */
+    --bg: var(--surface-page);
+
+    /* ===== Metrics Catalog (AIINS-1017) — feature tokens (light) ===== */
+    --slate-150: 214 32% 94%; /* #EAEFF5 */
+    --brand-press: var(--brand-700); /* #066867 */
+    --mx-group-band: var(--slate-150); /* #EAEFF5 */
+    --btn-secondary-bg: var(--surface-card);
+    --btn-outline-bg-hover: color-mix(
+      in srgb,
+      hsl(var(--brand-primary)) 6%,
+      transparent
+    );
+    --btn-outline-bg-press: color-mix(
+      in srgb,
+      hsl(var(--brand-primary)) 8%,
+      transparent
+    );
+    --icon-wrapper-bg: color-mix(
+      in srgb,
+      hsl(var(--brand-primary)) 5%,
+      hsl(var(--bg))
+    );
+    --card-lift-border: color-mix(
+      in srgb,
+      hsl(var(--brand-primary)) 22%,
+      hsl(var(--border))
+    );
+    --shadow-lift-hover:
+      0 6px 16px -3px rgb(15 23 42 / 9%), 0 2px 4px -1px rgb(15 23 42 / 5%);
+    --shadow-overlay-soft:
+      0 10px 15px -3px rgb(0 0 0 / 12%), 0 4px 6px -4px rgb(0 0 0 / 8%);
+    --shadow-menu:
+      0 6px 16px -4px rgb(0 0 0 / 12%), 0 2px 4px -2px rgb(0 0 0 / 6%);
+    --motion-fast: 120ms;
+    --motion-base: 180ms;
+    --motion-slow: 240ms;
+    --motion-ease: cubic-bezier(0.4, 0, 0.2, 1);
+    --motion-ease-out: cubic-bezier(0, 0, 0.2, 1);
+    /* Banner — gradient recipes + on-gradient tokens (light) */
+    --grad-noise: linear-gradient(
+      135deg,
+      hsl(var(--tertiary-700)) 0%,
+      hsl(var(--brand-600)) 20%,
+      hsl(var(--brand-100)) 100%
+    );
+    --grad-teal-dark: var(--grad-noise);
+    --banner-grad-text: var(--white); /* #FFFFFF */
+    --banner-grad-sub: color-mix(in srgb, hsl(var(--white)) 82%, transparent);
+    --banner-grad-ic-bg: color-mix(in srgb, hsl(var(--white)) 18%, transparent);
+    --banner-grad-ic-border: color-mix(
+      in srgb,
+      hsl(var(--white)) 40%,
+      transparent
+    );
+    --banner-grad-ic-shadow:
+      0 0 0 6px rgba(255, 255, 255, 0.04), 0 0 16px rgba(255, 255, 255, 0.05);
+    --banner-ic-shadow: 0 6px 16px -4px
+      color-mix(in srgb, hsl(var(--brand-primary)) 50%, transparent);
+    --banner-grad-horizontal-wide: linear-gradient(
+      90deg,
+      hsl(var(--brand-700)) 0%,
+      hsl(var(--brand-200)) 100%
+    );
+    --banner-grad-diagonal-airy: linear-gradient(
+      135deg,
+      hsl(var(--brand-700)) 0%,
+      hsl(var(--brand-100)) 100%
+    );
+    --banner-grad-diagonal-fade: linear-gradient(
+      135deg,
+      hsl(var(--brand-700)) 0%,
+      hsl(var(--brand-700)) 55%,
+      color-mix(in srgb, hsl(var(--brand-700)) 20%, transparent) 100%
+    );
+    --banner-grad-horizontal-slab: linear-gradient(
+      90deg,
+      hsl(var(--brand-700)) 0%,
+      hsl(var(--brand-700)) 45%,
+      color-mix(in srgb, hsl(var(--brand-700)) 0%, transparent) 100%
+    );
+    --opacity-disabled: 0.65;
+  }
+
+  .dark {
+    --white: 0 0% 100%;
+
+    /* ===== Design System v2 — Layer 2: Semantic tokens (dark) ===== */
+    --bg: var(--grey-950); /* #0F0E14 */
+    --tbl-header-bg: var(--grey-700); /* #2A2834 */
+    --brand-primary: var(--brand-500); /* #148F8D */
+    --brand-secondary: var(--brand-400); /* #2FA29B */
+    --brand-tertiary: var(--tertiary-500); /* #14A8AF */
+    --brand-hover: var(--brand-400); /* #2FA29B — Brand/Primary_Hover */
+    --ink-primary: var(--grey-50); /* #F9FAFB */
+    --ink-body: var(--grey-100); /* #F4F4F5 */
+    --ink-secondary: var(--grey-300); /* #D1D5DB */
+    --ink-inactive: var(--slate-400); /* #94A3B8 */
+    --ink-highlight: var(--tertiary-400); /* #2EBEC4 */
+    --surface-card: var(--grey-900); /* #17171E */
+    --surface-card2: var(--grey-800); /* #21212C */
+    --surface-chips: var(--grey-700); /* #2A2834 */
+    --surface-page: var(
+      --grey-950
+    ); /* #0F0E14 — page background (was legacy --background) */
+    /* Chat landing shell — stronger tint/glow on dark (kit .cl-shell .dark) */
+    --chat-shell-bg: radial-gradient(
+      at 50% 0%,
+      color-mix(
+        in srgb,
+        hsl(var(--brand-tertiary)) 4%,
+        hsl(var(--surface-page))
+      ),
+      hsl(var(--surface-page)) 55%
+    );
+    --chat-glow-fill: color-mix(
+      in srgb,
+      hsl(var(--brand-tertiary)) 18%,
+      transparent
+    );
+    --surface-accent: var(--brand-900-soft); /* #111A1C (dark) */
+    --stroke-border: var(--grey-700); /* #2A2834 */
+    --stroke-border-hover: var(--slate-700); /* #334155 */
+    --state-hover: var(--grey-800); /* #21212C */
+    --state-pressed: var(--grey-700); /* #2A2834 */
+    --tbl-row-hover: var(--state-hover); /* #21212C */
+    --tbl-row-pressed: var(--grey-800); /* #21212C */
+    --state-disabled: var(--grey-700); /* #2A2834 */
+    --state-focus-ring: var(--slate-100); /* #F1F5F9 */
+    --fb-red: var(--red-700); /* #B91C1C */
+    --fb-red-text: var(--red-400); /* #F25555 */
+    --fb-error-hover: var(--red-800); /* #991B1B */
+    --fb-error-press: var(--red-850); /* #7F1D1D */
+    --fb-attention: var(--orange-500); /* #FF6900 */
+    --fb-green: var(--green-dark-500); /* #03AF76 */
+    --chart-series-1: var(--chart-teal-500);
+    --chart-series-2: var(--chart-orange-600);
+    --chart-series-3: var(--chart-violet-500);
+    --chart-series-4: var(--green-dark-500);
+    --chart-series-5: var(--chart-blue-500);
+    --chart-series-6: var(--red-400);
+    --logo-ink: var(--brand-50); /* #E8F2F5 */
+    --logo-mark: var(--brand-500); /* #148F8D */
+
+    /* ===== Design System v2 — Layer 3: Component-scoped overrides (dark) ===== */
+    --input-focus: var(--slate-500); /* #64748B (dark) — kit s-focus */
+    --field-border-hover: var(
+      --slate-600
+    ); /* #475569 (dark) — form hover border */
+    --input-error: var(
+      --red-500
+    ); /* #EF4444 (dark) — brighter red for AA on dark */
+    --dropzone-border: var(--grey-600); /* #525258 */
+    --badge-primary-bg: var(
+      --brand-800
+    ); /* #142B31 (dark analogue of Brand-50) */
+    --switch-off-bg: var(--grey-700); /* #2A2834 */
+    --switch-off-bg-hover: var(--grey-600); /* #525258 */
+    --toast-bg-success: color-mix(
+      in srgb,
+      hsl(var(--fb-green)) 8%,
+      hsl(var(--surface-card))
+    );
+    --toast-bg-info: color-mix(
+      in srgb,
+      hsl(var(--brand-primary)) 8%,
+      hsl(var(--surface-card))
+    );
+    --toast-bg-warning: color-mix(
+      in srgb,
+      hsl(var(--fb-attention)) 8%,
+      hsl(var(--surface-card))
+    );
+    --toast-bg-error: color-mix(
+      in srgb,
+      hsl(var(--fb-red-text)) 8%,
+      hsl(var(--surface-card))
+    );
+    --btn-outline-destructive-border: var(--red-700); /* #B91C1C */
+    --btn-outline-destructive-border-hover: var(--red-800); /* #991B1B */
+    --btn-secondary-border: var(--grey-600); /* #525258 */
+    --btn-secondary-border-hover: var(--grey-500); /* #6B7280 */
+    --btn-outline-destructive-bg-hover: color-mix(
+      in srgb,
+      hsl(var(--fb-red)) 14%,
+      transparent
+    );
+    --btn-outline-destructive-bg-press: color-mix(
+      in srgb,
+      hsl(var(--fb-red)) 22%,
+      transparent
+    );
+    /* SegmentedControl — component-scoped state recipes (dark) */
+    --segctrl-btn-hover-bg: color-mix(
+      in srgb,
+      hsl(var(--surface-chips)) 50%,
+      hsl(var(--surface-card2))
+    ); /* half-step lift between slot and pill (dark) */
+    --segctrl-hover-shadow: inset 0 0 0 1px
+      color-mix(in srgb, hsl(var(--white)) 3%, transparent);
+    --segctrl-active-shadow:
+      inset 0 0 0 1px color-mix(in srgb, hsl(var(--white)) 6%, transparent),
+      0 1px 2px rgba(0, 0, 0, 0.3);
+    /* Table — canonical row state bgs (dark): hover + pressed collapse to grey-800 */
+    --tbl-row-hover: var(--state-hover); /* grey-800 */
+    --tbl-row-pressed: var(--grey-800);
+    /* Floating-surface shadow (—shadow-overlay, dark): the light value is
+       invisible on dark surfaces — cards/panels need a deeper drop + hairline top. */
+    --shadow-overlay-soft:
+      0 16px 32px -8px color-mix(in srgb, hsl(var(--black)) 65%, transparent),
+      0 6px 14px -4px color-mix(in srgb, hsl(var(--black)) 50%, transparent),
+      inset 0 1px 0 0 color-mix(in srgb, hsl(var(--white)) 4%, transparent);
+
+    /* --- Legacy tokens (FROZEN during redesign; do not use in new code) --- */
+    --primary: 191 97% 12%;
+    --secondary: 193 81% 40%;
+    --text-primary: 0 0% 100%;
+    --text-secondary: 240 1% 59%;
+    --text-light: 220 4% 32%;
+    --text-body: 0 0% 87%;
+    --card: 252 10% 10%;
+    --hover: 193 42% 14%;
+    --background: 240 14% 4%;
+    --accent: 178 94% 30%;
+    --border: var(--grey-700); /* #2A2834 */
+    --success: 150 100% 38% / 0.9;
+    --chip: 240 5% 15%;
+    --green: 88 100% 32%;
+    --red: 358 100% 66%;
+    --orange: 30 79% 44%;
+    --attention: 24 100% 50%;
+
+    /* ===== Metrics Catalog (AIINS-1017) — feature tokens (dark) ===== */
+    --bg: var(--grey-950); /* #0F0E14 */
+    --card2: var(--grey-800); /* #21212C */
+    --chips: var(--grey-700); /* #2A2834 */
+    --mx-group-band: var(--grey-700); /* #2A2834 */
+    --overlay-scrim: rgb(2 6 23 / 60%);
+    --brand-press: var(--brand-600); /* #07807E */
+    --ink: var(--grey-50); /* #F9FAFB */
+    --border-hover: var(--slate-600); /* #475569 */
+    --focus-ring: var(--slate-100); /* #F1F5F9 */
+    --fb-red-hover: var(--red-800); /* #991B1B */
+    --fb-red-press: var(--red-850); /* #7F1D1D */
+    --fb-attention-text: var(--orange-attention-text-dark); /* #FB923C */
+    /* Banner — dark gradient recipes */
+    --banner-grad-btn-text: var(--slate-900); /* #0F172A */
+    --grad-noise: linear-gradient(
+      135deg,
+      hsl(var(--slate-900)) 0%,
+      hsl(var(--brand-800)) 48%,
+      hsl(var(--brand-700)) 100%
+    );
+    --banner-grad-ic-bg: color-mix(in srgb, hsl(var(--white)) 12%, transparent);
+    --banner-grad-ic-border: color-mix(
+      in srgb,
+      hsl(var(--white)) 18%,
+      transparent
+    );
+    --banner-grad-ic-shadow:
+      0 0 0 6px rgb(255 255 255 / 4%), 0 0 16px rgb(255 255 255 / 5%);
+    --banner-grad-horizontal-wide: linear-gradient(
+      90deg,
+      hsl(var(--brand-900)) 0%,
+      hsl(var(--brand-700)) 100%
+    );
+    --banner-grad-diagonal-airy: linear-gradient(
+      135deg,
+      hsl(var(--brand-600)) 0%,
+      hsl(var(--brand-900)) 100%
+    );
+    --banner-grad-diagonal-fade: linear-gradient(
+      135deg,
+      hsl(var(--brand-600)) 0%,
+      hsl(var(--brand-600)) 55%,
+      color-mix(in srgb, hsl(var(--brand-600)) 20%, transparent) 100%
+    );
+    --banner-grad-horizontal-slab: linear-gradient(
+      90deg,
+      hsl(var(--brand-800)) 0%,
+      hsl(var(--brand-800)) 45%,
+      color-mix(in srgb, hsl(var(--brand-800)) 0%, transparent) 100%
+    );
+  }
+
+  /*
+   * WebKit/Blink autofill: text follows `currentColor`. Fill uses the parent’s
+   * computed background (e.g. InputGroup `bg-*`), including error tint—no token
+   * forks here. `!important` beats UA autofill paint.
+   */
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:focus,
+  input:-webkit-autofill:active,
+  textarea:-webkit-autofill,
+  textarea:-webkit-autofill:hover,
+  textarea:-webkit-autofill:focus,
+  textarea:-webkit-autofill:active,
+  select:-webkit-autofill,
+  select:-webkit-autofill:hover,
+  select:-webkit-autofill:focus,
+  select:-webkit-autofill:active {
+    -webkit-text-fill-color: currentColor;
+    caret-color: currentColor;
+
+    /* biome-ignore lint/complexity/noImportantStyles: override WebKit autofill */
+    background-color: inherit !important;
+    transition:
+      background-color 5000s ease-in-out,
+      color 5000s ease-in-out;
+  }
+}
+
+@layer components {
+  [data-slot="table-body"] [data-slot="table-cell"] {
+    transition-property: background-color;
+    transition-duration: 120ms;
+    transition-timing-function: ease;
+  }
+
+  [data-slot="table-body"]
+    [data-slot="table-row"][data-interactive]:hover
+    > [data-slot="table-cell"] {
+    background-color: hsl(var(--tbl-row-hover));
+  }
+
+  [data-slot="table-body"]
+    [data-slot="table-row"][data-interactive]:focus-visible
+    > [data-slot="table-cell"] {
+    background-color: hsl(var(--tbl-row-hover));
+  }
+
+  [data-slot="table-body"]
+    [data-slot="table-row"].is-selected
+    > [data-slot="table-cell"] {
+    background-color: hsl(var(--tbl-row-pressed));
+  }
+
+  [data-slot="table-body"]
+    [data-slot="table-row"].is-selected:hover
+    > [data-slot="table-cell"] {
+    background-color: color-mix(
+      in srgb,
+      hsl(var(--brand-primary)) 10%,
+      hsl(var(--tbl-row-pressed))
+    );
+  }
+
+  [data-slot="table-body"]
+    [data-slot="table-row"][data-interactive]:active
+    > [data-slot="table-cell"] {
+    background-color: hsl(var(--tbl-row-pressed));
+  }
+
+  [data-slot="table-body"]
+    [data-slot="table-row"].is-selected:active
+    > [data-slot="table-cell"] {
+    background-color: hsl(var(--tbl-row-pressed));
+  }
+}
+
+@layer utilities {
+  /* Hide scrollbar for Chrome, Safari and Opera */
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Hide scrollbar for IE, Edge and Firefox */
+  .no-scrollbar {
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
+  }
+
+  /* Fade chat-row title before the trailing kebab/status indicator */
+  .chat-title-fade-mask {
+    mask-image: linear-gradient(
+      to right,
+      black 0%,
+      black 70%,
+      transparent 91%,
+      transparent 100%
+    );
+  }
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  @apply text-ink-primary;
+}
+
+/* Scrollbar styling */
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: hsl(var(--ink-body)) transparent;
+}
+
+/* WebKit browsers (Chrome, Safari, Edge) */
+*::-webkit-scrollbar {
+  width: 2px;
+  height: 2px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: hsl(var(--ink-body));
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background-color: hsl(var(--ink-body));
+}
+
+*::-webkit-scrollbar-button,
+*::-webkit-scrollbar-corner {
+  display: none;
+  appearance: none;
+  width: 0;
+  height: 0;
+}

@@ -1,0 +1,1 @@
+export const SCROLL_SHADOW_THRESHOLD = 1;
