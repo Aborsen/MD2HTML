@@ -71,3 +71,35 @@ create table if not exists m2h_api_key (
 );
 
 create index if not exists m2h_api_key_owner on m2h_api_key (user_id, created_at desc);
+
+-- Rate limiting and usage, in one place.
+--
+-- A row per caller per minute. It answers "is this caller going too fast" without another service
+-- to run, and the same rows answer "is this key still in use, and how hard" — which is the second
+-- question anyone asks about an API. Old minutes are swept on write; nothing here is kept for long.
+
+create table if not exists m2h_call (
+  caller  text not null,
+  minute  timestamptz not null,
+  calls   integer not null default 0,
+  primary key (caller, minute)
+);
+
+create index if not exists m2h_call_minute on m2h_call (minute);
+
+-- Reports about a shared document.
+--
+-- A public link plus arbitrary content is a phishing surface, and the only thing worse than
+-- receiving a report is having nowhere for one to land. The token is stored rather than the
+-- document id: whoever reports has the link, not the id.
+
+create table if not exists m2h_report (
+  id          uuid primary key default gen_random_uuid(),
+  share_token text not null,
+  reason      text not null,
+  reporter    text,
+  created_at  timestamptz not null default now(),
+  handled_at  timestamptz
+);
+
+create index if not exists m2h_report_open on m2h_report (created_at desc) where handled_at is null;

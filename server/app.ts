@@ -3,18 +3,16 @@ import { Hono } from 'hono';
 import { createMiddleware } from 'hono/factory';
 import {
   buildNoticePage,
+  buildReportPage,
   buildSharedPage,
   buildStandaloneHtml,
 } from '../shared/markdown.js';
 import { authProxy, currentUser, type SessionUser } from './auth.js';
 import { sql, type DocumentRow } from './db.js';
 import { createKey, listKeys, revokeKey } from './keys.js';
+import { checkQuota, QUOTA, usageOf } from './limits.js';
 import { deleteSources, putSource, readSource } from './source.js';
 import v1 from './v1.js';
-
-/** Server-side caps: a stored document is meant to be re-openable, not archival. */
-const MAX_MARKDOWN_BYTES = 1024 * 1024;
-const MAX_DOCUMENTS_PER_USER = 200;
 
 type Env = { Variables: { user: SessionUser } };
 
@@ -169,7 +167,7 @@ api.get('/shared-with-me', async (c) => {
       and d.share_mode = 'people'
       and d.user_id <> ${user.id}
     order by s.created_at desc
-    limit ${MAX_DOCUMENTS_PER_USER}
+    limit ${QUOTA.documents}
   `) as Array<DocumentRow & { share_token: string; owner_email: string }>;
 
   return c.json({ documents: rows });
@@ -181,7 +179,7 @@ api.get('/documents', async (c) => {
     from m2h_document
     where user_id = ${c.get('user').id}
     order by created_at desc
-    limit ${MAX_DOCUMENTS_PER_USER}
+    limit ${QUOTA.documents}
   `) as DocumentRow[];
 
   return c.json({ documents: rows });
@@ -203,8 +201,11 @@ api.post('/documents', async (c) => {
     return c.json({ error: 'name and markdown are required' }, 400);
   }
 
-  if (new TextEncoder().encode(body.markdown).length > MAX_MARKDOWN_BYTES) {
-    return c.json({ error: 'Document is too large to store (1 MB limit)' }, 413);
+  const size = new TextEncoder().encode(body.markdown).length;
+  const room = await checkQuota(userId, size);
+
+  if (!room.ok) {
+    return c.json({ error: room.error, usage: room.usage }, room.status);
   }
 
   /*
@@ -239,21 +240,6 @@ api.post('/documents', async (c) => {
 
     return c.json({ error: `Could not store the document: ${why}` }, 502);
   }
-
-  // Keep the list bounded: drop anything past the newest N, sources included.
-  const trimmed = (await sql()`
-    delete from m2h_document
-    where user_id = ${userId}
-      and id not in (
-        select id from m2h_document
-        where user_id = ${userId}
-        order by created_at desc
-        limit ${MAX_DOCUMENTS_PER_USER}
-      )
-    returning blob_path
-  `) as Array<{ blob_path: string | null }>;
-
-  await deleteSources(trimmed.map((row) => row.blob_path));
 
   return c.json({ document: rows[0] }, 201);
 });
@@ -445,8 +431,35 @@ api.delete('/documents', async (c) => {
  * An addressed share depends on who is asking, so it is never cached; a stranger is bounced to
  * the app, which knows how to ask them to sign in.
  */
+/*
+ * A page of somebody's content, served from our domain.
+ *
+ * It carries no scripts of its own, so it says so: `script-src 'none'` means an injection that
+ * survived the sanitiser still cannot run, and `frame-ancestors 'none'` keeps the document out of
+ * someone else's frame, where it could be dressed up as their page.
+ */
+const SHARED_PAGE_HEADERS: Record<string, string> = {
+  'content-security-policy': [
+    "default-src 'none'",
+    "script-src 'none'",
+    "style-src 'unsafe-inline' https://fonts.googleapis.com",
+    'font-src https://fonts.gstatic.com',
+    'img-src https: data:',
+    "connect-src 'none'",
+    "base-uri 'none'",
+    "form-action 'self'",
+    "frame-ancestors 'none'",
+  ].join('; '),
+  'x-content-type-options': 'nosniff',
+  'referrer-policy': 'no-referrer',
+};
+
 app.get('/s/:token', async (c) => {
   const token = c.req.param('token');
+
+  for (const [header, value] of Object.entries(SHARED_PAGE_HEADERS)) {
+    c.header(header, value);
+  }
 
   /*
    * Loaded here, not at the top of the file. The renderer is the one dependency with a history of
@@ -542,7 +555,45 @@ app.get('/s/:token', async (c) => {
       body,
       createdAt,
       downloadHref: `/s/${encodeURIComponent(token)}?download`,
+      reportHref: `/report/${encodeURIComponent(token)}`,
     })
+  );
+});
+
+/*
+ * Somewhere for a report to land.
+ *
+ * A form, not an API call: the page it is reached from runs no JavaScript, and someone reporting a
+ * phishing page should not have to. Nothing is revoked automatically — a report is a claim, and
+ * acting on it is `npm run reports`, where a person reads it.
+ */
+app.get('/report/:token', (c) => {
+  for (const [header, value] of Object.entries(SHARED_PAGE_HEADERS)) {
+    c.header(header, value);
+  }
+
+  return c.html(buildReportPage(c.req.param('token')));
+});
+
+app.post('/report/:token', async (c) => {
+  const body = await c.req.parseBody();
+  const reason = String(body.reason ?? '').slice(0, 2000);
+  const reporter = String(body.reporter ?? '').slice(0, 200) || null;
+
+  if (!reason.trim()) {
+    return c.html(buildReportPage(c.req.param('token'), 'Say what is wrong with it.'));
+  }
+
+  await sql()`
+    insert into m2h_report (share_token, reason, reporter)
+    values (${c.req.param('token')}, ${reason}, ${reporter})
+  `;
+
+  return c.html(
+    buildNoticePage(
+      'Thank you — the report has been logged',
+      'Someone will look at this document. If it breaks the rules, its link stops working.'
+    )
   );
 });
 

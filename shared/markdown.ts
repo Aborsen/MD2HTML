@@ -198,8 +198,8 @@ interface SharedPageOptions {
   createdAt?: number;
   /** Where the Download link points; omitted for a page nobody should save from. */
   downloadHref?: string;
-  /** Public pages have no reader we know of, so both palettes ship and the browser picks. */
-  origin?: string;
+  /** Where a reader can say this document should not be here. */
+  reportHref?: string;
 }
 
 /**
@@ -214,6 +214,7 @@ export function buildSharedPage({
   body,
   createdAt = Date.now(),
   downloadHref,
+  reportHref,
 }: SharedPageOptions): string {
   const stamp = new Date(createdAt).toISOString().slice(0, 10);
 
@@ -246,7 +247,11 @@ ${SHARED_CHROME_STYLE}
 <article class="md-page md-doc">
 ${body}
 </article>
-<p class="md-footer">Shared document · converted ${escapeHtml(stamp)}</p>
+<p class="md-footer">Shared document · converted ${escapeHtml(stamp)}${
+    reportHref
+      ? ` · <a href="${escapeHtml(reportHref)}">Report this document</a>`
+      : ''
+  }</p>
 </body>
 </html>
 `;
@@ -287,6 +292,85 @@ a { color: var(--md-brand-3); }
 <h1>${escapeHtml(title)}</h1>
 <p>${escapeHtml(message)}</p>
 <p><a href="/">Convert your own file</a></p>
+</body>
+</html>
+`;
+}
+
+/** The form a reader fills in to say a shared document should not be here. */
+export function buildReportPage(token: string, problem?: string): string {
+  return `<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<meta name="robots" content="noindex">
+<title>Report a document</title>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,600&display=swap" rel="stylesheet">
+<style>
+${mdDocResponsiveTheme(':root')}
+body {
+  margin: 0;
+  min-height: 100vh;
+  display: grid;
+  place-content: center;
+  padding: 2rem 1.25rem;
+  background: var(--md-page);
+  color: var(--md-secondary);
+  font-family: "DM Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  width: min(30rem, 100%);
+  padding: 1.75rem;
+  border: 1px solid var(--md-stroke);
+  border-radius: 1rem;
+  background: var(--md-card);
+}
+h1 { margin: 0; font-size: 1.125rem; color: var(--md-ink); }
+p { margin: 0; font-size: 0.875rem; }
+label { font-size: 0.8125rem; color: var(--md-secondary); }
+textarea, input {
+  width: 100%;
+  padding: 0.6rem 0.7rem;
+  border: 1px solid var(--md-stroke);
+  border-radius: 0.5rem;
+  background: var(--md-page);
+  color: var(--md-ink);
+  font: inherit;
+  font-size: 0.875rem;
+  box-sizing: border-box;
+}
+textarea { min-height: 7rem; resize: vertical; }
+button {
+  align-self: flex-start;
+  padding: 0.5rem 1rem;
+  border: 0;
+  border-radius: 999px;
+  background: var(--md-brand);
+  color: #fff;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+.problem { color: #b91c1c; font-size: 0.8125rem; }
+</style>
+</head>
+<body>
+<form method="post" action="/report/${escapeHtml(token)}">
+  <h1>Report this document</h1>
+  <p>Tell us what is wrong with it — impersonation, a scam, someone else's private file.</p>
+  ${problem ? `<p class="problem">${escapeHtml(problem)}</p>` : ''}
+  <label for="reason">What is wrong</label>
+  <textarea id="reason" name="reason" required></textarea>
+  <label for="reporter">Your email, if you want an answer (optional)</label>
+  <input id="reporter" name="reporter" type="email" autocomplete="email">
+  <button type="submit">Send report</button>
+</form>
 </body>
 </html>
 `;

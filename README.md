@@ -130,9 +130,36 @@ curl -H "Authorization: Bearer m2h_live_…"      --data-binary @README.md      
 | `DELETE /api/v1/documents/:id` | removes the row and its source |
 | `GET \| PUT /api/v1/documents/:id/share` | `{mode, emails[]}`; `private` drops the token, so a link already sent stops working |
 
-A cookie works too, so the same endpoints can be tried from a signed-in browser. Errors are
-`{ "error": "…" }` with a status that means what it says: 401 unknown key, 404 not yours, 413 too
-large, 410 the source is gone.
+A cookie works too, so the same endpoints can be tried from a signed-in browser. `GET
+/api/v1/usage` says what an account is using. Errors are `{ "error": "…" }` with a status that means
+what it says: 401 unknown key, 404 not yours, 413 the document is over 1 MB, 403 the account is out
+of room, 429 too fast, 410 the source is gone.
+
+## Limits
+
+| | |
+| --- | --- |
+| Per account | 100 MB, 500 documents |
+| Per document | 1 MB of Markdown — roughly 150,000 words |
+| Per caller | 60 requests a minute, counted by key or by session |
+
+Reaching a limit is a refusal, not a silent eviction: this app used to drop the oldest document to
+stay under its cap, which quietly destroyed something its owner had chosen to keep. A refusal says
+what to delete instead. `server/limits.ts` holds the numbers; the rate counter is a row per caller
+per minute in Postgres, which is imprecise under heavy concurrency and, at this size, the right
+trade against running a cache beside the database.
+
+## Abuse
+
+A shared page carries other people's content on our domain, so it is served with
+`script-src 'none'` and `frame-ancestors 'none'` — an injection that somehow survived the sanitiser
+still cannot run, and the document cannot be framed as someone else's page. Every shared page links
+to `/report/<token>`, a form that needs no JavaScript, and reports land in `m2h_report`.
+
+Nothing is revoked automatically. `npm run reports` lists what is open, `-- --revoke <id>` kills the
+link and marks it handled, `-- --dismiss <id>` just marks it. A report is a stranger's claim about
+someone else's document, and both mistakes — leaving a phishing page up, killing an innocent link —
+deserve a person reading it first.
 
 ## Addresses
 

@@ -10,6 +10,10 @@
       "destination": "/api"
     },
     {
+      "source": "/report/(.*)",
+      "destination": "/api"
+    },
+    {
       "source": "/open/(.*)",
       "destination": "/index.html"
     },

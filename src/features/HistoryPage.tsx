@@ -24,7 +24,7 @@ import {
   formatRelative,
   toFileName,
 } from '@/lib/format';
-import { api } from '@/lib/api';
+import { api, type Usage } from '@/lib/api';
 import { readRoute, replaceFilter } from '@/lib/route';
 import type { HistoryEntry } from '@/lib/history';
 import { Badge } from '@/ui/components/Badge';
@@ -91,6 +91,7 @@ export function HistoryPage({
     return filter === 'md' || filter === 'shared' ? filter : 'html';
   });
   const [shared, setShared] = useState<HistoryEntry[]>([]);
+  const [usage, setUsage] = useState<Usage | null>(null);
   const [isLoadingShared, setIsLoadingShared] = useState(false);
 
   const isShared = chip === 'shared';
@@ -125,6 +126,19 @@ export function HistoryPage({
       setShared([]);
     }
   }, [isSynced, loadShared]);
+
+  // What is left of the account's allowance — the number people want before they hit the wall.
+  useEffect(() => {
+    if (!isSynced) {
+      setUsage(null);
+      return;
+    }
+
+    api
+      .usage()
+      .then(setUsage)
+      .catch(() => setUsage(null));
+  }, [isSynced, entries.length]);
 
   // A row that has gone — deleted here or on another device — must not stay selected.
   useEffect(() => {
@@ -255,6 +269,12 @@ export function HistoryPage({
           {isSynced
             ? 'Saved to your account'
             : 'Kept in this browser — sign in to reach them anywhere'}
+          {usage && (
+            <span className="text-ink-inactive">
+              · {formatBytes(usage.bytes)} of {formatBytes(usage.limits.bytes)} ·{' '}
+              {usage.documents} of {usage.limits.documents} documents
+            </span>
+          )}
         </Typography>
       </div>
 

@@ -51,6 +51,12 @@ function toEntry(doc: ServerDocument): HistoryEntry {
   };
 }
 
+export interface Usage {
+  bytes: number;
+  documents: number;
+  limits: { bytes: number; documents: number; documentBytes: number };
+}
+
 export interface ApiKey {
   id: string;
   name: string;
@@ -168,6 +174,8 @@ export const api = {
       shareToken: doc.share_token,
     }));
   },
+
+  usage: () => request<Usage>('/api/usage'),
 
   listKeys: async () => (await request<{ keys: ApiKey[] }>('/api/keys')).keys,
 

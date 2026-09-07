@@ -12,7 +12,8 @@
     "auth:origin": "node scripts/auth-origin.mjs",
     "env:setup": "node scripts/setup-env.mjs",
     "blob:migrate": "node scripts/sources-to-blob.mjs",
-    "blob:reconcile": "node scripts/reconcile-blobs.mjs"
+    "blob:reconcile": "node scripts/reconcile-blobs.mjs",
+    "reports": "node scripts/reports.mjs"
   },
   "dependencies": {
     "@hono/node-server": "^2.1.1",

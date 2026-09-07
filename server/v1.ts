@@ -5,6 +5,7 @@ import { buildStandaloneHtml, getDocStats } from '../shared/markdown.js';
 import { currentUser, selfOrigin } from './auth.js';
 import { sql } from './db.js';
 import { ownerOfKey } from './keys.js';
+import { checkQuota, countCall, QUOTA, RATE, usageOf } from './limits.js';
 import { markdownToHtml } from './render.js';
 import { deleteSources, putSource, readSource } from './source.js';
 
@@ -18,9 +19,6 @@ import { deleteSources, putSource, readSource } from './source.js';
  * Shapes here are a contract. The app's own /api/documents endpoints stay internal and free to
  * change; these do not.
  */
-
-const MAX_MARKDOWN_BYTES = 1024 * 1024;
-const MAX_DOCUMENTS_PER_USER = 200;
 
 type Caller = { id: string; email: string | null; via: 'key' | 'session' };
 type Env = { Variables: { caller: Caller } };
@@ -58,6 +56,30 @@ const requireCaller = createMiddleware<Env>(async (c, next) => {
 });
 
 v1.use('*', requireCaller);
+
+/*
+ * One counter per caller per minute. Keys are counted by key, a browser session by user, so one
+ * runaway script cannot spend the allowance of the person whose account it belongs to.
+ */
+v1.use('*', async (c, next) => {
+  const caller = c.get('caller');
+  const verdict = await countCall(`${caller.via}:${caller.id}`);
+
+  if (!verdict.ok) {
+    c.header('retry-after', String(verdict.retryAfter));
+
+    return c.json(
+      {
+        error: `Too many requests — the limit is ${RATE.perMinute} a minute. Try again in ${verdict.retryAfter}s.`,
+      },
+      429
+    );
+  }
+
+  return next();
+});
+
+v1.get('/usage', async (c) => c.json(await usageOf(c.get('caller').id)));
 
 interface DocumentRow {
   id: string;
@@ -101,7 +123,7 @@ v1.get('/documents', async (c) => {
     from m2h_document
     where user_id = ${c.get('caller').id}
     order by created_at desc
-    limit ${MAX_DOCUMENTS_PER_USER}
+    limit ${QUOTA.documents}
   `) as DocumentRow[];
 
   return c.json({ documents: rows.map((row) => asDocument(c, row)) });
@@ -140,20 +162,22 @@ v1.post('/documents', async (c) => {
     );
   }
 
-  if (new TextEncoder().encode(markdown).length > MAX_MARKDOWN_BYTES) {
-    return c.json({ error: 'Document is too large (1 MB limit)' }, 413);
-  }
-
   const share = c.req.query('share');
 
   if (share !== undefined && share !== 'link' && share !== 'people') {
     return c.json({ error: 'share must be `link` or `people`' }, 400);
   }
 
+  const size = new TextEncoder().encode(markdown).length;
+  const room = await checkQuota(userId, size);
+
+  if (!room.ok) {
+    return c.json({ error: room.error, usage: room.usage }, room.status);
+  }
+
   const documentName = (name || 'document.md').slice(0, 200);
   const html = markdownToHtml(markdown);
   const stats = getDocStats(markdown, html);
-  const size = new TextEncoder().encode(markdown).length;
 
   const created = (await sql()`
     insert into m2h_document (user_id, name, size, markdown, stats, share_mode, share_token)
@@ -184,20 +208,6 @@ v1.post('/documents', async (c) => {
 
     return c.json({ error: `Could not store the document: ${why}` }, 502);
   }
-
-  const trimmed = (await sql()`
-    delete from m2h_document
-    where user_id = ${userId}
-      and id not in (
-        select id from m2h_document
-        where user_id = ${userId}
-        order by created_at desc
-        limit ${MAX_DOCUMENTS_PER_USER}
-      )
-    returning blob_path
-  `) as Array<{ blob_path: string | null }>;
-
-  await deleteSources(trimmed.map((row) => row.blob_path));
 
   return c.json({ document: asDocument(c, created[0], { words: stats.words }) }, 201);
 });
