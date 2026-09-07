@@ -6,7 +6,7 @@ import { ScrollToTop } from '@/components/ScrollToTop';
 import { api, type SharedDocument } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
 import { formatDateTime, toFileName } from '@/lib/format';
-import { buildStandaloneHtml, markdownToHtml } from '@/lib/markdown';
+import { buildStandaloneHtml, markdownToHtml } from '@shared/markdown';
 import { useTheme } from '@/lib/theme';
 import { Button } from '@/ui/components/Button';
 import { GoogleGlyph } from '@/components/GoogleGlyph';

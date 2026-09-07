@@ -8,6 +8,8 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
+      // The converter the function also imports; one implementation, two runtimes.
+      '@shared': path.resolve(__dirname, './shared'),
     },
   },
   server: {

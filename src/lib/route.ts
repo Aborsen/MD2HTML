@@ -17,7 +17,11 @@ export interface Route {
 }
 
 export function readRoute(): Route {
-  const shared = window.location.pathname.match(/^\/s\/([^/]+)\/?$/);
+  /*
+   * /s/<token> is rendered by the server; the app only sees /open/<token>, where the server sent
+   * a reader whose access depends on being signed in.
+   */
+  const shared = window.location.pathname.match(/^\/(?:open|s)\/([^/]+)\/?$/);
 
   return {
     view: /^\/history\/?$/.test(window.location.pathname)

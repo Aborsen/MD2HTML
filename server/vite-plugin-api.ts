@@ -25,7 +25,8 @@ export function apiDevServer(): Plugin {
     },
     configureServer(server) {
       server.middlewares.use(async (req, res, next) => {
-        if (!req.url?.startsWith('/api/')) {
+        // The same paths vercel.json sends to the function in production.
+        if (!req.url?.startsWith('/api/') && !req.url?.startsWith('/s/')) {
           return next();
         }
 

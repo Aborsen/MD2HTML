@@ -57,6 +57,25 @@ ${declare(theme === 'dark' ? DARK : LIGHT)}
 }`;
 }
 
+/**
+ * The palette left to the reader's own setting.
+ *
+ * A downloaded file freezes the theme its owner was looking at — that is the file they saw. A page
+ * we serve has no such owner: whoever opens the link brings their own preference, so it ships both
+ * palettes and lets the browser choose.
+ */
+export function mdDocResponsiveTheme(selector = '.md-doc'): string {
+  return `${selector} {
+${declare(LIGHT)}
+}
+
+@media (prefers-color-scheme: dark) {
+${selector} {
+${declare(DARK)}
+}
+}`;
+}
+
 /** On paper a dark document is a wall of ink, so printing always uses the light values. */
 export function mdDocPrintOverride(selector = '.md-doc'): string {
   return `@media print {

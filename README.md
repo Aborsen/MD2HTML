@@ -116,10 +116,28 @@ showing), `/s/<token>` a shared document. They are read straight from `location`
 through a router — three routes do not need one — which is what makes a reload land where you
 were and the Back button work. Each needs a rewrite to `index.html` in `vercel.json`.
 
+## Rendering
+
+The converter lives in `shared/` and runs in both places: the browser renders the preview, and the
+function renders the page a share link opens. One implementation, so a document cannot look one way
+in the app and another way to whoever it was sent to. DOMPurify comes from `isomorphic-dompurify`,
+which supplies a DOM on the server and stays out of the browser bundle.
+
+`GET /s/<token>` is served by the function, not by the app:
+
+- **link share** — built HTML with `s-maxage=60, stale-while-revalidate=600`, so repeat visitors
+  are answered by the CDN and the database sees about one read a minute per document. The window is
+  short on purpose: revoking a share has to take effect in about a minute.
+- **addressed share** — never cached. A reader who is signed in and on the list gets the same page
+  privately; anyone else is redirected to `/open/<token>`, the app's own page, which knows how to
+  ask them to sign in.
+- **`?download`** — the same document as an attachment.
+
 ## Structure
 
 ```
 api/index.ts            Vercel entry point (wraps the Hono app)
+shared/                 the converter and document styles, used by both runtimes
 server/                 API: routes, Neon Auth proxy, Neon client, dev middleware
 db/schema.sql           m2h_document and its sharing tables
 scripts/init-db.mjs     applies the schema

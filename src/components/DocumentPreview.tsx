@@ -1,4 +1,4 @@
-import { mdDocTheme, MD_DOC_STYLE, MD_PREVIEW_STYLE } from '@/lib/md-doc-css';
+import { mdDocTheme, MD_DOC_STYLE, MD_PREVIEW_STYLE } from '@shared/md-doc-css';
 import { useTheme } from '@/lib/theme';
 import { cn } from '@/ui/lib/utils';
 

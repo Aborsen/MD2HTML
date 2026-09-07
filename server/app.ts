@@ -1,6 +1,12 @@
 import { randomBytes } from 'node:crypto';
 import { Hono } from 'hono';
 import { createMiddleware } from 'hono/factory';
+import {
+  buildNoticePage,
+  buildSharedPage,
+  buildStandaloneHtml,
+  markdownToHtml,
+} from '../shared/markdown.js';
 import { authProxy, currentUser, type SessionUser } from './auth.js';
 import { sql, type DocumentRow } from './db.js';
 
@@ -10,9 +16,15 @@ const MAX_DOCUMENTS_PER_USER = 200;
 
 type Env = { Variables: { user: SessionUser } };
 
-const app = new Hono<Env>().basePath('/api');
+/*
+ * Two roots: the API, and the share links people paste around. A shared page is rendered here
+ * rather than in the browser so it can be cached at the edge — see `GET /s/:token`.
+ */
+const app = new Hono<Env>();
 
-app.get('/health', (c) => c.json({ ok: true }));
+const api = new Hono<Env>().basePath('/api');
+
+api.get('/health', (c) => c.json({ ok: true }));
 
 interface ShareRow {
   id: string;
@@ -34,7 +46,7 @@ const normaliseEmail = (value: unknown) =>
  * 'link' is anyone holding the token. 'people' is the owner plus the addresses on the document —
  * checked against the session, never against anything the caller says about themselves.
  */
-app.get('/shared/:token', async (c) => {
+api.get('/shared/:token', async (c) => {
   const rows = (await sql()`
     select id, user_id, name, markdown, created_at, share_mode, share_token
     from m2h_document
@@ -78,7 +90,7 @@ app.get('/shared/:token', async (c) => {
 
 // Sign-in, sign-out and the session read all live at the auth service; this app only forwards
 // them so its cookie is first-party. See server/auth.ts.
-app.all('/auth/*', authProxy);
+api.all('/auth/*', authProxy);
 
 /** Everything below needs a session. */
 const requireUser = createMiddleware<Env>(async (c, next) => {
@@ -93,9 +105,9 @@ const requireUser = createMiddleware<Env>(async (c, next) => {
   return next();
 });
 
-app.use('/documents', requireUser);
-app.use('/documents/*', requireUser);
-app.use('/shared-with-me', requireUser);
+api.use('/documents', requireUser);
+api.use('/documents/*', requireUser);
+api.use('/shared-with-me', requireUser);
 
 /**
  * Documents other people shared with this address.
@@ -105,7 +117,7 @@ app.use('/shared-with-me', requireUser);
  * here — the row carries the token and reads it through /shared/:token, which is the one place
  * access is decided.
  */
-app.get('/shared-with-me', async (c) => {
+api.get('/shared-with-me', async (c) => {
   const user = c.get('user');
 
   const rows = (await sql()`
@@ -130,7 +142,7 @@ app.get('/shared-with-me', async (c) => {
   return c.json({ documents: rows });
 });
 
-app.get('/documents', async (c) => {
+api.get('/documents', async (c) => {
   const rows = (await sql()`
     select id, name, size, stats, created_at
     from m2h_document
@@ -142,7 +154,7 @@ app.get('/documents', async (c) => {
   return c.json({ documents: rows });
 });
 
-app.post('/documents', async (c) => {
+api.post('/documents', async (c) => {
   const userId = c.get('user').id;
 
   type CreateBody = {
@@ -189,7 +201,7 @@ app.post('/documents', async (c) => {
   return c.json({ document: rows[0] }, 201);
 });
 
-app.get('/documents/:id', async (c) => {
+api.get('/documents/:id', async (c) => {
   const rows = (await sql()`
     select id, name, size, stats, created_at, markdown
     from m2h_document
@@ -240,13 +252,13 @@ async function ensureToken(userId: string, documentId: string) {
   return rows[0]?.share_token ?? null;
 }
 
-app.get('/documents/:id/share', async (c) => {
+api.get('/documents/:id/share', async (c) => {
   const state = await shareState(c.get('user').id, c.req.param('id'));
 
   return state ? c.json(state) : c.json({ error: 'Not found' }, 404);
 });
 
-app.put('/documents/:id/share', async (c) => {
+api.put('/documents/:id/share', async (c) => {
   const userId = c.get('user').id;
   const id = c.req.param('id');
   const body = await c.req
@@ -281,7 +293,7 @@ app.put('/documents/:id/share', async (c) => {
   return state ? c.json(state) : c.json({ error: 'Not found' }, 404);
 });
 
-app.post('/documents/:id/share/people', async (c) => {
+api.post('/documents/:id/share/people', async (c) => {
   const userId = c.get('user').id;
   const id = c.req.param('id');
   const body = await c.req
@@ -314,7 +326,7 @@ app.post('/documents/:id/share/people', async (c) => {
   return state ? c.json(state) : c.json({ error: 'Not found' }, 404);
 });
 
-app.delete('/documents/:id/share/people', async (c) => {
+api.delete('/documents/:id/share/people', async (c) => {
   const userId = c.get('user').id;
   const id = c.req.param('id');
   const email = normaliseEmail(c.req.query('email'));
@@ -334,7 +346,7 @@ app.delete('/documents/:id/share/people', async (c) => {
   return state ? c.json(state) : c.json({ error: 'Not found' }, 404);
 });
 
-app.delete('/documents/:id', async (c) => {
+api.delete('/documents/:id', async (c) => {
   await sql()`
     delete from m2h_document
     where user_id = ${c.get('user').id} and id = ${c.req.param('id')}
@@ -343,10 +355,102 @@ app.delete('/documents/:id', async (c) => {
   return c.json({ ok: true });
 });
 
-app.delete('/documents', async (c) => {
+api.delete('/documents', async (c) => {
   await sql()`delete from m2h_document where user_id = ${c.get('user').id}`;
 
   return c.json({ ok: true });
 });
+
+/*
+ * The page a share link opens.
+ *
+ * A link share is the same bytes for everyone, so it is built once and handed to the CDN with a
+ * short s-maxage: repeat visitors never reach this function, and the database sees one read per
+ * minute per document instead of one per visitor. The window is deliberately short — revoking a
+ * share has to take effect in about a minute, not a day.
+ *
+ * An addressed share depends on who is asking, so it is never cached; a stranger is bounced to
+ * the app, which knows how to ask them to sign in.
+ */
+app.get('/s/:token', async (c) => {
+  const token = c.req.param('token');
+
+  const rows = (await sql()`
+    select id, user_id, name, markdown, created_at, share_mode
+    from m2h_document
+    where share_token = ${token}
+  `) as Array<{
+    id: string;
+    user_id: string;
+    name: string;
+    markdown: string;
+    created_at: string;
+    share_mode: 'private' | 'link' | 'people';
+  }>;
+
+  const document = rows[0];
+
+  if (!document || document.share_mode === 'private') {
+    c.header('cache-control', 'no-store');
+    c.status(404);
+
+    return c.html(
+      buildNoticePage(
+        'This link does not open a document',
+        'It was never shared, or the person who shared it has since revoked the link.'
+      )
+    );
+  }
+
+  if (document.share_mode === 'people') {
+    const user = await currentUser(c);
+    const allowed =
+      user &&
+      (user.id === document.user_id ||
+        ((await sql()`
+          select 1 from m2h_document_share
+          where document_id = ${document.id}
+            and email = ${normaliseEmail(user.email)}
+        `) as unknown[]).length > 0);
+
+    if (!allowed) {
+      // The app owns the sign-in flow; /open/<token> is the same page, client-side.
+      c.header('cache-control', 'no-store');
+
+      return c.redirect(`/open/${encodeURIComponent(token)}`, 302);
+    }
+
+    c.header('cache-control', 'private, no-store');
+  } else {
+    c.header(
+      'cache-control',
+      'public, max-age=0, s-maxage=60, stale-while-revalidate=600'
+    );
+  }
+
+  const body = markdownToHtml(document.markdown);
+  const createdAt = new Date(document.created_at).getTime();
+
+  if (c.req.query('download') !== undefined) {
+    const fileName = `${document.name.replace(/\.(md|markdown|mdown|mkd|txt)$/i, '')}.html`;
+
+    c.header('content-disposition', `attachment; filename="${fileName}"`);
+
+    return c.html(
+      buildStandaloneHtml({ title: document.name, body, createdAt, theme: 'light' })
+    );
+  }
+
+  return c.html(
+    buildSharedPage({
+      title: document.name,
+      body,
+      createdAt,
+      downloadHref: `/s/${encodeURIComponent(token)}?download`,
+    })
+  );
+});
+
+app.route('/', api);
 
 export default app;

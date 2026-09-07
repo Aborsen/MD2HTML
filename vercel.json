@@ -7,6 +7,10 @@
     },
     {
       "source": "/s/(.*)",
+      "destination": "/api"
+    },
+    {
+      "source": "/open/(.*)",
       "destination": "/index.html"
     },
     {

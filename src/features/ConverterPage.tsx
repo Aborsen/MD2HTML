@@ -19,7 +19,7 @@ import { ShareDialog } from '@/components/ShareDialog';
 import { Dropzone } from '@/components/Dropzone';
 import { useTheme } from '@/lib/theme';
 import type { ConvertedDoc } from '@/lib/types';
-import { buildStandaloneHtml } from '@/lib/markdown';
+import { buildStandaloneHtml } from '@shared/markdown';
 import { formatBytes, formatDateTime, toHtmlFileName } from '@/lib/format';
 import { Badge } from '@/ui/components/Badge';
 import { Button } from '@/ui/components/Button';
