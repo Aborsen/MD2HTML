@@ -12,6 +12,10 @@
     {
       "source": "/history",
       "destination": "/index.html"
+    },
+    {
+      "source": "/history/",
+      "destination": "/index.html"
     }
   ]
 }
