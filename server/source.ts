@@ -73,6 +73,11 @@ export async function putSource(
  * from a checkout without store access. Rather than a migration someone has to remember to run,
  * each one moves the first time it is read somewhere the store is reachable. Best effort: if the
  * upload fails the text is still returned, and the row simply gets another chance next time.
+ *
+ * The move is awaited rather than left running. A serverless instance is frozen the moment its
+ * response is sent, and the first attempt at this uploaded the file but never got to write the
+ * row — a document counted twice, in the store and in the column. Once per document, so the cost
+ * lands on one reader and nobody after.
  */
 export async function readSource(row: {
   id?: string;
@@ -82,7 +87,7 @@ export async function readSource(row: {
 }): Promise<string | null> {
   if (row.markdown != null) {
     if (blobEnabled() && row.id && row.user_id) {
-      void moveIntoStore(row.user_id, row.id, row.markdown);
+      await moveIntoStore(row.user_id, row.id, row.markdown);
     }
 
     return row.markdown;
