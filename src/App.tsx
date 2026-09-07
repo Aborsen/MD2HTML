@@ -276,18 +276,20 @@ function Shell() {
 
   const handleRemoveMany = useCallback(
     async (ids: string[]) => {
-      await history.removeMany(ids);
-
-      toast.info(
-        ids.length === 1 ? 'File removed' : `${ids.length} files removed`
-      );
+      // Only claim success when the store says the delete actually stuck.
+      if (await history.removeMany(ids)) {
+        toast.info(
+          ids.length === 1 ? 'File removed' : `${ids.length} files removed`
+        );
+      }
     },
     [history]
   );
 
   const handleClear = useCallback(async () => {
-    await history.clear();
-    toast.info('History cleared');
+    if (await history.clear()) {
+      toast.info('History cleared');
+    }
   }, [history]);
 
   return (

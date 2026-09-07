@@ -43,6 +43,20 @@ function takeSignInOutcome(): string | null {
   return outcome === 'ok' ? null : why ? `${outcome} — ${why}` : outcome;
 }
 
+/** The one-time value Neon Auth hands back when an OAuth round trip completes. */
+const VERIFIER = 'neon_auth_session_verifier';
+
+function takeVerifier(): string | null {
+  return new URL(window.location.href).searchParams.get(VERIFIER);
+}
+
+function stripVerifier() {
+  const url = new URL(window.location.href);
+
+  url.searchParams.delete(VERIFIER);
+  window.history.replaceState(null, '', url.pathname + url.search + url.hash);
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -50,10 +64,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [error, setError] = useState<string | null>(() => takeSignInOutcome());
 
   useEffect(() => {
-    api
-      .me()
-      .then(setUser)
-      .finally(() => setIsLoading(false));
+    const verifier = takeVerifier();
+
+    api.me().then((account) => {
+      /*
+       * A verifier in the address bar means an OAuth round trip came back to the page instead of
+       * to /api/auth/finish — which happens, and leaves both an unfinished sign-in and a URL full
+       * of machinery. Finish it here: only a server can trade the verifier for the session cookie,
+       * so hand it over and come back clean.
+       */
+      if (verifier && !account) {
+        const to = window.location.pathname + window.location.search.replace(
+          new RegExp(`[?&]${VERIFIER}=[^&]*`),
+          ''
+        );
+
+        window.location.replace(
+          `/api/auth/finish?to=${encodeURIComponent(to || '/')}&${VERIFIER}=${encodeURIComponent(verifier)}`
+        );
+        return;
+      }
+
+      if (verifier) {
+        stripVerifier();
+      }
+
+      setUser(account);
+      setIsLoading(false);
+    });
   }, []);
 
   const signIn = useCallback(async () => {

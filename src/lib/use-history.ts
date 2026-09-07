@@ -113,17 +113,50 @@ export function useHistory(isSignedIn: boolean) {
     []
   );
 
+  /*
+   * The list is updated before the server answers, so a delete feels instant. When the server
+   * refuses, the rows come back AND the failure is reported: a delete that only appeared to work
+   * is the one bug that cannot be noticed from the inside.
+   */
+  const removeRemote = useCallback(
+    async (ids: string[]) => {
+      setEntries((current) =>
+        current.filter((entry) => !ids.includes(entry.id))
+      );
+
+      const results = await Promise.allSettled(
+        ids.map((id) => api.deleteDocument(id))
+      );
+      const failed = results.filter((result) => result.status === 'rejected');
+
+      if (failed.length === 0) {
+        return true;
+      }
+
+      const [first] = failed as PromiseRejectedResult[];
+
+      setError(
+        failed.length === ids.length
+          ? `Could not delete: ${first.reason instanceof Error ? first.reason.message : 'server refused'}`
+          : `${failed.length} of ${ids.length} files could not be deleted`
+      );
+      await refresh();
+
+      return false;
+    },
+    [refresh]
+  );
+
   const remove = useCallback(
     async (id: string) => {
       if (!isSignedIn) {
         setEntries(removeHistoryEntry(id).sort(byNewest));
-        return;
+        return true;
       }
 
-      setEntries((current) => current.filter((entry) => entry.id !== id));
-      await api.deleteDocument(id).catch(() => refresh());
+      return removeRemote([id]);
     },
-    [isSignedIn, refresh]
+    [isSignedIn, removeRemote]
   );
 
   const removeMany = useCallback(
@@ -136,26 +169,32 @@ export function useHistory(isSignedIn: boolean) {
         }
 
         setEntries(next.sort(byNewest));
-        return;
+        return true;
       }
 
-      setEntries((current) => current.filter((entry) => !ids.includes(entry.id)));
-
-      await Promise.all(ids.map((id) => api.deleteDocument(id))).catch(() =>
-        refresh()
-      );
+      return removeRemote(ids);
     },
-    [isSignedIn, refresh]
+    [isSignedIn, removeRemote]
   );
 
   const clear = useCallback(async () => {
     if (!isSignedIn) {
       setEntries(clearHistory());
-      return;
+      return true;
     }
 
     setEntries([]);
-    await api.clearDocuments().catch(() => refresh());
+
+    try {
+      await api.clearDocuments();
+      return true;
+    } catch (cause) {
+      setError(
+        cause instanceof Error ? cause.message : 'Could not clear the history'
+      );
+      await refresh();
+      return false;
+    }
   }, [isSignedIn, refresh]);
 
   return { entries, error, add, remove, removeMany, clear, getSource, refresh };
