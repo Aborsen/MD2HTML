@@ -1,7 +1,14 @@
 import { getRequestListener } from '@hono/node-server';
 import { loadEnv, type Plugin } from 'vite';
 
-const SERVER_ENV_KEYS = ['DATABASE_URL', 'NEON_AUTH_BASE_URL'];
+const SERVER_ENV_KEYS = [
+  'DATABASE_URL',
+  'NEON_AUTH_BASE_URL',
+  // The Blob store: a read-write token where one exists, otherwise the OIDC pair.
+  'BLOB_READ_WRITE_TOKEN',
+  'BLOB_STORE_ID',
+  'VERCEL_OIDC_TOKEN',
+];
 
 /**
  * Serves the same Hono app the Vercel function uses, so `npm run dev` gives a

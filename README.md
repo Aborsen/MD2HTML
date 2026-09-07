@@ -137,9 +137,9 @@ does the same in one pass where that is preferred, and `npm run blob:reconcile` 
 and database disagree — an orphaned file is safe to delete, a row whose file is gone is only
 reported.
 
-One gap worth knowing: a locally pulled OIDC token is always scoped to `development`, so unless
-that environment is allowed under Secure Backend Access, `npm run dev` writes sources to the column
-while production writes them to the store.
+The store's connection has to include the **Development** environment (Storage → the store →
+Configure → Environments), or a locally pulled OIDC token is refused and `npm run dev` writes
+sources to the column while production writes them to the store.
 
 ## Rendering
 
