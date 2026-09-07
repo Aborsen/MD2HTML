@@ -5,7 +5,7 @@ import { ConverterPage } from './features/ConverterPage';
 import { HistoryPage } from './features/HistoryPage';
 import { AuthProvider, useAuth } from './lib/auth';
 import { ThemeProvider, useTheme } from './lib/theme';
-import { toHtmlFileName } from './lib/format';
+import { type DocFormat, toFileName } from './lib/format';
 import type { HistoryEntry } from './lib/history';
 import {
   buildStandaloneHtml,
@@ -46,25 +46,41 @@ function convert(
   };
 }
 
-function downloadHtml(
-  name: string,
-  html: string,
-  createdAt: number,
-  theme: 'dark' | 'light'
-) {
-  const blob = new Blob(
-    [buildStandaloneHtml({ title: name, body: html, createdAt, theme })],
-    { type: 'text/html;charset=utf-8' }
-  );
-  const url = URL.createObjectURL(blob);
+function save(fileName: string, contents: string, type: string) {
+  const url = URL.createObjectURL(new Blob([contents], { type }));
   const link = document.createElement('a');
 
   link.href = url;
-  link.download = toHtmlFileName(name);
+  link.download = fileName;
   document.body.appendChild(link);
   link.click();
   link.remove();
   URL.revokeObjectURL(url);
+}
+
+/** Hands over the document in the format the list is showing: the source, or the built page. */
+function download(
+  name: string,
+  markdown: string,
+  createdAt: number,
+  theme: 'dark' | 'light',
+  format: DocFormat
+) {
+  if (format === 'md') {
+    save(toFileName(name, 'md'), markdown, 'text/markdown;charset=utf-8');
+    return;
+  }
+
+  save(
+    toFileName(name, 'html'),
+    buildStandaloneHtml({
+      title: name,
+      body: markdownToHtml(markdown),
+      createdAt,
+      theme,
+    }),
+    'text/html;charset=utf-8'
+  );
 }
 
 function Shell() {
@@ -166,7 +182,7 @@ function Shell() {
   );
 
   const handleDownloadFromHistory = useCallback(
-    async (entry: HistoryEntry) => {
+    async (entry: HistoryEntry, format: DocFormat) => {
       const markdown = await history.getSource(entry);
 
       if (!markdown) {
@@ -174,9 +190,9 @@ function Shell() {
         return;
       }
 
-      downloadHtml(entry.name, markdownToHtml(markdown), entry.createdAt, theme);
-      toast.success('HTML file downloaded', {
-        description: toHtmlFileName(entry.name),
+      download(entry.name, markdown, entry.createdAt, theme, format);
+      toast.success('File downloaded', {
+        description: toFileName(entry.name, format),
       });
     },
     [history, theme]
@@ -240,7 +256,7 @@ function Shell() {
   );
 
   const handleDownloadMany = useCallback(
-    async (entries: HistoryEntry[]) => {
+    async (entries: HistoryEntry[], format: DocFormat) => {
       let saved = 0;
 
       for (const entry of entries) {
@@ -250,12 +266,7 @@ function Shell() {
           continue;
         }
 
-        downloadHtml(
-          entry.name,
-          markdownToHtml(markdown),
-          entry.createdAt,
-          theme
-        );
+        download(entry.name, markdown, entry.createdAt, theme, format);
         saved += 1;
 
         // A browser handed a burst of downloads starts dropping them.
@@ -267,8 +278,12 @@ function Shell() {
         return;
       }
 
+      const label = format === 'html' ? 'HTML' : 'Markdown';
+
       toast.success(
-        saved === 1 ? 'HTML file downloaded' : `${saved} HTML files downloaded`
+        saved === 1
+          ? `${label} file downloaded`
+          : `${saved} ${label} files downloaded`
       );
     },
     [history, theme]
@@ -315,8 +330,12 @@ function Shell() {
             isSynced={Boolean(user)}
             onOpen={handleOpenFromHistory}
             onFiles={handleFiles}
-            onDownload={handleDownloadFromHistory}
-            onDownloadMany={(entries) => void handleDownloadMany(entries)}
+            onDownload={(entry, format) =>
+              void handleDownloadFromHistory(entry, format)
+            }
+            onDownloadMany={(entries, format) =>
+              void handleDownloadMany(entries, format)
+            }
             onMerge={(entries) => void handleMergeFromHistory(entries)}
             onRemove={(id) => void history.remove(id)}
             onRemoveMany={(ids) => void handleRemoveMany(ids)}

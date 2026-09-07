@@ -41,3 +41,14 @@ export function formatRelative(timestamp: number): string {
 export function toHtmlFileName(markdownName: string): string {
   return `${markdownName.replace(/\.(md|markdown|mdown|mkd|txt)$/i, '')}.html`;
 }
+
+/** The document's own format: what the row shows, and what a download hands over. */
+export type DocFormat = 'md' | 'html';
+
+export function toMarkdownFileName(name: string): string {
+  return /\.(md|markdown|mdown|mkd|txt)$/i.test(name) ? name : `${name}.md`;
+}
+
+export function toFileName(name: string, format: DocFormat): string {
+  return format === 'html' ? toHtmlFileName(name) : toMarkdownFileName(name);
+}

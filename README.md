@@ -73,10 +73,15 @@ step; a deployment made before them needs a redeploy to see them. The build is a
 - **History** — signed in: stored in Neon (up to 200 documents, 1 MB of source
   each), available on every device; signed out: the last 25 conversions in
   `localStorage`. Whatever was collected locally is moved into the account on
-  first sign-in. The page has its own dropzone, a search box over file names and
-  sortable headers; a row opens the document, and rows can be selected in bulk to
-  merge, download or delete them (the selection bar is the design system's
-  `ListSelectionBar`).
+  first sign-in. The page has its own dropzone, a search box over file names,
+  Markdown/HTML chips and sortable headers; a row opens the document, and rows can
+  be selected in bulk to merge, download or delete them (the selection bar and the
+  chips come from the design system).
+
+  The chips choose which face of a document the list shows: the Markdown source it
+  was made from, or the HTML it converts to — the row's name, its type badge and
+  what a download hands over all follow. Only the source is stored; the HTML is
+  built on the spot, which is why the size column names what it measures.
 - **Sign-in** — Google, through Neon Auth.
 
 ## UI

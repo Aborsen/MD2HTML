@@ -11,10 +11,18 @@ import {
 } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Hint } from '@/components/Hint';
+import { FilterChips } from '@/components/FilterChips';
 import { ListSelectionBar } from '@/components/ListSelectionBar';
 import { ACCEPTED_EXTENSIONS } from '@/components/Dropzone';
-import { formatBytes, formatDateTime, formatRelative } from '@/lib/format';
+import {
+  type DocFormat,
+  formatBytes,
+  formatDateTime,
+  formatRelative,
+  toFileName,
+} from '@/lib/format';
 import type { HistoryEntry } from '@/lib/history';
+import { Badge } from '@/ui/components/Badge';
 import { Button } from '@/ui/components/Button';
 import { Checkbox } from '@/ui/components/Checkbox';
 import {
@@ -42,8 +50,8 @@ interface HistoryPageProps {
   onOpen: (entry: HistoryEntry) => void;
   /** Same handler the dropzone uses, so a new document can start from this page. */
   onFiles: (files: File[]) => void;
-  onDownload: (entry: HistoryEntry) => void;
-  onDownloadMany: (entries: HistoryEntry[]) => void;
+  onDownload: (entry: HistoryEntry, format: DocFormat) => void;
+  onDownloadMany: (entries: HistoryEntry[], format: DocFormat) => void;
   onMerge: (entries: HistoryEntry[]) => void;
   onRemove: (id: string) => void;
   onRemoveMany: (ids: string[]) => void;
@@ -68,6 +76,7 @@ export function HistoryPage({
 }: HistoryPageProps) {
   const [selected, setSelected] = useState<string[]>([]);
   const [query, setQuery] = useState('');
+  const [format, setFormat] = useState<DocFormat>('md');
   const filePicker = useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [sort, setSort] = useState<{ key: SortKey; direction: 'asc' | 'desc' }>({
@@ -278,6 +287,15 @@ export function HistoryPage({
         </InputGroup>
       </div>
 
+      <FilterChips
+        value={format}
+        items={[
+          { value: 'md', label: 'Markdown' },
+          { value: 'html', label: 'HTML' },
+        ]}
+        onValueChange={(value) => setFormat(value as DocFormat)}
+      />
+
       <ListSelectionBar
         sticky
         title={
@@ -319,7 +337,7 @@ export function HistoryPage({
                 size="xs"
                 className="!px-1.5 !py-1"
                 leftSlot={<Download />}
-                onClick={() => onDownloadMany(selectedEntries)}
+                onClick={() => onDownloadMany(selectedEntries, format)}
               >
                 Download
               </Button>
@@ -374,13 +392,14 @@ export function HistoryPage({
             >
               File
             </TableHead>
+            <TableHead className="hidden w-24 sm:table-cell">Type</TableHead>
             <TableHead
               className="hidden sm:table-cell"
               sortable
               sortDirection={directionOf('size')}
               onSort={() => sortBy('size')}
             >
-              Size
+              Source size
             </TableHead>
             <TableHead
               className="hidden md:table-cell"
@@ -448,10 +467,20 @@ export function HistoryPage({
                     <span className="flex min-w-0 items-center gap-2">
                       <FileText className="size-4 shrink-0 text-brand-tertiary" />
                       <span className="truncate font-medium text-ink-primary">
-                        {entry.name}
+                        {toFileName(entry.name, format)}
                       </span>
                     </span>
                   </Hint>
+                </TableCell>
+
+                <TableCell className="hidden sm:table-cell">
+                  <Badge
+                    variant={format === 'html' ? 'primary' : 'secondary'}
+                    size="sm"
+                    rounded="full"
+                  >
+                    {format === 'html' ? 'HTML' : 'MD'}
+                  </Badge>
                 </TableCell>
 
                 <TableCell className="hidden sm:table-cell">
@@ -477,14 +506,14 @@ export function HistoryPage({
                   onKeyDown={stopRowClick}
                 >
                   <span className="flex items-center justify-end gap-1">
-                    <Hint content="Download .html">
+                    <Hint content={format === 'html' ? 'Download .html' : 'Download .md'}>
                       <span>
                         <IconButton
                           variant="tertiary"
                           size="sm"
-                          aria-label={`Download ${entry.name}`}
+                          aria-label={`Download ${toFileName(entry.name, format)}`}
                           disabled={!isReopenable}
-                          onClick={() => onDownload(entry)}
+                          onClick={() => onDownload(entry, format)}
                         >
                           <Download />
                         </IconButton>
