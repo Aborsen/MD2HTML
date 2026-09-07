@@ -108,6 +108,13 @@ dark page on paper is a wall of ink.
 The theme (dark by default) lives behind the account menu, remembered per browser in
 `localStorage`; signed out, a sun/moon button in the header does the same job.
 
+## Addresses
+
+`/` is the converter, `/history` the list (with `?filter=html|md|shared` for the chip it is
+showing), `/s/<token>` a shared document. They are read straight from `location` rather than
+through a router — three routes do not need one — which is what makes a reload land where you
+were and the Back button work. Each needs a rewrite to `index.html` in `vercel.json`.
+
 ## Structure
 
 ```

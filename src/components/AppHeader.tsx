@@ -5,7 +5,9 @@ import { Separator } from '@/ui/components/Separator';
 import { Typography } from '@/ui/components/Typography';
 import { cn } from '@/ui/lib/utils';
 
-export type AppView = 'converter' | 'history';
+import type { AppView } from '@/lib/route';
+
+export type { AppView };
 
 interface AppHeaderProps {
   view: AppView;

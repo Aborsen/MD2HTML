@@ -25,6 +25,7 @@ import {
   toFileName,
 } from '@/lib/format';
 import { api } from '@/lib/api';
+import { readRoute, replaceFilter } from '@/lib/route';
 import type { HistoryEntry } from '@/lib/history';
 import { Badge } from '@/ui/components/Badge';
 import { Button } from '@/ui/components/Button';
@@ -80,8 +81,15 @@ export function HistoryPage({
 }: HistoryPageProps) {
   const [selected, setSelected] = useState<string[]>([]);
   const [query, setQuery] = useState('');
-  /** One row of chips over two axes: which format of my files, or somebody else's files. */
-  const [chip, setChip] = useState<'html' | 'md' | 'shared'>('html');
+  /**
+   * One row of chips over two axes: which format of my files, or somebody else's files. It lives
+   * in the address too, so refreshing the page keeps looking at the same list.
+   */
+  const [chip, setChip] = useState<'html' | 'md' | 'shared'>(() => {
+    const filter = readRoute().filter;
+
+    return filter === 'md' || filter === 'shared' ? filter : 'html';
+  });
   const [shared, setShared] = useState<HistoryEntry[]>([]);
   const [isLoadingShared, setIsLoadingShared] = useState(false);
 
@@ -347,6 +355,7 @@ export function HistoryPage({
         onValueChange={(value) => {
           setSelected([]);
           setChip(value as 'html' | 'md' | 'shared');
+          replaceFilter(value);
         }}
       />
 

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { AppHeader, type AppView } from './components/AppHeader';
+import { AppHeader } from './components/AppHeader';
 import { ACCEPTED_EXTENSIONS, MAX_FILE_SIZE } from './components/Dropzone';
 import { ConverterPage } from './features/ConverterPage';
 import { HistoryPage } from './features/HistoryPage';
@@ -14,6 +14,7 @@ import {
   markdownToHtml,
 } from './lib/markdown';
 import { mergedName, mergeMarkdown } from './lib/merge';
+import { type AppView, goTo, readRoute } from './lib/route';
 import type { ConvertedDoc } from './lib/types';
 import { useHistory } from './lib/use-history';
 import { toast, Toaster } from './ui/components/Toast';
@@ -87,7 +88,21 @@ function download(
 function Shell() {
   const { user, error: authError } = useAuth();
   const { theme } = useTheme();
-  const [view, setView] = useState<AppView>('converter');
+  const [view, setViewState] = useState<AppView>(() => readRoute().view);
+
+  /* The view lives in the address, so a reload lands where you were and Back means something. */
+  const setView = useCallback((next: AppView) => {
+    setViewState(next);
+    goTo(next, readRoute().filter);
+  }, []);
+
+  useEffect(() => {
+    const sync = () => setViewState(readRoute().view);
+
+    window.addEventListener('popstate', sync);
+
+    return () => window.removeEventListener('popstate', sync);
+  }, []);
   const [doc, setDoc] = useState<ConvertedDoc | null>(null);
   const [isBusy, setIsBusy] = useState(false);
 
@@ -172,7 +187,7 @@ function Shell() {
         setIsBusy(false);
       }
     },
-    [history]
+    [history, setView]
   );
 
   const handleOpenFromHistory = useCallback(
@@ -189,7 +204,7 @@ function Shell() {
       setDoc(entry.remote ? { ...reopened, remoteId: entry.id } : reopened);
       setView('converter');
     },
-    [history]
+    [history, setView]
   );
 
   const handleDownloadFromHistory = useCallback(
@@ -212,7 +227,7 @@ function Shell() {
   const startOver = useCallback(() => {
     setDoc(null);
     setView('converter');
-  }, []);
+  }, [setView]);
 
   const handleMergeFromHistory = useCallback(
     async (entries: HistoryEntry[]) => {
@@ -380,15 +395,8 @@ function Shell() {
   );
 }
 
-/** The app has one alternative destination: a shared document at /s/<token>. */
-function sharedToken(): string | null {
-  const match = window.location.pathname.match(/^\/s\/([^/]+)\/?$/);
-
-  return match ? decodeURIComponent(match[1]) : null;
-}
-
 export default function App() {
-  const token = sharedToken();
+  const token = readRoute().sharedToken;
 
   return (
     <ThemeProvider>

@@ -8,6 +8,10 @@
     {
       "source": "/s/(.*)",
       "destination": "/index.html"
+    },
+    {
+      "source": "/history",
+      "destination": "/index.html"
     }
   ]
 }
