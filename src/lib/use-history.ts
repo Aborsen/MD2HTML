@@ -76,19 +76,27 @@ export function useHistory(isSignedIn: boolean) {
     void refresh();
   }, [refresh]);
 
+  /** Returns the stored entry, so the caller can hang account-only actions off its id. */
   const add = useCallback(
-    async (entry: NewEntry) => {
+    async (entry: NewEntry): Promise<HistoryEntry | null> => {
       if (!isSignedIn) {
-        setEntries(addHistoryEntry(entry).history.sort(byNewest));
-        return;
+        const { entry: stored, history } = addHistoryEntry(entry);
+
+        setEntries(history.sort(byNewest));
+
+        return stored;
       }
 
       try {
         const created = await api.createDocument(entry);
 
         setEntries((current) => [created, ...current].sort(byNewest));
+
+        return created;
       } catch (cause) {
         setError(cause instanceof Error ? cause.message : 'Could not save file');
+
+        return null;
       }
     },
     [isSignedIn]

@@ -8,11 +8,13 @@ import {
   Maximize2,
   Minimize2,
   RotateCcw,
+  Share2,
 } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { DocStats } from '@/components/DocStats';
 import { DocumentPreview } from '@/components/DocumentPreview';
 import { Hint } from '@/components/Hint';
+import { ShareDialog } from '@/components/ShareDialog';
 import { Dropzone } from '@/components/Dropzone';
 import { useTheme } from '@/lib/theme';
 import type { ConvertedDoc } from '@/lib/types';
@@ -48,6 +50,7 @@ export function ConverterPage({
   const [isCopied, setIsCopied] = useState(false);
   const [tab, setTab] = useState<'preview' | 'source'>('preview');
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [isShareOpen, setIsShareOpen] = useState(false);
   const previewFrame = useRef<HTMLDivElement>(null);
 
   // Escape and the browser's own chrome can leave fullscreen without us, so follow the event.
@@ -213,6 +216,26 @@ export function ConverterPage({
           >
             New file
           </Button>
+          <Hint
+            content={
+              doc.remoteId
+                ? 'Share a link to this document'
+                : 'Sign in to share — sharing needs the document in your account'
+            }
+          >
+            <span>
+              <Button
+                variant="secondary"
+                size="sm"
+                leftSlot={<Share2 />}
+                disabled={!doc.remoteId}
+                onClick={() => setIsShareOpen(true)}
+              >
+                Share
+              </Button>
+            </span>
+          </Hint>
+
           <Button
             variant="secondary"
             size="sm"
@@ -281,6 +304,13 @@ export function ConverterPage({
           </pre>
         </TabsContent>
       </Tabs>
+
+      <ShareDialog
+        documentId={doc.remoteId ?? null}
+        name={doc.name}
+        open={isShareOpen}
+        onOpenChange={setIsShareOpen}
+      />
     </div>
   );
 }

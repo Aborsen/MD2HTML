@@ -5,6 +5,7 @@ import {
   FileText,
   MonitorSmartphone,
   Search,
+  Share2,
   Trash2,
   Upload,
   X,
@@ -13,6 +14,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { Hint } from '@/components/Hint';
 import { FilterChips } from '@/components/FilterChips';
 import { ListSelectionBar } from '@/components/ListSelectionBar';
+import { ShareDialog } from '@/components/ShareDialog';
 import { ACCEPTED_EXTENSIONS } from '@/components/Dropzone';
 import {
   type DocFormat,
@@ -79,6 +81,7 @@ export function HistoryPage({
   const [format, setFormat] = useState<DocFormat>('html');
   const filePicker = useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = useState(false);
+  const [sharing, setSharing] = useState<HistoryEntry | null>(null);
   const [sort, setSort] = useState<{ key: SortKey; direction: 'asc' | 'desc' }>({
     key: 'createdAt',
     direction: 'desc',
@@ -417,7 +420,7 @@ export function HistoryPage({
             >
               Converted
             </TableHead>
-            <TableHead className="w-24 text-right">Actions</TableHead>
+            <TableHead className="w-32 text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>
 
@@ -508,6 +511,19 @@ export function HistoryPage({
                   onKeyDown={stopRowClick}
                 >
                   <span className="flex items-center justify-end gap-1">
+                    {entry.remote && (
+                      <Hint content="Share">
+                        <IconButton
+                          variant="tertiary"
+                          size="sm"
+                          aria-label={`Share ${entry.name}`}
+                          onClick={() => setSharing(entry)}
+                        >
+                          <Share2 />
+                        </IconButton>
+                      </Hint>
+                    )}
+
                     <Hint content={format === 'html' ? 'Download .html' : 'Download .md'}>
                       <span>
                         <IconButton
@@ -541,6 +557,13 @@ export function HistoryPage({
           })}
         </TableBody>
       </Table>
+
+      <ShareDialog
+        documentId={sharing?.id ?? null}
+        name={sharing?.name ?? ''}
+        open={sharing !== null}
+        onOpenChange={(open) => !open && setSharing(null)}
+      />
     </div>
   );
 }

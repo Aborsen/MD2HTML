@@ -51,6 +51,20 @@ function toEntry(doc: ServerDocument): HistoryEntry {
   };
 }
 
+export type ShareMode = 'private' | 'link' | 'people';
+
+export interface ShareState {
+  mode: ShareMode;
+  token: string | null;
+  emails: string[];
+}
+
+export interface SharedDocument {
+  name: string;
+  markdown: string;
+  createdAt: number;
+}
+
 export const api = {
   /** Null when nobody is signed in — Better Auth answers null rather than erroring, and so does this. */
   me: async (): Promise<AuthUser | null> => {
@@ -130,4 +144,37 @@ export const api = {
 
   clearDocuments: () =>
     request<{ ok: true }>('/api/documents', { method: 'DELETE' }),
+
+  getShare: (id: string) => request<ShareState>(`/api/documents/${id}/share`),
+
+  setShareMode: (id: string, mode: ShareMode) =>
+    request<ShareState>(`/api/documents/${id}/share`, {
+      method: 'PUT',
+      body: JSON.stringify({ mode }),
+    }),
+
+  addShareRecipient: (id: string, email: string) =>
+    request<ShareState>(`/api/documents/${id}/share/people`, {
+      method: 'POST',
+      body: JSON.stringify({ email }),
+    }),
+
+  removeShareRecipient: (id: string, email: string) =>
+    request<ShareState>(
+      `/api/documents/${id}/share/people?email=${encodeURIComponent(email)}`,
+      { method: 'DELETE' }
+    ),
+
+  /** The public read: 404 when it was never shared, 401/403 when it was not shared with you. */
+  getShared: async (token: string): Promise<SharedDocument> => {
+    const { document } = await request<{
+      document: { name: string; markdown: string; created_at: string };
+    }>(`/api/shared/${encodeURIComponent(token)}`);
+
+    return {
+      name: document.name,
+      markdown: document.markdown,
+      createdAt: new Date(document.created_at).getTime(),
+    };
+  },
 };

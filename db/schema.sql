@@ -21,3 +21,22 @@ create table if not exists m2h_document (
 -- The only query the list makes: this user's documents, newest first.
 create index if not exists m2h_document_user_recent
   on m2h_document (user_id, created_at desc);
+
+-- Sharing.
+--
+-- One token per document, and a mode that says who may use it: 'link' is anyone holding it,
+-- 'people' narrows that to the addresses in m2h_document_share, 'private' means nobody. The token
+-- survives a switch between modes so an already-sent link keeps working when access widens.
+
+alter table m2h_document
+  add column if not exists share_token text unique;
+
+alter table m2h_document
+  add column if not exists share_mode text not null default 'private';
+
+create table if not exists m2h_document_share (
+  document_id uuid not null references m2h_document (id) on delete cascade,
+  email       text not null,
+  created_at  timestamptz not null default now(),
+  primary key (document_id, email)
+);

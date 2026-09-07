@@ -3,6 +3,8 @@ export interface ConvertedDoc {
   name: string;
   /** Present when the document was chained from several files, in merge order. */
   sources?: string[];
+  /** Its id in the account, once it is stored there — sharing needs a server-side row. */
+  remoteId?: string;
   size: number;
   createdAt: number;
   markdown: string;

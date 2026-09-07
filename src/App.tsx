@@ -3,6 +3,7 @@ import { AppHeader, type AppView } from './components/AppHeader';
 import { ACCEPTED_EXTENSIONS, MAX_FILE_SIZE } from './components/Dropzone';
 import { ConverterPage } from './features/ConverterPage';
 import { HistoryPage } from './features/HistoryPage';
+import { SharedDocumentPage } from './features/SharedDocumentPage';
 import { AuthProvider, useAuth } from './lib/auth';
 import { ThemeProvider, useTheme } from './lib/theme';
 import { type DocFormat, toFileName } from './lib/format';
@@ -144,12 +145,20 @@ function Shell() {
         setDoc(converted);
         setView('converter');
 
-        await history.add({
+        const stored = await history.add({
           name: converted.name,
           size: converted.size,
           markdown: converted.markdown,
           stats: converted.stats,
         });
+
+        if (stored?.remote) {
+          setDoc((current) =>
+            current?.id === converted.id
+              ? { ...current, remoteId: stored.id }
+              : current
+          );
+        }
 
         toast.success(
           files.length > 1
@@ -175,7 +184,9 @@ function Shell() {
         return;
       }
 
-      setDoc(convert(entry.name, entry.size, markdown, entry.createdAt));
+      const reopened = convert(entry.name, entry.size, markdown, entry.createdAt);
+
+      setDoc(entry.remote ? { ...reopened, remoteId: entry.id } : reopened);
       setView('converter');
     },
     [history]
@@ -238,12 +249,20 @@ function Shell() {
         setDoc(converted);
         setView('converter');
 
-        await history.add({
+        const stored = await history.add({
           name: converted.name,
           size: converted.size,
           markdown: converted.markdown,
           stats: converted.stats,
         });
+
+        if (stored?.remote) {
+          setDoc((current) =>
+            current?.id === converted.id
+              ? { ...current, remoteId: stored.id }
+              : current
+          );
+        }
 
         toast.success(`Chained ${parts.length} files into one document`, {
           description: converted.name,
@@ -357,18 +376,26 @@ function Shell() {
           </Typography>
         </div>
       </footer>
-
-      <Toaster />
     </div>
   );
 }
 
+/** The app has one alternative destination: a shared document at /s/<token>. */
+function sharedToken(): string | null {
+  const match = window.location.pathname.match(/^\/s\/([^/]+)\/?$/);
+
+  return match ? decodeURIComponent(match[1]) : null;
+}
+
 export default function App() {
+  const token = sharedToken();
+
   return (
     <ThemeProvider>
       <AuthProvider>
         <TooltipProvider delayDuration={200}>
-          <Shell />
+          {token ? <SharedDocumentPage token={token} /> : <Shell />}
+          <Toaster />
         </TooltipProvider>
       </AuthProvider>
     </ThemeProvider>

@@ -1,3 +1,4 @@
+import { randomBytes } from 'node:crypto';
 import { Hono } from 'hono';
 import { createMiddleware } from 'hono/factory';
 import { authProxy, currentUser, type SessionUser } from './auth.js';
@@ -12,6 +13,68 @@ type Env = { Variables: { user: SessionUser } };
 const app = new Hono<Env>().basePath('/api');
 
 app.get('/health', (c) => c.json({ ok: true }));
+
+interface ShareRow {
+  id: string;
+  name: string;
+  markdown: string;
+  created_at: string;
+  share_mode: 'private' | 'link' | 'people';
+  share_token: string | null;
+}
+
+const normaliseEmail = (value: unknown) =>
+  String(value ?? '')
+    .trim()
+    .toLowerCase();
+
+/**
+ * A shared document, if this caller may have it.
+ *
+ * 'link' is anyone holding the token. 'people' is the owner plus the addresses on the document —
+ * checked against the session, never against anything the caller says about themselves.
+ */
+app.get('/shared/:token', async (c) => {
+  const rows = (await sql()`
+    select id, user_id, name, markdown, created_at, share_mode, share_token
+    from m2h_document
+    where share_token = ${c.req.param('token')}
+  `) as Array<ShareRow & { user_id: string }>;
+
+  const document = rows[0];
+
+  if (!document || document.share_mode === 'private') {
+    return c.json({ error: 'Not found' }, 404);
+  }
+
+  if (document.share_mode === 'people') {
+    const user = await currentUser(c);
+
+    if (!user) {
+      return c.json({ error: 'Sign in to open this document' }, 401);
+    }
+
+    const allowed =
+      user.id === document.user_id ||
+      ((await sql()`
+        select 1 from m2h_document_share
+        where document_id = ${document.id}
+          and email = ${normaliseEmail(user.email)}
+      `) as unknown[]).length > 0;
+
+    if (!allowed) {
+      return c.json({ error: 'This document was not shared with you' }, 403);
+    }
+  }
+
+  return c.json({
+    document: {
+      name: document.name,
+      markdown: document.markdown,
+      created_at: document.created_at,
+    },
+  });
+});
 
 // Sign-in, sign-out and the session read all live at the auth service; this app only forwards
 // them so its cookie is first-party. See server/auth.ts.
@@ -104,6 +167,137 @@ app.get('/documents/:id', async (c) => {
   }
 
   return c.json({ document: rows[0] });
+});
+
+/** The document's sharing state, as the dialog needs it. */
+async function shareState(userId: string, documentId: string) {
+  const rows = (await sql()`
+    select id, share_mode, share_token
+    from m2h_document
+    where user_id = ${userId} and id = ${documentId}
+  `) as Array<Pick<ShareRow, 'id' | 'share_mode' | 'share_token'>>;
+
+  if (rows.length === 0) {
+    return null;
+  }
+
+  const emails = (await sql()`
+    select email from m2h_document_share
+    where document_id = ${documentId}
+    order by created_at
+  `) as Array<{ email: string }>;
+
+  return {
+    mode: rows[0].share_mode,
+    token: rows[0].share_token,
+    emails: emails.map((row) => row.email),
+  };
+}
+
+/** Mints the token the first time a document is shared; later modes reuse it. */
+async function ensureToken(userId: string, documentId: string) {
+  const rows = (await sql()`
+    update m2h_document
+    set share_token = coalesce(share_token, ${randomBytes(16).toString('base64url')})
+    where user_id = ${userId} and id = ${documentId}
+    returning share_token
+  `) as Array<{ share_token: string }>;
+
+  return rows[0]?.share_token ?? null;
+}
+
+app.get('/documents/:id/share', async (c) => {
+  const state = await shareState(c.get('user').id, c.req.param('id'));
+
+  return state ? c.json(state) : c.json({ error: 'Not found' }, 404);
+});
+
+app.put('/documents/:id/share', async (c) => {
+  const userId = c.get('user').id;
+  const id = c.req.param('id');
+  const body = await c.req
+    .json<{ mode?: 'private' | 'link' | 'people' }>()
+    .catch(() => ({}) as { mode?: 'private' | 'link' | 'people' });
+
+  if (!body.mode || !['private', 'link', 'people'].includes(body.mode)) {
+    return c.json({ error: 'mode must be private, link or people' }, 400);
+  }
+
+  if (body.mode === 'private') {
+    // Revoking drops the token as well: a link that was sent must stop working.
+    await sql()`
+      update m2h_document
+      set share_mode = 'private', share_token = null
+      where user_id = ${userId} and id = ${id}
+    `;
+  } else {
+    if (!(await ensureToken(userId, id))) {
+      return c.json({ error: 'Not found' }, 404);
+    }
+
+    await sql()`
+      update m2h_document
+      set share_mode = ${body.mode}
+      where user_id = ${userId} and id = ${id}
+    `;
+  }
+
+  const state = await shareState(userId, id);
+
+  return state ? c.json(state) : c.json({ error: 'Not found' }, 404);
+});
+
+app.post('/documents/:id/share/people', async (c) => {
+  const userId = c.get('user').id;
+  const id = c.req.param('id');
+  const body = await c.req
+    .json<{ email?: string }>()
+    .catch(() => ({}) as { email?: string });
+  const email = normaliseEmail(body.email);
+
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+    return c.json({ error: 'That does not look like an email address' }, 400);
+  }
+
+  if (!(await ensureToken(userId, id))) {
+    return c.json({ error: 'Not found' }, 404);
+  }
+
+  await sql()`
+    insert into m2h_document_share (document_id, email)
+    values (${id}, ${email})
+    on conflict do nothing
+  `;
+
+  await sql()`
+    update m2h_document
+    set share_mode = 'people'
+    where user_id = ${userId} and id = ${id} and share_mode <> 'link'
+  `;
+
+  const state = await shareState(userId, id);
+
+  return state ? c.json(state) : c.json({ error: 'Not found' }, 404);
+});
+
+app.delete('/documents/:id/share/people', async (c) => {
+  const userId = c.get('user').id;
+  const id = c.req.param('id');
+  const email = normaliseEmail(c.req.query('email'));
+
+  await sql()`
+    delete from m2h_document_share
+    where document_id = ${id}
+      and email = ${email}
+      and exists (
+        select 1 from m2h_document
+        where id = ${id} and user_id = ${userId}
+      )
+  `;
+
+  const state = await shareState(userId, id);
+
+  return state ? c.json(state) : c.json({ error: 'Not found' }, 404);
 });
 
 app.delete('/documents/:id', async (c) => {

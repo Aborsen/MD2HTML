@@ -66,6 +66,10 @@ step; a deployment made before them needs a redeploy to see them. The build is a
   arrive, separated by a rule; the same works on any selection in the history.
 - **Preview** — GitHub Flavored Markdown (tables, task lists, strikethrough,
   autolinks), sanitized with DOMPurify, styled with the design-system tokens.
+- **Share** — a document in your account can be opened by anyone with the link, or only by the
+  addresses you list (they sign in with that address). `/s/<token>` is a read-only page: the
+  document and a download, nothing else. Revoking drops the token, so a link already sent stops
+  working. No email is sent — you pass the link on yourself.
 - **Fullscreen reading** — the preview takes the whole screen, the sheet keeps a readable measure
   and scrolls; Escape comes back.
 - **HTML source** tab — the exact standalone document that gets downloaded.
@@ -106,7 +110,7 @@ The theme (dark by default) lives behind the account menu, remembered per browse
 ```
 api/index.ts            Vercel entry point (wraps the Hono app)
 server/                 API: routes, Neon Auth proxy, Neon client, dev middleware
-db/schema.sql           the m2h_document table
+db/schema.sql           m2h_document and its sharing tables
 scripts/init-db.mjs     applies the schema
 scripts/auth-origin.mjs manages Neon Auth's trusted origins
 src/
