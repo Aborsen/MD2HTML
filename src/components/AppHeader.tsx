@@ -1,4 +1,4 @@
-import { FileCode2, History } from 'lucide-react';
+import { BookOpen, FileCode2, History } from 'lucide-react';
 import { Logo } from './Logo';
 import { UserMenu } from './UserMenu';
 import { Separator } from '@/ui/components/Separator';
@@ -20,6 +20,7 @@ interface AppHeaderProps {
 const NAV_ITEMS = [
   { id: 'converter' as const, label: 'Converter', icon: FileCode2 },
   { id: 'history' as const, label: 'History', icon: History },
+  { id: 'docs' as const, label: 'Docs', icon: BookOpen },
 ];
 
 export function AppHeader({

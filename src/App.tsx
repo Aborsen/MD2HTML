@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { AppHeader } from './components/AppHeader';
 import { ACCEPTED_EXTENSIONS, MAX_FILE_SIZE } from './components/Dropzone';
 import { ConverterPage } from './features/ConverterPage';
+import { DocsPage } from './features/DocsPage';
 import { HistoryPage } from './features/HistoryPage';
 import { SharedDocumentPage } from './features/SharedDocumentPage';
 import { AuthProvider, useAuth } from './lib/auth';
@@ -351,7 +352,9 @@ function Shell() {
       />
 
       <main className="mx-auto w-full max-w-container-content flex-1 px-6 py-8">
-        {view === 'converter' ? (
+        {view === 'docs' ? (
+          <DocsPage />
+        ) : view === 'converter' ? (
           <ConverterPage
             doc={doc}
             isBusy={isBusy}
