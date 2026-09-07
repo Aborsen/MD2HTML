@@ -77,7 +77,10 @@ step; a deployment made before them needs a redeploy to see them. The build is a
   and scrolls; Escape comes back. A long document gets a back-to-top button, in both the normal and
   the fullscreen view.
 - **HTML source** tab — the exact standalone document that gets downloaded.
-- **Download / Copy** — self-contained `.html` with inline styles, print-ready.
+- **Download / Copy** — self-contained `.html` with inline styles, print-ready. Nothing is fetched
+  when it opens: no scripts, and no webfont either. It used to link DM Sans from Google, which made
+  "self-contained" false in the one file that is actually handed to someone else, so the export
+  falls back through `ui-sans-serif` to the system face and asks for nothing.
 - **History** — signed in: stored in the account (up to 500 documents, 1 MB of source
   each), available on every device; signed out: the last 25 conversions in
   `localStorage`. Whatever was collected locally is moved into the account on

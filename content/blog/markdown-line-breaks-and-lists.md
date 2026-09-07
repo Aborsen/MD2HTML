@@ -10,7 +10,7 @@ Markdown is small enough that most people learn it by imitation and never read t
 
 ## Three ways to end a line
 
-A single newline is not a markdown line break. Two lines of text with nothing between them are one paragraph, and the newline becomes a space. The source looks broken into lines; the HTML does not.
+A single newline is not a line break. Two lines of text with nothing between them are one paragraph, and the newline becomes a space. The source looks broken into lines; the HTML does not.
 
 Three things change that.
 
@@ -20,9 +20,9 @@ Three things change that.
 | Two spaces at the end of a line | A break inside the paragraph, `<br>` |
 | A backslash at the end of a line | The same break |
 
-The markdown two spaces rule is the original hard break and the fragile one. Trailing whitespace is invisible, many editors strip it on save, linters flag it, and a reviewer reading a diff cannot see what changed. The backslash does the same job in plain sight, though it is CommonMark's addition rather than original Markdown's, so a very old parser prints the backslash instead of breaking the line.
+The two-space rule is the original hard break and the fragile one. Trailing whitespace is invisible, many editors strip it on save, linters flag it, and a reviewer reading a diff cannot see what changed. The backslash does the same job in plain sight, though it is CommonMark's addition rather than original Markdown's, so a very old parser prints the backslash instead of breaking the line.
 
-For running prose the blank line is almost always what you wanted. Keep the hard break for where the markdown new line is part of the content: an address, a verse, a two-line signature.
+For running prose the blank line is almost always what you wanted. Keep the hard break for where the new line is part of the content: an address, a verse, a two-line signature.
 
 Many chat and issue boxes turn every newline into a break, which is why text that looked right in a comment field collapses into one paragraph inside a file. The text did not change; the renderer did.
 
@@ -51,23 +51,23 @@ Four spaces is the habit most people carry over, and extra indentation is allowe
 
 ## Ordered lists, and the loose ones
 
-In a markdown ordered list only the first number is read. `1. 1. 1.` and `1. 7. 3.` both produce 1, 2, 3. Writing every item as `1.` keeps diffs small: the renumbering happens at render time, not across twenty lines of the file. Start at another number and the list starts there. `1)` works as well as `1.` in CommonMark.
+In an ordered list only the first number is read. `1. 1. 1.` and `1. 7. 3.` both produce 1, 2, 3. Writing every item as `1.` keeps diffs small: the renumbering happens at render time, not across twenty lines of the file. Start at another number and the list starts there. `1)` works as well as `1.` in CommonMark.
 
 Then there is the spacing that appears from nowhere. A list is tight when its items sit against each other, and their text goes straight into each `<li>`. Put a blank line between any two items, or give one item two paragraphs, and the whole list turns loose: every item, including the ones you did not touch, gets its text wrapped in a paragraph, which shows up in the browser as extra vertical space. One empty line changed the list's type.
 
 ## Checkboxes and task lists
 
-A markdown checkbox is a list item whose text begins with brackets:
+A checkbox is a list item whose text begins with brackets:
 
 - [x] Marker, space, brackets, space, then the text
 - [ ] The brackets come first — text before them and it is an ordinary item
 - [ ] `x` or `X` ticks it, a single space leaves it empty, and that space is required
 
-A markdown task list is a GitHub Flavored Markdown extension, not plain CommonMark, so a strict CommonMark converter hands you literal square brackets. M2H speaks GFM, so task lists, tables, strikethrough and autolinks come through as themselves. The checkbox in the output is a picture of the state in your file, not a control: GFM renders it as a disabled input, so there is nothing to click.
+A task list is a GitHub Flavored Markdown extension, not plain CommonMark, so a strict CommonMark converter hands you literal square brackets. M2H speaks GFM, so task lists, tables, strikethrough and autolinks come through as themselves. The checkbox in the output is a picture of the state in your file, not a control: GFM renders it as a disabled input, so there is nothing to click.
 
 ## Escaping a character that means something
 
-A markdown escape character is a backslash. In CommonMark it works before any ASCII punctuation mark and nowhere else, so a backslash before a letter stays on the page as a backslash.
+The escape character is a backslash. In CommonMark it works before any ASCII punctuation mark and nowhere else, so a backslash before a letter stays on the page as a backslash.
 
 ```markdown
 1986\. The year, not the first item of a list.

@@ -14,7 +14,7 @@ Pandoc reads a document into an internal representation, then writes that back o
 
 Four jobs where nothing else comes close.
 
-**A format matrix.** One source, several outputs, kept in step. HTML for the site, *markdown to docx* for the reviewer who redlines in Word, EPUB for the reader.
+**A format matrix.** One source, several outputs, kept in step. HTML for the site, DOCX for the reviewer who redlines in Word, EPUB for the reader.
 
 **Academic writing.** Maths, cross-references, numbered figures, and `--citeproc` with a BibTeX file and a CSL style, so the bibliography formats itself.
 
@@ -32,7 +32,7 @@ The third line carries a caveat. *Markdown to pdf* is not one of pandoc's writer
 
 ## Pandoc standalone HTML, and what it costs
 
-Converting *pandoc markdown to html* is one line, and *pandoc standalone html* is one flag more:
+Converting Markdown to HTML with pandoc is one line, and a standalone document is one flag more:
 
 ```bash
 pandoc -f gfm -t html -s README.md -o README.html
@@ -58,7 +58,7 @@ Ask one question: does anything other than HTML come out of this pipeline, now o
 | One HTML file to send to a person | A browser converter | Nothing |
 | HTML published on every merge | An API or an Action in CI | A key in your repository secrets |
 
-A yes to the first two rows ends the argument. Install pandoc. Below them, a *pandoc alternative* is smaller, not braver.
+A yes to the first two rows ends the argument. Install pandoc. Below them, an alternative is smaller, not braver.
 
 ## Converting Markdown without pandoc
 

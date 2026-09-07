@@ -43,6 +43,8 @@ export function ArticleCard({
           event.metaKey ||
           event.ctrlKey ||
           event.shiftKey ||
+          // Alt-click is "save this link", which is the browser's job, not ours.
+          event.altKey ||
           event.button !== 0
         ) {
           return;

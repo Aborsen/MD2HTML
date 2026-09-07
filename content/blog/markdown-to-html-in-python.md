@@ -1,6 +1,6 @@
 ---
-title: Rendering Markdown in Python
-description: The four Python Markdown libraries, the extension flags that catch everyone out, sanitising with nh3, and a script that converts a whole directory
+title: Rendering Markdown to HTML in Python
+description: The four Python Markdown libraries, the extension flags that catch everyone out, sanitising the HTML with nh3, and a script that converts a directory
 date: 2026-07-07
 tag: Code
 keywords: markdown to html python, python markdown, markdown2 python, mistune, markdown parser, convert markdown programmatically
@@ -87,7 +87,7 @@ html = md.render(text)
 
 Because it is the same parser family as the JS original, a Python backend and a Node front end can be made to agree on the output. Which flavour you are targeting matters more than which library you pick; [CommonMark, GFM and the flavours](/blog/commonmark-gfm-and-the-flavours) sets out the differences, and the same libraries have counterparts covered in [rendering Markdown in JavaScript](/blog/markdown-to-html-in-javascript).
 
-## Sanitising the result
+## Sanitising the HTML
 
 None of these four is a sanitiser. Markdown permits raw HTML by design, so a `<script>` tag in the source is a `<script>` tag in the output unless something escapes or removes it. Python-Markdown says as much in its own documentation; its old `safe_mode` was removed rather than repaired.
 

@@ -14,8 +14,15 @@ import { readdirSync, readFileSync } from 'node:fs';
 const DIR = 'content/blog';
 const KEYS = ['title', 'description', 'date', 'tag', 'keywords'];
 
-/* Everything inside a fence is a sample, not prose: a shell comment is not a heading. */
-const withoutCode = (markdown) => markdown.replace(/```[\s\S]*?```/g, '');
+/*
+ * Everything inside a fence is a sample, not prose: a shell comment is not a heading.
+ *
+ * Anchored to the start of a line, because samples contain backticks of their own — an awk script
+ * that matches `/^```/` is one of ours — and an unanchored pattern pairs those with the real fences
+ * and swallows the paragraphs in between.
+ */
+const withoutCode = (markdown) =>
+  markdown.replace(/^```[\s\S]*?^```[^\n]*$/gm, '');
 
 const BANNED = [
   'game-chang',
@@ -111,14 +118,15 @@ for (const file of files) {
     problems.push(`${slug}: emoji`);
   }
 
-  const words = prose.split(/\s+/).filter(Boolean).length;
+  // The whole body, code included: a reader reads the commands too, and an article that explains
+  // itself in samples is not thin the way an article of four short paragraphs is. Headings and
+  // fences are counted with everything else — this is a smoke alarm, not a judge.
+  const words = body.split(/\s+/).filter(Boolean).length;
   const headings = (prose.match(/^## /gm) ?? []).length;
   const mentions = (prose.match(/\bM2H\b/g) ?? []).length;
 
-  // Prose only: code samples are read as much as the sentences are, so an article that explains
-  // itself in commands is not thin the way an article of four short paragraphs is.
-  if (words < 650) {
-    problems.push(`${slug}: ${words} words of prose — too thin to rank or to help`);
+  if (words < 750) {
+    problems.push(`${slug}: ${words} words — too thin to rank or to help`);
   }
 
   if (headings < 3) {

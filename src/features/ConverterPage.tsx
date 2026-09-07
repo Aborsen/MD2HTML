@@ -102,7 +102,13 @@ export function ConverterPage({
     return (
       <div className="flex flex-col gap-6">
         <div className="flex flex-col gap-1">
-          <Typography variant="h4" weight="semibold" textColor="primary">
+          {/* The page's own h1: the header carries a wordmark, not a heading. */}
+          <Typography
+            variant="h1"
+            weight="semibold"
+            textColor="primary"
+            className="text-lg md:text-lg"
+          >
             Markdown to HTML
           </Typography>
           <Typography variant="p" textColor="secondary">

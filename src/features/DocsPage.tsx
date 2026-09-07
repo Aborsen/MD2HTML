@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { useEffect, useState, type ReactNode } from 'react';
 import { ScrollToTop } from '@/components/ScrollToTop';
+import { DOCS_SECTIONS } from '@/lib/docs-sections';
 import { FAQ_ENTRIES } from '@/lib/faq';
 import { useTheme } from '@/lib/theme';
 import { Badge } from '@/ui/components/Badge';
@@ -28,24 +29,24 @@ import { cn } from '@/ui/lib/utils';
  * only ever be as stale as the deployment it ships in.
  */
 
-interface SectionSpec {
-  id: string;
-  title: string;
-  icon: typeof BookOpen;
-}
+/** The order and the wording live in one place; the icons are this page's own business. */
+const ICONS: Record<string, typeof BookOpen> = {
+  start: BookOpen,
+  converting: FileCode2,
+  history: Boxes,
+  sharing: Share2,
+  account: KeyRound,
+  api: Terminal,
+  cli: Terminal,
+  action: Terminal,
+  limits: Gauge,
+  faq: HelpCircle,
+};
 
-const SECTIONS: SectionSpec[] = [
-  { id: 'start', title: 'Start here', icon: BookOpen },
-  { id: 'converting', title: 'Converting', icon: FileCode2 },
-  { id: 'history', title: 'History', icon: Boxes },
-  { id: 'sharing', title: 'Sharing', icon: Share2 },
-  { id: 'account', title: 'Account', icon: KeyRound },
-  { id: 'api', title: 'API', icon: Terminal },
-  { id: 'cli', title: 'Command line', icon: Terminal },
-  { id: 'action', title: 'GitHub Action', icon: Terminal },
-  { id: 'limits', title: 'Limits', icon: Gauge },
-  { id: 'faq', title: 'Questions', icon: HelpCircle },
-];
+const SECTIONS = DOCS_SECTIONS.map((section) => ({
+  ...section,
+  icon: ICONS[section.id] ?? BookOpen,
+}));
 
 /**
  * Which heading the reader is on, so the contents list can say so.

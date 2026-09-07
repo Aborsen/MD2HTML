@@ -1,6 +1,6 @@
 ---
-title: Sending a Markdown document to someone who does not use Markdown
-description: Four honest ways to send a .md file to someone who will not install anything, and what a read-only link should and should not ask of them
+title: Share a Markdown file with someone who does not use Markdown
+description: Four honest ways to share a .md file with someone who will not install anything, and what a read-only link should and should not ask of them
 date: 2026-09-05
 tag: Publishing
 keywords: share markdown file, publish markdown online, markdown to shareable link, host markdown file, read only document link, send markdown to a client

@@ -128,9 +128,13 @@ export function buildStandaloneHtml({
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="${theme}">
 <title>${escapeHtml(title)}</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap" rel="stylesheet">
+<!--
+  No font link, deliberately. This file is the deliverable: it gets emailed, dropped on a share, and
+  opened on a machine with no network, and until recently it asked Google for DM Sans on the way —
+  which made "self-contained, no requests" false in the one place it was promised loudest, and left
+  a document that phoned home every time somebody opened it. The stack below falls back through
+  ui-sans-serif to the system face, which costs a typeface and buys back the promise.
+-->
 <style>
 ${mdDocTheme(theme, ':root, .md-doc')}
 ${mdDocPrintOverride(':root, .md-doc')}

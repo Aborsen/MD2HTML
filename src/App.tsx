@@ -378,6 +378,7 @@ function Shell() {
               slug={articleSlug}
               onBack={() => setView('blog')}
               onOpenArticle={openArticle}
+              onGoTo={setView}
               onGoToConverter={startOver}
             />
           ) : (

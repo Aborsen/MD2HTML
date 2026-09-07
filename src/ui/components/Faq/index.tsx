@@ -42,7 +42,7 @@ export function Faq({ items, defaultOpen, className }: FaqProps) {
     >
       {items.map((item) => (
         <AccordionItem key={item.question} value={item.question}>
-          <AccordionTrigger className="rounded-none px-4 text-left">
+          <AccordionTrigger className="rounded-none px-4 text-left focus-visible:ring-2 focus-visible:ring-focus-ring-brand focus-visible:ring-inset">
             {item.question}
           </AccordionTrigger>
           <AccordionContent className="px-4 pb-4 text-ink-body text-sm leading-relaxed">

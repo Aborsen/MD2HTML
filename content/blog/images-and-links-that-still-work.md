@@ -19,11 +19,11 @@ A URL in Markdown comes in a few shapes, each assuming something different about
 | `/assets/flow.png` | the root of the current site | only within that same site |
 | `https://example.com/flow.png` | nothing, it is already complete | yes, as long as the host serves it |
 
-The detail that catches people out: a **markdown relative link** resolves against the URL of the *rendered page*, not against the folder the `.md` file lived in. Convert `docs/guide.md`, open the HTML from your desktop, and `img/flow.png` now means an `img` folder on your desktop. The path was never wrong; it was answering a question nobody asks any more.
+The detail that catches people out: a markdown relative link resolves against the URL of the *rendered page*, not against the folder the `.md` file lived in. Convert `docs/guide.md`, open the HTML from your desktop, and `img/flow.png` now means an `img` folder on your desktop. The path was never wrong; it was answering a question nobody asks any more.
 
 ## Why a Markdown image is not showing
 
-When a **markdown image** does not appear, the cause is almost always one of five things.
+When a markdown image does not appear, the cause is almost always one of five things.
 
 - **The path points at the old location.** Move the file, move the pictures, or switch to absolute URLs.
 - **The case does not match.** `Diagram.PNG` and `diagram.png` are one file on a Mac or Windows disk, which ignores case by default, and two on the Linux machine serving your site.
@@ -35,7 +35,7 @@ Alt text is not a caption. It is what a screen reader announces and what shows w
 
 ## Base64: the image inside the file
 
-A data URI puts the bytes in the document: a **markdown base64 image** is an ordinary image with the encoded file where the path would go.
+A data URI puts the bytes in the document: a markdown base64 image is an ordinary image with the encoded file where the path would go.
 
 ```markdown
 ![Company logo](data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAAB...)
@@ -61,15 +61,15 @@ The label is reused as often as you like, the URL written once, so a moved domai
 
 ## Anchor links, and how the slug is made
 
-A **markdown anchor link** is a link to a heading in the same document: `[see below](#installing-the-cli)`. The id it points at is generated from the heading text, and the recipe is roughly the same everywhere. Lowercase the text, drop punctuation, turn runs of whitespace into hyphens, and add a number when two headings collide.
+A markdown anchor link is a link to a heading in the same document: `[see below](#installing-the-cli)`. The id it points at is generated from the heading text, and the recipe is roughly the same everywhere. Lowercase the text, drop punctuation, turn runs of whitespace into hyphens, and add a number when two headings collide.
 
-Roughly the same is not the same. A **markdown link to heading** written for one renderer can miss on another, and nothing warns you: an anchor that matches nothing does nothing. M2H prefixes every heading id with `doc-`, so `## Installing the CLI` becomes `id="doc-installing-the-cli"` and the link has to be `#doc-installing-the-cli`. The prefix exists to keep ids out of DOM-clobbering territory, which is the same reasoning behind [sanitising the output at all](/blog/sanitising-markdown-safely).
+Roughly the same is not the same. A markdown link to heading written for one renderer can miss on another, and nothing warns you: an anchor that matches nothing does nothing. M2H prefixes every heading id with `doc-`, so `## Installing the CLI` becomes `id="doc-installing-the-cli"` and the link has to be `#doc-installing-the-cli`. The prefix exists to keep ids out of DOM-clobbering territory, which is the same reasoning behind [sanitising the output at all](/blog/sanitising-markdown-safely).
 
 So convert first and read the ids the converter produced instead of guessing. Renaming a heading silently breaks every anchor aimed at it, which is a reason to keep the contents list short in [documentation that lives in the repository](/blog/documentation-that-lives-in-the-repo).
 
 ## What self-contained HTML actually contains
 
-**Self contained HTML** is a claim about presentation, rarely about content. In a **single file HTML** document the styles are inline, there are no scripts and nothing is fetched to make the page look right — the M2H download works that way. What that never covers is a picture you pointed somewhere else. `<img src="diagram.png">` still means `diagram.png`, next to wherever the reader put the file.
+Self-contained HTML is a claim about presentation, rarely about content. In a single-file HTML document the styles are inline, there are no scripts and nothing is fetched to make the page look right — the M2H download works that way. What that never covers is a picture you pointed somewhere else. `<img src="diagram.png">` still means `diagram.png`, next to wherever the reader put the file.
 
 Check the document before you send it.
 

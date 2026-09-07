@@ -18,11 +18,38 @@ import { dirname, join, resolve } from 'node:path';
 import { markdownToHtml } from '../server/render.js';
 import { MD_DOC_STYLE, mdDocTheme } from '../shared/md-doc-css.js';
 import { ARTICLES, articlePath, formatArticleDate } from '../src/lib/blog.js';
+import { DOCS_SECTIONS } from '../src/lib/docs-sections.js';
 import { FAQ_ENTRIES } from '../src/lib/faq.js';
 
 const SITE = process.env.SITE_URL ?? 'https://md-2-html.vercel.app';
 const DIST = resolve('dist');
-const SHELL = readFileSync(join(DIST, 'index.html'), 'utf8');
+
+/*
+ * The shell is dist/index.html — which is also a page this script rewrites, so on a second run it
+ * would be read back with the home page's own head and body already in it, and every article would
+ * inherit them. The markers make the injection removable, so the shell is always the shell.
+ */
+const HEAD_OPEN = '<!--prerender:head-->';
+const HEAD_CLOSE = '<!--/prerender:head-->';
+const BODY_OPEN = '<div id="root"><!--prerender:body-->';
+const BODY_CLOSE = '<!--/prerender:body--></div>';
+
+const SHELL = readFileSync(join(DIST, 'index.html'), 'utf8')
+  // The indentation and the newline go too, or the shell grows a blank line per run.
+  .replace(
+    new RegExp(`[ \\t]*${HEAD_OPEN}[\\s\\S]*?${HEAD_CLOSE}\\n?`),
+    ''
+  )
+  .replace(
+    new RegExp(`${BODY_OPEN}[\\s\\S]*?${BODY_CLOSE}`),
+    '<div id="root"></div>'
+  );
+
+if (!SHELL.includes('<div id="root"></div>')) {
+  throw new Error(
+    'dist/index.html has no empty <div id="root"></div> to render into — run `vite build` first.'
+  );
+}
 
 const escapeHtml = (value: string) =>
   value
@@ -70,8 +97,11 @@ function render(page: Page): string {
       /<meta\s+name="description"[\s\S]*?\/>/,
       `<meta name="description" content="${escapeHtml(page.description)}" />`
     )
-    .replace('</head>', `  ${head}\n  </head>`)
-    .replace('<div id="root"></div>', `<div id="root">${page.body}</div>`);
+    .replace('</head>', `  ${HEAD_OPEN}\n    ${head}\n    ${HEAD_CLOSE}\n  </head>`)
+    .replace(
+      '<div id="root"></div>',
+      `${BODY_OPEN}${page.body}${BODY_CLOSE}`
+    );
 }
 
 function write(page: Page) {
@@ -117,8 +147,9 @@ for (const article of ARTICLES) {
         publisher: { '@type': 'Organization', name: 'M2H', url: SITE },
         author: { '@type': 'Organization', name: 'M2H', url: SITE },
       }),
+      DOC_STYLE,
     ].join('\n    '),
-    body: `${DOC_STYLE}<article class="md-doc"><h1>${escapeHtml(article.title)}</h1><p>${escapeHtml(
+    body: `<article class="md-doc"><h1>${escapeHtml(article.title)}</h1><p>${escapeHtml(
       formatArticleDate(article.date)
     )} · ${article.readingMinutes} min read</p>${markdownToHtml(article.markdown)}</article>`,
   });
@@ -182,7 +213,10 @@ pages.push({
   description:
     'What M2H does, in full: converting, the history, sharing by link or by address, the API, the command line client, the GitHub Action and the limits.',
   listed: true,
-  body: '<h1>Everything M2H does</h1><p>Converting, the history, sharing, the API, the command line and the GitHub Action.</p>',
+  body: `<h1>Everything M2H does</h1><p>Markdown in, a self-contained HTML document out — from the app, from a terminal, or from a pull request.</p>${DOCS_SECTIONS.map(
+    (section) =>
+      `<section><h2>${escapeHtml(section.title)}</h2><p>${escapeHtml(section.summary)}</p></section>`
+  ).join('')}`,
 });
 
 for (const page of pages) {

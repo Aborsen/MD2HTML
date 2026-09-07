@@ -24,7 +24,7 @@ CommonMark stops at a core on purpose: no tables, no footnotes, no strikethrough
 
 ## GitHub Flavored Markdown
 
-GFM is the CommonMark spec plus a fixed list of extensions — four additions and one subtraction. That is the *gfm vs commonmark* difference in full.
+GFM is the CommonMark spec plus a fixed list of extensions — four additions and one subtraction. That is the difference between GFM and CommonMark in full.
 
 | Extension | What it adds |
 | --- | --- |

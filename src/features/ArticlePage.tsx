@@ -1,5 +1,5 @@
 import { ArrowLeft } from 'lucide-react';
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { DocumentPreview } from '@/components/DocumentPreview';
 import { ScrollToTop } from '@/components/ScrollToTop';
 import {
@@ -9,6 +9,7 @@ import {
   formatArticleDate,
 } from '@/lib/blog';
 import { markdownToHtml } from '@/lib/markdown';
+import type { AppView } from '@/lib/route';
 import { ArticleCard } from '@/ui/components/ArticleCard';
 import { Badge } from '@/ui/components/Badge';
 import { Button } from '@/ui/components/Button';
@@ -19,8 +20,21 @@ interface ArticlePageProps {
   slug: string;
   onBack: () => void;
   onOpenArticle: (slug: string) => void;
+  /** For the links inside the article that point at the rest of the app. */
+  onGoTo: (view: AppView) => void;
   onGoToConverter: () => void;
 }
+
+/** What index.html ships with; the tab goes back to it when an article closes. */
+const DEFAULT_TITLE = 'M2H — Markdown to HTML';
+
+/** The app's own addresses, as an article would write them. */
+const VIEW_FOR_PATH: Record<string, AppView> = {
+  '/': 'converter',
+  '/history': 'history',
+  '/docs': 'docs',
+  '/blog': 'blog',
+};
 
 /**
  * One article, rendered by the converter this site is about.
@@ -33,56 +47,93 @@ export function ArticlePage({
   slug,
   onBack,
   onOpenArticle,
+  onGoTo,
   onGoToConverter,
 }: ArticlePageProps) {
   const article = findArticle(slug);
+  const body = useRef<HTMLDivElement>(null);
   const html = useMemo(
     () => (article ? markdownToHtml(article.markdown) : ''),
     [article]
   );
 
-  // An article is a page, not a state change: give it the title, and put it back on the way out.
+  /*
+   * An article is a page, not a state change: give it the title, and put the app's own back on the
+   * way out. Not the title that was there before — on an article opened from a link, that is this
+   * article's own prerendered title, which would then follow the reader to wherever they went next.
+   */
   useEffect(() => {
     if (!article) {
       return;
     }
 
-    const previous = document.title;
-
     document.title = `${article.title} — M2H`;
 
     return () => {
-      document.title = previous;
+      document.title = DEFAULT_TITLE;
     };
   }, [article]);
 
-  // Links inside the article body are plain anchors; keep in-app ones in the app.
+  /*
+   * Links inside the article body are plain anchors, and an anchor to /docs would reload the whole
+   * application — losing whatever document the reader had open in the converter. Catch them here.
+   *
+   * On the article body rather than on the document: the cards further down this page already have
+   * their own handler, and a listener on `document` would answer the same click a second time and
+   * push two history entries for it.
+   */
   useEffect(() => {
-    const handle = (event: MouseEvent) => {
-      const link = (event.target as HTMLElement | null)?.closest?.('a');
-      const href = link?.getAttribute('href');
+    const root = body.current;
 
+    if (!root) {
+      return;
+    }
+
+    const handle = (event: MouseEvent) => {
       if (
-        !href?.startsWith('/blog/') ||
+        event.defaultPrevented ||
+        event.button !== 0 ||
         event.metaKey ||
         event.ctrlKey ||
-        event.shiftKey
+        event.shiftKey ||
+        event.altKey
       ) {
         return;
       }
 
-      const target = href.replace('/blog/', '').replace(/\/$/, '');
+      const href = (event.target as HTMLElement | null)
+        ?.closest?.('a')
+        ?.getAttribute('href');
 
-      if (findArticle(target)) {
+      if (!href?.startsWith('/')) {
+        return;
+      }
+
+      const path = href.replace(/\/$/, '') || '/';
+
+      if (path.startsWith('/blog/')) {
+        const target = path.slice('/blog/'.length);
+
+        if (findArticle(target)) {
+          event.preventDefault();
+          onOpenArticle(target);
+        }
+
+        return;
+      }
+
+      const view = VIEW_FOR_PATH[path];
+
+      if (view) {
         event.preventDefault();
-        onOpenArticle(target);
+        onGoTo(view);
       }
     };
 
-    document.addEventListener('click', handle);
+    root.addEventListener('click', handle);
 
-    return () => document.removeEventListener('click', handle);
-  }, [onOpenArticle]);
+    return () => root.removeEventListener('click', handle);
+  }, [onOpenArticle, onGoTo]);
 
   if (!article) {
     return (
@@ -132,7 +183,9 @@ export function ArticlePage({
         </Typography>
       </header>
 
-      <DocumentPreview html={html} />
+      <div ref={body}>
+        <DocumentPreview html={html} />
+      </div>
 
       <div className="flex flex-wrap items-center gap-3 rounded-lg border border-stroke bg-surface-card p-4">
         <Typography variant="span" textColor="secondary" className="text-sm">
