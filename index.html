@@ -14,6 +14,17 @@
   </head>
   <body>
     <div id="root"></div>
+    <script>
+      // Applied before first paint so a remembered light theme does not flash dark.
+      try {
+        var stored = localStorage.getItem('m2h.theme');
+        if (stored === 'light') {
+          document.documentElement.classList.remove('dark');
+          document.documentElement.classList.add('light');
+          document.documentElement.style.colorScheme = 'light';
+        }
+      } catch (e) {}
+    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
