@@ -10,7 +10,9 @@
     "check-types": "tsc -b",
     "db:init": "node scripts/init-db.mjs",
     "auth:origin": "node scripts/auth-origin.mjs",
-    "env:setup": "node scripts/setup-env.mjs"
+    "env:setup": "node scripts/setup-env.mjs",
+    "blob:migrate": "node scripts/sources-to-blob.mjs",
+    "blob:reconcile": "node scripts/reconcile-blobs.mjs"
   },
   "dependencies": {
     "@hono/node-server": "^2.1.1",
@@ -31,6 +33,7 @@
     "@radix-ui/react-toggle": "^1.1.12",
     "@radix-ui/react-toggle-group": "^1.1.13",
     "@radix-ui/react-tooltip": "^1.2.8",
+    "@vercel/blob": "^2.8.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "dompurify": "^3.2.7",

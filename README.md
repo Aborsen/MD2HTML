@@ -116,6 +116,21 @@ showing), `/s/<token>` a shared document. They are read straight from `location`
 through a router — three routes do not need one — which is what makes a reload land where you
 were and the Back button work. Each needs a rewrite to `index.html` in `vercel.json`.
 
+## Where a document lives
+
+Postgres keeps what the app queries — name, size, stats, share token, recipients. Those rows stay
+small however many documents there are. The Markdown source is never filtered on or sorted by, only
+fetched whole, and it is the only part that grows, so it goes to a Vercel Blob store instead:
+`sources/<user>/<document>.md`.
+
+The store is **private**. A source is read on the server with the store's token and its URL never
+reaches a browser — a shared document is served by our own route, which is where access is decided.
+
+Without `BLOB_READ_WRITE_TOKEN` the source is written to the `markdown` column exactly as before, so
+a checkout with no store still works and rows written earlier still open. `npm run blob:migrate`
+moves those rows into the store; `npm run blob:reconcile` reports where store and database disagree
+— an orphaned file is safe to delete, a row whose file is gone is only reported.
+
 ## Rendering
 
 The parse, the renderer overrides and the allow-list live in `shared/` and run in both places: the

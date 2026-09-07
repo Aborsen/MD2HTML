@@ -40,3 +40,15 @@ create table if not exists m2h_document_share (
   created_at  timestamptz not null default now(),
   primary key (document_id, email)
 );
+
+-- Sources move out of the row.
+--
+-- `markdown` stays nullable rather than being dropped: rows written before the Blob store existed
+-- still carry their text, and a checkout without a store token still writes there. `blob_path`
+-- names the file when it went to Blob instead.
+
+alter table m2h_document
+  add column if not exists blob_path text;
+
+alter table m2h_document
+  alter column markdown drop not null;

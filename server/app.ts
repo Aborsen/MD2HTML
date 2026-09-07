@@ -8,6 +8,7 @@ import {
 } from '../shared/markdown.js';
 import { authProxy, currentUser, type SessionUser } from './auth.js';
 import { sql, type DocumentRow } from './db.js';
+import { deleteSources, putSource, readSource } from './source.js';
 
 /** Server-side caps: a stored document is meant to be re-openable, not archival. */
 const MAX_MARKDOWN_BYTES = 1024 * 1024;
@@ -47,10 +48,10 @@ const normaliseEmail = (value: unknown) =>
  */
 api.get('/shared/:token', async (c) => {
   const rows = (await sql()`
-    select id, user_id, name, markdown, created_at, share_mode, share_token
+    select id, user_id, name, markdown, blob_path, created_at, share_mode, share_token
     from m2h_document
     where share_token = ${c.req.param('token')}
-  `) as Array<ShareRow & { user_id: string }>;
+  `) as Array<ShareRow & { user_id: string; blob_path: string | null }>;
 
   const document = rows[0];
 
@@ -81,7 +82,7 @@ api.get('/shared/:token', async (c) => {
   return c.json({
     document: {
       name: document.name,
-      markdown: document.markdown,
+      markdown: await readSource(document),
       created_at: document.created_at,
     },
   });
@@ -173,20 +174,41 @@ api.post('/documents', async (c) => {
     return c.json({ error: 'Document is too large to store (1 MB limit)' }, 413);
   }
 
+  /*
+   * The row is created first, empty of text, because a source's path is derived from its id. If
+   * the upload then fails the row is removed again: a document that cannot be opened would be
+   * worse than no document at all.
+   */
   const rows = (await sql()`
     insert into m2h_document (user_id, name, size, markdown, stats)
     values (
       ${userId},
       ${body.name},
       ${body.size ?? body.markdown.length},
-      ${body.markdown},
+      null,
       ${JSON.stringify(body.stats ?? {})}::jsonb
     )
     returning id, name, size, stats, created_at
   `) as DocumentRow[];
 
-  // Keep the list bounded: drop anything past the newest N.
-  await sql()`
+  try {
+    const stored = await putSource(userId, rows[0].id, body.markdown);
+
+    await sql()`
+      update m2h_document
+      set blob_path = ${stored.blobPath}, markdown = ${stored.markdown}
+      where id = ${rows[0].id}
+    `;
+  } catch (cause) {
+    await sql()`delete from m2h_document where id = ${rows[0].id}`;
+
+    const why = cause instanceof Error ? cause.message : 'upload failed';
+
+    return c.json({ error: `Could not store the document: ${why}` }, 502);
+  }
+
+  // Keep the list bounded: drop anything past the newest N, sources included.
+  const trimmed = (await sql()`
     delete from m2h_document
     where user_id = ${userId}
       and id not in (
@@ -195,23 +217,30 @@ api.post('/documents', async (c) => {
         order by created_at desc
         limit ${MAX_DOCUMENTS_PER_USER}
       )
-  `;
+    returning blob_path
+  `) as Array<{ blob_path: string | null }>;
+
+  await deleteSources(trimmed.map((row) => row.blob_path));
 
   return c.json({ document: rows[0] }, 201);
 });
 
 api.get('/documents/:id', async (c) => {
   const rows = (await sql()`
-    select id, name, size, stats, created_at, markdown
+    select id, name, size, stats, created_at, markdown, blob_path
     from m2h_document
     where user_id = ${c.get('user').id} and id = ${c.req.param('id')}
-  `) as DocumentRow[];
+  `) as Array<DocumentRow & { blob_path: string | null }>;
 
   if (rows.length === 0) {
     return c.json({ error: 'Not found' }, 404);
   }
 
-  return c.json({ document: rows[0] });
+  const { blob_path: _stored, ...document } = rows[0];
+
+  return c.json({
+    document: { ...document, markdown: await readSource(rows[0]) },
+  });
 });
 
 /** The document's sharing state, as the dialog needs it. */
@@ -346,16 +375,25 @@ api.delete('/documents/:id/share/people', async (c) => {
 });
 
 api.delete('/documents/:id', async (c) => {
-  await sql()`
+  const removed = (await sql()`
     delete from m2h_document
     where user_id = ${c.get('user').id} and id = ${c.req.param('id')}
-  `;
+    returning blob_path
+  `) as Array<{ blob_path: string | null }>;
+
+  await deleteSources(removed.map((row) => row.blob_path));
 
   return c.json({ ok: true });
 });
 
 api.delete('/documents', async (c) => {
-  await sql()`delete from m2h_document where user_id = ${c.get('user').id}`;
+  const removed = (await sql()`
+    delete from m2h_document
+    where user_id = ${c.get('user').id}
+    returning blob_path
+  `) as Array<{ blob_path: string | null }>;
+
+  await deleteSources(removed.map((row) => row.blob_path));
 
   return c.json({ ok: true });
 });
@@ -382,14 +420,15 @@ app.get('/s/:token', async (c) => {
   const { markdownToHtml } = await import('./render.js');
 
   const rows = (await sql()`
-    select id, user_id, name, markdown, created_at, share_mode
+    select id, user_id, name, markdown, blob_path, created_at, share_mode
     from m2h_document
     where share_token = ${token}
   `) as Array<{
     id: string;
     user_id: string;
     name: string;
-    markdown: string;
+    markdown: string | null;
+    blob_path: string | null;
     created_at: string;
     share_mode: 'private' | 'link' | 'people';
   }>;
@@ -434,7 +473,21 @@ app.get('/s/:token', async (c) => {
     );
   }
 
-  const body = markdownToHtml(document.markdown);
+  const source = await readSource(document);
+
+  if (source === null) {
+    c.header('cache-control', 'no-store');
+    c.status(404);
+
+    return c.html(
+      buildNoticePage(
+        'This document is no longer available',
+        'Its contents could not be found. The owner may have removed it.'
+      )
+    );
+  }
+
+  const body = markdownToHtml(source);
   const createdAt = new Date(document.created_at).getTime();
 
   if (c.req.query('download') !== undefined) {
