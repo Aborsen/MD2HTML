@@ -74,7 +74,8 @@ step; a deployment made before them needs a redeploy to see them. The build is a
   who shared each one. They are read-only: open and download, no delete, no re-share. Only
   addressed shares appear; a link share belongs to whoever holds the link, not to a list.
 - **Fullscreen reading** — the preview takes the whole screen, the sheet keeps a readable measure
-  and scrolls; Escape comes back.
+  and scrolls; Escape comes back. A long document gets a back-to-top button, in both the normal and
+  the fullscreen view.
 - **HTML source** tab — the exact standalone document that gets downloaded.
 - **Download / Copy** — self-contained `.html` with inline styles, print-ready.
 - **History** — signed in: stored in Neon (up to 200 documents, 1 MB of source

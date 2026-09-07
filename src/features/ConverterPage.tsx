@@ -14,6 +14,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { DocStats } from '@/components/DocStats';
 import { DocumentPreview } from '@/components/DocumentPreview';
 import { Hint } from '@/components/Hint';
+import { ScrollToTop } from '@/components/ScrollToTop';
 import { ShareDialog } from '@/components/ShareDialog';
 import { Dropzone } from '@/components/Dropzone';
 import { useTheme } from '@/lib/theme';
@@ -295,6 +296,8 @@ export function ConverterPage({
               html={doc.html}
               className="mx-auto max-w-3xl rounded-lg border border-stroke p-6 shadow-rest sm:p-10"
             />
+
+            <ScrollToTop />
           </div>
         </TabsContent>
 

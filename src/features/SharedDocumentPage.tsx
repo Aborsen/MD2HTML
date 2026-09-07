@@ -2,6 +2,7 @@ import { Download, FileText } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { DocumentPreview } from '@/components/DocumentPreview';
 import { Logo } from '@/components/Logo';
+import { ScrollToTop } from '@/components/ScrollToTop';
 import { api, type SharedDocument } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
 import { formatDateTime, toFileName } from '@/lib/format';
@@ -171,6 +172,8 @@ export function SharedDocumentPage({ token }: { token: string }) {
                 html={markdownToHtml(document.markdown)}
                 className="mx-auto max-w-3xl rounded-lg border border-stroke p-6 shadow-rest sm:p-10"
               />
+
+              <ScrollToTop />
             </div>
           </div>
         )}
