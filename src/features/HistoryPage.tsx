@@ -366,7 +366,7 @@ export function HistoryPage({
         }
       />
 
-      <Table wrapperClassName="shadow-rest">
+      <Table className="table-fixed" wrapperClassName="shadow-rest">
         <TableHeader>
           <TableRow>
             <TableHead className="w-10">
@@ -392,9 +392,9 @@ export function HistoryPage({
             >
               File
             </TableHead>
-            <TableHead className="hidden w-24 sm:table-cell">Type</TableHead>
+            <TableHead className="hidden w-20 sm:table-cell">Type</TableHead>
             <TableHead
-              className="hidden sm:table-cell"
+              className="hidden w-32 sm:table-cell"
               sortable
               sortDirection={directionOf('size')}
               onSort={() => sortBy('size')}
@@ -402,7 +402,7 @@ export function HistoryPage({
               Source size
             </TableHead>
             <TableHead
-              className="hidden md:table-cell"
+              className="hidden w-52 md:table-cell"
               sortable
               sortDirection={directionOf('words')}
               onSort={() => sortBy('words')}
@@ -410,6 +410,7 @@ export function HistoryPage({
               Content
             </TableHead>
             <TableHead
+              className="w-36"
               sortable
               sortDirection={directionOf('createdAt')}
               onSort={() => sortBy('createdAt')}
@@ -456,7 +457,7 @@ export function HistoryPage({
                   />
                 </TableCell>
 
-                <TableCell className="max-w-[16rem]">
+                <TableCell className="max-w-0">
                   <Hint
                     content={
                       isReopenable
@@ -478,6 +479,7 @@ export function HistoryPage({
                     variant={format === 'html' ? 'primary' : 'secondary'}
                     size="sm"
                     rounded="full"
+                    className="w-14 justify-center"
                   >
                     {format === 'html' ? 'HTML' : 'MD'}
                   </Badge>
