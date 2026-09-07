@@ -50,6 +50,16 @@ npm run auth:origin -- http://127.0.0.1:5180       # for local work
 **Vercel** → project settings → Environment Variables: add both variables, then redeploy. The build
 is auto-detected (Vite → `dist`) and `/api/*` is routed to the Hono function by `vercel.json`.
 
+If the values already live in another Vercel project that uses the same Neon database, they can be
+moved across without being pasted anywhere:
+
+```bash
+vercel link --project <the-other-project> --yes
+vercel env pull .env.local --environment=production
+vercel link --project md-2-html --yes
+npm run env:setup -- --vercel      # keeps only this app's keys, pushes them, prints no values
+```
+
 ## What it does
 
 - **Upload** — drag & drop or file picker, `.md / .markdown / .mdown / .mkd / .txt`, up to 10 MB.

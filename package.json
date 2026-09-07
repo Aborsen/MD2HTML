@@ -9,7 +9,8 @@
     "preview": "vite preview",
     "check-types": "tsc -b",
     "db:init": "node scripts/init-db.mjs",
-    "auth:origin": "node scripts/auth-origin.mjs"
+    "auth:origin": "node scripts/auth-origin.mjs",
+    "env:setup": "node scripts/setup-env.mjs"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.1.0",

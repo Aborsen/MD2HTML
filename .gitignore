@@ -3,6 +3,6 @@ dist
 .turbo
 .vercel
 .env
-.env.local
-.env*.local
+.env.*
+!.env.example
 *.local
