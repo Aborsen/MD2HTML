@@ -2,7 +2,6 @@ import {
   Cloud,
   Combine,
   Download,
-  Eye,
   FileText,
   MonitorSmartphone,
   Trash2,
@@ -25,6 +24,7 @@ import {
   TableRow,
 } from '@/ui/components/Table';
 import { Typography } from '@/ui/components/Typography';
+import { cn } from '@/ui/lib/utils';
 
 interface HistoryPageProps {
   entries: HistoryEntry[];
@@ -40,6 +40,8 @@ interface HistoryPageProps {
   onGoToConverter: () => void;
 }
 
+type SortKey = 'name' | 'size' | 'words' | 'createdAt';
+
 export function HistoryPage({
   entries,
   isSynced,
@@ -53,6 +55,10 @@ export function HistoryPage({
   onGoToConverter,
 }: HistoryPageProps) {
   const [selected, setSelected] = useState<string[]>([]);
+  const [sort, setSort] = useState<{ key: SortKey; direction: 'asc' | 'desc' }>({
+    key: 'createdAt',
+    direction: 'desc',
+  });
 
   // A row that has gone — deleted here or on another device — must not stay selected.
   useEffect(() => {
@@ -81,6 +87,47 @@ export function HistoryPage({
 
   const allSelected =
     selectableIds.length > 0 && selected.length === selectableIds.length;
+
+  const rows = useMemo(() => {
+    const value = (entry: HistoryEntry) => {
+      switch (sort.key) {
+        case 'name':
+          return entry.name.toLowerCase();
+        case 'size':
+          return entry.size;
+        case 'words':
+          return entry.stats.words;
+        default:
+          return entry.createdAt;
+      }
+    };
+
+    return [...entries].sort((a, b) => {
+      const left = value(a);
+      const right = value(b);
+      const order =
+        typeof left === 'string' && typeof right === 'string'
+          ? left.localeCompare(right)
+          : Number(left) - Number(right);
+
+      return sort.direction === 'asc' ? order : -order;
+    });
+  }, [entries, sort]);
+
+  /** Clicking a header sorts by it; clicking the active one flips the direction. */
+  const sortBy = (key: SortKey) =>
+    setSort((current) =>
+      current.key === key
+        ? { key, direction: current.direction === 'asc' ? 'desc' : 'asc' }
+        : { key, direction: key === 'name' ? 'asc' : 'desc' }
+    );
+
+  const directionOf = (key: SortKey) =>
+    sort.key === key ? sort.direction : undefined;
+
+  // A click on a control inside the row must not also open the document.
+  const stopRowClick = (event: { stopPropagation: () => void }) =>
+    event.stopPropagation();
 
   const toggle = (id: string) =>
     setSelected((current) =>
@@ -215,16 +262,42 @@ export function HistoryPage({
                 }
               />
             </TableHead>
-            <TableHead>File</TableHead>
-            <TableHead className="hidden sm:table-cell">Size</TableHead>
-            <TableHead className="hidden md:table-cell">Content</TableHead>
-            <TableHead>Converted</TableHead>
-            <TableHead className="w-44 text-right">Actions</TableHead>
+            <TableHead
+              sortable
+              sortDirection={directionOf('name')}
+              onSort={() => sortBy('name')}
+            >
+              File
+            </TableHead>
+            <TableHead
+              className="hidden sm:table-cell"
+              sortable
+              sortDirection={directionOf('size')}
+              onSort={() => sortBy('size')}
+            >
+              Size
+            </TableHead>
+            <TableHead
+              className="hidden md:table-cell"
+              sortable
+              sortDirection={directionOf('words')}
+              onSort={() => sortBy('words')}
+            >
+              Content
+            </TableHead>
+            <TableHead
+              sortable
+              sortDirection={directionOf('createdAt')}
+              onSort={() => sortBy('createdAt')}
+            >
+              Converted
+            </TableHead>
+            <TableHead className="w-24 text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>
 
         <TableBody>
-          {entries.map((entry) => {
+          {rows.map((entry) => {
             const isReopenable =
               entry.markdown !== undefined || entry.remote === true;
             const isSelected = selected.includes(entry.id);
@@ -232,9 +305,25 @@ export function HistoryPage({
             return (
               <TableRow
                 key={entry.id}
-                className={isSelected ? 'is-selected' : undefined}
+                // The whole row opens the document; the controls in it do their own thing.
+                data-interactive={isReopenable ? '' : undefined}
+                role={isReopenable ? 'button' : undefined}
+                tabIndex={isReopenable ? 0 : undefined}
+                aria-label={isReopenable ? `Open ${entry.name}` : undefined}
+                className={cn(
+                  isSelected && 'is-selected',
+                  isReopenable &&
+                    'cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring-brand focus-visible:ring-inset'
+                )}
+                onClick={() => isReopenable && onOpen(entry)}
+                onKeyDown={(event) => {
+                  if (isReopenable && (event.key === 'Enter' || event.key === ' ')) {
+                    event.preventDefault();
+                    onOpen(entry);
+                  }
+                }}
               >
-                <TableCell>
+                <TableCell onClick={stopRowClick} onKeyDown={stopRowClick}>
                   <Checkbox
                     aria-label={`Select ${entry.name}`}
                     checked={isSelected}
@@ -244,12 +333,20 @@ export function HistoryPage({
                 </TableCell>
 
                 <TableCell className="max-w-[16rem]">
-                  <span className="flex min-w-0 items-center gap-2">
-                    <FileText className="size-4 shrink-0 text-brand-tertiary" />
-                    <span className="truncate font-medium text-ink-primary">
-                      {entry.name}
+                  <Hint
+                    content={
+                      isReopenable
+                        ? 'Open preview'
+                        : 'Source was too large to keep locally'
+                    }
+                  >
+                    <span className="flex min-w-0 items-center gap-2">
+                      <FileText className="size-4 shrink-0 text-brand-tertiary" />
+                      <span className="truncate font-medium text-ink-primary">
+                        {entry.name}
+                      </span>
                     </span>
-                  </span>
+                  </Hint>
                 </TableCell>
 
                 <TableCell className="hidden sm:table-cell">
@@ -269,37 +366,25 @@ export function HistoryPage({
                   </Hint>
                 </TableCell>
 
-                <TableCell className="text-right">
+                <TableCell
+                  className="text-right"
+                  onClick={stopRowClick}
+                  onKeyDown={stopRowClick}
+                >
                   <span className="flex items-center justify-end gap-1">
-                    <Hint
-                      content={
-                        isReopenable
-                          ? 'Open preview'
-                          : 'Source was too large to keep locally'
-                      }
-                    >
+                    <Hint content="Download .html">
                       <span>
                         <IconButton
                           variant="tertiary"
                           size="sm"
-                          aria-label="Open preview"
+                          aria-label={`Download ${entry.name}`}
                           disabled={!isReopenable}
-                          onClick={() => onOpen(entry)}
+                          onClick={() => onDownload(entry)}
                         >
-                          <Eye />
+                          <Download />
                         </IconButton>
                       </span>
                     </Hint>
-
-                    <Button
-                      variant="secondary"
-                      size="xs"
-                      leftSlot={<Download />}
-                      disabled={!isReopenable}
-                      onClick={() => onDownload(entry)}
-                    >
-                      Download
-                    </Button>
 
                     <Hint content="Remove from history">
                       <span>
