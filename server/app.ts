@@ -6,7 +6,6 @@ import {
   buildSharedPage,
   buildStandaloneHtml,
 } from '../shared/markdown.js';
-import { markdownToHtml } from './render.js';
 import { authProxy, currentUser, type SessionUser } from './auth.js';
 import { sql, type DocumentRow } from './db.js';
 
@@ -374,6 +373,13 @@ api.delete('/documents', async (c) => {
  */
 app.get('/s/:token', async (c) => {
   const token = c.req.param('token');
+
+  /*
+   * Loaded here, not at the top of the file. The renderer is the one dependency with a history of
+   * refusing to load in this runtime, and when it did, it took sign-in and every document call
+   * down with it — a page failing to render must never be able to do that again.
+   */
+  const { markdownToHtml } = await import('./render.js');
 
   const rows = (await sql()`
     select id, user_id, name, markdown, created_at, share_mode

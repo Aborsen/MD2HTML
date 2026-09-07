@@ -41,16 +41,15 @@
     "react-day-picker": "^9.13.0",
     "react-dom": "^19.2.3",
     "react-resizable-panels": "^4.10.0",
-    "sanitize-html": "^2.17.7",
     "sonner": "^2.0.7",
     "tailwind-merge": "^3.4.0",
-    "tailwindcss-animate": "^1.0.7"
+    "tailwindcss-animate": "^1.0.7",
+    "xss": "^1.0.15"
   },
   "devDependencies": {
     "@types/node": "^24.10.1",
     "@types/react": "^19.2.3",
     "@types/react-dom": "^19.2.3",
-    "@types/sanitize-html": "^2.16.1",
     "@vitejs/plugin-react": "^5.1.1",
     "autoprefixer": "^10.4.20",
     "dotenv": "^17.4.2",
