@@ -78,7 +78,7 @@ step; a deployment made before them needs a redeploy to see them. The build is a
   the fullscreen view.
 - **HTML source** tab — the exact standalone document that gets downloaded.
 - **Download / Copy** — self-contained `.html` with inline styles, print-ready.
-- **History** — signed in: stored in Neon (up to 200 documents, 1 MB of source
+- **History** — signed in: stored in the account (up to 500 documents, 1 MB of source
   each), available on every device; signed out: the last 25 conversions in
   `localStorage`. Whatever was collected locally is moved into the account on
   first sign-in. The page has its own dropzone, a search box over file names,
@@ -124,7 +124,7 @@ curl -H "Authorization: Bearer m2h_live_…"      --data-binary @README.md      
 | | |
 | --- | --- |
 | `POST /api/v1/documents` | Markdown as the body (`?name=`) or JSON `{name, markdown}`; `?share=link\|people` publishes it in the same call |
-| `GET /api/v1/documents` | the newest 200 |
+| `GET /api/v1/documents` | the newest 500 |
 | `GET /api/v1/documents/:id` | metadata and the source |
 | `GET /api/v1/documents/:id.html` | the standalone document, `?theme=dark` optional |
 | `DELETE /api/v1/documents/:id` | removes the row and its source |
@@ -134,6 +134,42 @@ A cookie works too, so the same endpoints can be tried from a signed-in browser.
 /api/v1/usage` says what an account is using. Errors are `{ "error": "…" }` with a status that means
 what it says: 401 unknown key, 404 not yours, 413 the document is over 1 MB, 403 the account is out
 of room, 429 too fast, 410 the source is gone.
+
+## From a terminal
+
+`cli/m2h.mjs` is the same API with a friendlier face. No dependencies — it is one `fetch` and some
+printing, because a tool people run in CI should not drag a package tree behind it.
+
+```bash
+node cli/m2h.mjs login m2h_live_…              # remembers the key in ~/.config/m2h/config.json
+node cli/m2h.mjs push README.md --share        # prints the link
+node cli/m2h.mjs push docs/*.md --merge --share --name handbook.md
+node cli/m2h.mjs list
+node cli/m2h.mjs rm <id>
+node cli/m2h.mjs usage                         # 65.8 kB of 100.0 MB · 3 of 500 documents
+```
+
+The key comes from `--key`, `M2H_API_KEY`, or that config file, in that order; `M2H_HOST` points it
+at another deployment. `--json` prints the API's own response, which is what the Action reads.
+
+## As a GitHub Action
+
+`action.yml` at the root of this repository publishes Markdown from a workflow. Given no file list
+it takes what the pull request changed, and with `pull-requests: write` it comments the links, so a
+reviewer opens the rendered document instead of reading a diff of asterisks.
+
+```yaml
+- uses: Aborsen/MD2HTML@main
+  with:
+    api-key: ${{ secrets.M2H_API_KEY }}
+```
+
+`examples/publish-markdown.yml` is a complete workflow to copy. Inputs: `api-key`, `files`,
+`share` (`link` / `people` / `none`), `merge`, `name`, `comment`, `host`; outputs: `urls` and
+`documents`. Checkout needs `fetch-depth: 0` for the base commit the file list is computed against.
+
+A new document per push is deliberate — a link in an old comment keeps showing what that commit
+said. `share: none` publishes privately if the links should not be public.
 
 ## Limits
 
@@ -200,10 +236,12 @@ browser renders the preview, the function renders the page a share link opens. O
 asks for it.
 
 Only the sanitiser differs, because only one of the two runtimes has a DOM: `src/lib/markdown.ts`
-uses DOMPurify over the browser's own, `server/render.ts` uses `sanitize-html`, which parses the
-HTML itself. Emulating a DOM was tried first and is a trap worth writing down — jsdom broke the Node
+uses DOMPurify over the browser's own, `server/render.ts` uses `xss`, which parses the HTML
+itself against the same allow-list. Emulating a DOM was tried first and is a trap worth writing down — jsdom broke the Node
 runtime outright (a CJS dependency requiring an ESM module), and the lighter stand-ins were worse:
-DOMPurify reported success and returned its input untouched, `<script>` and all. Heading ids carry a
+DOMPurify reported success and returned its input untouched, `<script>` and all. `sanitize-html`
+failed the same way jsdom did, and took sign-in down with it — which is why the renderer is now
+imported lazily inside the share route, where a broken renderer can only break that page. Heading ids carry a
 `doc-` prefix so both sanitisers keep them; a bare `id="title"` is DOM-clobbering, which the browser
 strips and a parser does not.
 
@@ -226,6 +264,8 @@ server/                 API: routes, Neon Auth proxy, Neon client, dev middlewar
 db/schema.sql           m2h_document and its sharing tables
 scripts/init-db.mjs     applies the schema
 scripts/auth-origin.mjs manages Neon Auth's trusted origins
+cli/m2h.mjs             the command line client
+action.yml              the GitHub Action (examples/ has a workflow to copy)
 src/
   App.tsx               app shell and state
   components/           header, user menu, dropzone, preview, stats

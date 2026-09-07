@@ -1,0 +1,128 @@
+name: Publish Markdown with M2H
+description: Convert Markdown files to shareable HTML pages and, on a pull request, comment the links.
+author: M2H
+
+branding:
+  icon: file-text
+  color: green
+
+inputs:
+  api-key:
+    description: An M2H API key. Store it as a repository secret and pass it here.
+    required: true
+  files:
+    description: Space-separated files or globs. Defaults to the Markdown a pull request changed.
+    required: false
+    default: ''
+  share:
+    description: 'How to publish: link, people, or none.'
+    required: false
+    default: link
+  merge:
+    description: Chain the files into a single document instead of one document each.
+    required: false
+    default: 'false'
+  name:
+    description: Name for the document. Only meaningful with merge.
+    required: false
+    default: ''
+  comment:
+    description: Comment the links on the pull request. Needs `permissions: pull-requests: write`.
+    required: false
+    default: 'true'
+  host:
+    description: Where M2H is deployed.
+    required: false
+    default: https://md-2-html.vercel.app
+
+outputs:
+  urls:
+    description: The published links, one per line.
+    value: ${{ steps.publish.outputs.urls }}
+  documents:
+    description: The API's response for every document, as JSON.
+    value: ${{ steps.publish.outputs.documents }}
+
+runs:
+  using: composite
+  steps:
+    - id: files
+      shell: bash
+      env:
+        INPUT_FILES: ${{ inputs.files }}
+        BASE_SHA: ${{ github.event.pull_request.base.sha }}
+      run: |
+        # Given no list, publish the Markdown this pull request touched — the common case, and the
+        # one where a stale link is most annoying.
+        if [ -n "$INPUT_FILES" ]; then
+          echo "list=$INPUT_FILES" >> "$GITHUB_OUTPUT"
+        elif [ -n "$BASE_SHA" ]; then
+          changed=$(git diff --name-only --diff-filter=d "$BASE_SHA"...HEAD -- '*.md' | tr '\n' ' ')
+          echo "list=$changed" >> "$GITHUB_OUTPUT"
+        else
+          echo "list=" >> "$GITHUB_OUTPUT"
+        fi
+
+    - id: publish
+      shell: bash
+      env:
+        M2H_API_KEY: ${{ inputs.api-key }}
+        M2H_HOST: ${{ inputs.host }}
+        FILES: ${{ steps.files.outputs.list }}
+        SHARE: ${{ inputs.share }}
+        MERGE: ${{ inputs.merge }}
+        NAME: ${{ inputs.name }}
+      run: |
+        set -euo pipefail
+
+        if [ -z "${FILES// /}" ]; then
+          echo "No Markdown to publish."
+          echo "urls=" >> "$GITHUB_OUTPUT"
+          echo "documents=[]" >> "$GITHUB_OUTPUT"
+          exit 0
+        fi
+
+        # An array, not a string: `set -e` turns a false `[ … ] && args=…` into a failed step, and
+        # file names survive their own spaces this way.
+        args=()
+        if [ "$SHARE" != "none" ]; then args+=(--share "$SHARE"); fi
+        if [ "$MERGE" = "true" ]; then args+=(--merge); fi
+        if [ -n "$NAME" ]; then args+=(--name "$NAME"); fi
+
+        read -r -a files <<< "$FILES"
+
+        node "$GITHUB_ACTION_PATH/cli/m2h.mjs" push "${files[@]}" "${args[@]}" --json > documents.json
+        cat documents.json
+
+        {
+          echo "documents<<M2H"
+          cat documents.json
+          echo "M2H"
+          echo "urls<<M2H"
+          node -e "JSON.parse(require('fs').readFileSync('documents.json','utf8')).forEach(d => d.share.url && console.log(d.share.url))"
+          echo "M2H"
+        } >> "$GITHUB_OUTPUT"
+
+    - if: ${{ inputs.comment == 'true' && github.event_name == 'pull_request' }}
+      shell: bash
+      env:
+        GH_TOKEN: ${{ github.token }}
+        DOCUMENTS: ${{ steps.publish.outputs.documents }}
+        PR: ${{ github.event.pull_request.number }}
+        REPO: ${{ github.repository }}
+      run: |
+        set -euo pipefail
+
+        body=$(node -e '
+          const documents = JSON.parse(process.env.DOCUMENTS || "[]");
+          if (documents.length === 0) process.exit(0);
+          const rows = documents
+            .map((d) => `| ${d.name} | ${d.words} | ${d.share.url ? `[read](${d.share.url})` : "not shared"} |`)
+            .join("\n");
+          console.log(`#### Markdown preview\n\n| file | words | |\n| --- | --- | --- |\n${rows}`);
+        ')
+
+        if [ -n "$body" ]; then
+          gh api "repos/$REPO/issues/$PR/comments" -f body="$body" >/dev/null
+          echo "Commented on #$PR"
+        fi
