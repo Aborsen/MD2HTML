@@ -9,10 +9,11 @@ export const MAX_FILE_SIZE = 10 * 1024 * 1024;
 
 interface DropzoneProps {
   isBusy?: boolean;
-  onFile: (file: File) => void;
+  /** Several files are chained into one document, in the order they arrive. */
+  onFiles: (files: File[]) => void;
 }
 
-export function Dropzone({ isBusy = false, onFile }: DropzoneProps) {
+export function Dropzone({ isBusy = false, onFiles }: DropzoneProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = useState(false);
 
@@ -20,17 +21,20 @@ export function Dropzone({ isBusy = false, onFile }: DropzoneProps) {
     event.preventDefault();
     setIsDragging(false);
 
-    const file = event.dataTransfer.files?.[0];
-    if (file) {
-      onFile(file);
+    const files = Array.from(event.dataTransfer.files ?? []);
+
+    if (files.length > 0) {
+      onFiles(files);
     }
   };
 
   const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      onFile(file);
+    const files = Array.from(event.target.files ?? []);
+
+    if (files.length > 0) {
+      onFiles(files);
     }
+
     // allow re-picking the same file
     event.target.value = '';
   };
@@ -56,11 +60,12 @@ export function Dropzone({ isBusy = false, onFile }: DropzoneProps) {
 
       <div className="flex flex-col items-center gap-1.5">
         <Typography variant="lead" weight="bold" textColor="primary">
-          Drop a Markdown file here
+          Drop Markdown files here
         </Typography>
         <Typography variant="p" textColor="secondary" align="center">
           Upload an <span className="font-medium">.md</span> file and see
-          exactly how it will look in HTML.
+          exactly how it will look in HTML. Drop several and they are chained
+          into one document, in the order you pick them.
         </Typography>
       </div>
 
@@ -70,7 +75,7 @@ export function Dropzone({ isBusy = false, onFile }: DropzoneProps) {
         leftSlot={<FileText />}
         onClick={() => inputRef.current?.click()}
       >
-        Choose file
+        Choose files
       </Button>
 
       <Typography variant="span" textColor="light" className="text-xs">
@@ -82,6 +87,7 @@ export function Dropzone({ isBusy = false, onFile }: DropzoneProps) {
         ref={inputRef}
         type="file"
         accept={ACCEPTED_EXTENSIONS.join(',')}
+        multiple
         className="hidden"
         onChange={handleChange}
       />

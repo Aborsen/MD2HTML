@@ -12,6 +12,7 @@ import {
   getDocStats,
   markdownToHtml,
 } from './lib/markdown';
+import { mergedName, mergeMarkdown } from './lib/merge';
 import type { ConvertedDoc } from './lib/types';
 import { useHistory } from './lib/use-history';
 import { toast, Toaster } from './ui/components/Toast';
@@ -28,7 +29,8 @@ function convert(
   name: string,
   size: number,
   markdown: string,
-  createdAt = Date.now()
+  createdAt = Date.now(),
+  sources?: string[]
 ): ConvertedDoc {
   const html = markdownToHtml(markdown);
 
@@ -39,6 +41,7 @@ function convert(
     createdAt,
     markdown,
     html,
+    sources,
     stats: getDocStats(markdown, html),
   };
 }
@@ -85,16 +88,19 @@ function Shell() {
     }
   }, [authError]);
 
-  const handleFile = useCallback(
-    async (file: File) => {
-      if (!hasAcceptedExtension(file.name)) {
+  /** One file converts; several are chained into a single document, in the order they arrive. */
+  const handleFiles = useCallback(
+    async (files: File[]) => {
+      const rejected = files.find((file) => !hasAcceptedExtension(file.name));
+
+      if (rejected) {
         toast.error('Unsupported file type', {
-          description: `Pick one of: ${ACCEPTED_EXTENSIONS.join(', ')}`,
+          description: `${rejected.name} — pick one of: ${ACCEPTED_EXTENSIONS.join(', ')}`,
         });
         return;
       }
 
-      if (file.size > MAX_FILE_SIZE) {
+      if (files.some((file) => file.size > MAX_FILE_SIZE)) {
         toast.error('File is too large', { description: 'The limit is 10 MB.' });
         return;
       }
@@ -102,8 +108,22 @@ function Shell() {
       setIsBusy(true);
 
       try {
-        const markdown = await file.text();
-        const converted = convert(file.name, file.size, markdown);
+        const parts = await Promise.all(
+          files.map(async (file) => ({
+            name: file.name,
+            markdown: await file.text(),
+          }))
+        );
+
+        const markdown = mergeMarkdown(parts);
+        const names = parts.map((part) => part.name);
+        const converted = convert(
+          mergedName(names),
+          files.reduce((total, file) => total + file.size, 0),
+          markdown,
+          Date.now(),
+          files.length > 1 ? names : undefined
+        );
 
         setDoc(converted);
         setView('converter');
@@ -115,9 +135,14 @@ function Shell() {
           stats: converted.stats,
         });
 
-        toast.success('Converted to HTML', { description: file.name });
+        toast.success(
+          files.length > 1
+            ? `Chained ${files.length} files into one document`
+            : 'Converted to HTML',
+          { description: converted.name }
+        );
       } catch {
-        toast.error('Could not read the file');
+        toast.error('Could not read the files');
       } finally {
         setIsBusy(false);
       }
@@ -162,6 +187,104 @@ function Shell() {
     setView('converter');
   }, []);
 
+  const handleMergeFromHistory = useCallback(
+    async (entries: HistoryEntry[]) => {
+      setIsBusy(true);
+
+      try {
+        const parts: { name: string; markdown: string }[] = [];
+
+        for (const entry of entries) {
+          const markdown = await history.getSource(entry);
+
+          if (markdown) {
+            parts.push({ name: entry.name, markdown });
+          }
+        }
+
+        if (parts.length < 2) {
+          toast.error('Nothing to merge', {
+            description: 'The sources of these files are no longer available.',
+          });
+          return;
+        }
+
+        const markdown = mergeMarkdown(parts);
+        const names = parts.map((part) => part.name);
+        const converted = convert(
+          mergedName(names),
+          new Blob([markdown]).size,
+          markdown,
+          Date.now(),
+          names
+        );
+
+        setDoc(converted);
+        setView('converter');
+
+        await history.add({
+          name: converted.name,
+          size: converted.size,
+          markdown: converted.markdown,
+          stats: converted.stats,
+        });
+
+        toast.success(`Chained ${parts.length} files into one document`, {
+          description: converted.name,
+        });
+      } finally {
+        setIsBusy(false);
+      }
+    },
+    [history]
+  );
+
+  const handleDownloadMany = useCallback(
+    async (entries: HistoryEntry[]) => {
+      let saved = 0;
+
+      for (const entry of entries) {
+        const markdown = await history.getSource(entry);
+
+        if (!markdown) {
+          continue;
+        }
+
+        downloadHtml(
+          entry.name,
+          markdownToHtml(markdown),
+          entry.createdAt,
+          theme
+        );
+        saved += 1;
+
+        // A browser handed a burst of downloads starts dropping them.
+        await new Promise((resolve) => setTimeout(resolve, 300));
+      }
+
+      if (saved === 0) {
+        toast.error('Nothing could be downloaded');
+        return;
+      }
+
+      toast.success(
+        saved === 1 ? 'HTML file downloaded' : `${saved} HTML files downloaded`
+      );
+    },
+    [history, theme]
+  );
+
+  const handleRemoveMany = useCallback(
+    async (ids: string[]) => {
+      await history.removeMany(ids);
+
+      toast.info(
+        ids.length === 1 ? 'File removed' : `${ids.length} files removed`
+      );
+    },
+    [history]
+  );
+
   const handleClear = useCallback(async () => {
     await history.clear();
     toast.info('History cleared');
@@ -181,7 +304,7 @@ function Shell() {
           <ConverterPage
             doc={doc}
             isBusy={isBusy}
-            onFile={handleFile}
+            onFiles={handleFiles}
             onReset={startOver}
           />
         ) : (
@@ -190,7 +313,10 @@ function Shell() {
             isSynced={Boolean(user)}
             onOpen={handleOpenFromHistory}
             onDownload={handleDownloadFromHistory}
+            onDownloadMany={(entries) => void handleDownloadMany(entries)}
+            onMerge={(entries) => void handleMergeFromHistory(entries)}
             onRemove={(id) => void history.remove(id)}
+            onRemoveMany={(ids) => void handleRemoveMany(ids)}
             onClear={() => void handleClear()}
             onGoToConverter={() => setView('converter')}
           />

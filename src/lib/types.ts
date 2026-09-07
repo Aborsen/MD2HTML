@@ -1,6 +1,8 @@
 export interface ConvertedDoc {
   id: string;
   name: string;
+  /** Present when the document was chained from several files, in merge order. */
+  sources?: string[];
   size: number;
   createdAt: number;
   markdown: string;

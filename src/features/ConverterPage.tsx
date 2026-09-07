@@ -30,14 +30,14 @@ import { toast } from '@/ui/components/Toast';
 interface ConverterPageProps {
   doc: ConvertedDoc | null;
   isBusy: boolean;
-  onFile: (file: File) => void;
+  onFiles: (files: File[]) => void;
   onReset: () => void;
 }
 
 export function ConverterPage({
   doc,
   isBusy,
-  onFile,
+  onFiles,
   onReset,
 }: ConverterPageProps) {
   const [isCopied, setIsCopied] = useState(false);
@@ -69,7 +69,7 @@ export function ConverterPage({
           </Typography>
         </div>
 
-        <Dropzone isBusy={isBusy} onFile={onFile} />
+        <Dropzone isBusy={isBusy} onFiles={onFiles} />
 
         <div className="grid gap-4 sm:grid-cols-3">
           {[
@@ -78,8 +78,8 @@ export function ConverterPage({
               text: 'Parsing and sanitizing happen fully in the browser.',
             },
             {
-              title: 'GitHub Flavored Markdown',
-              text: 'Tables, task lists, strikethrough and autolinks included.',
+              title: 'Several files, one document',
+              text: 'Drop a few at once, or merge them later from the history.',
             },
             {
               title: 'Self-contained export',
@@ -160,6 +160,12 @@ export function ConverterPage({
               <Badge variant="success" size="sm" rounded="full">
                 converted
               </Badge>
+
+              {doc.sources && (
+                <Badge variant="secondary" size="sm" rounded="full">
+                  {doc.sources.length} files merged
+                </Badge>
+              )}
             </div>
             <Typography variant="span" textColor="secondary" className="text-xs">
               {formatBytes(doc.size)} · {formatDateTime(doc.createdAt)}

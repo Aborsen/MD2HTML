@@ -62,6 +62,8 @@ step; a deployment made before them needs a redeploy to see them. The build is a
 ## What it does
 
 - **Upload** — drag & drop or file picker, `.md / .markdown / .mdown / .mkd / .txt`, up to 10 MB.
+- **Chain several files** — drop more than one and they become a single document, in the order they
+  arrive, separated by a rule; the same works on any selection in the history.
 - **Preview** — GitHub Flavored Markdown (tables, task lists, strikethrough,
   autolinks), sanitized with DOMPurify, styled with the design-system tokens.
 - **HTML source** tab — the exact standalone document that gets downloaded.
@@ -69,7 +71,8 @@ step; a deployment made before them needs a redeploy to see them. The build is a
 - **History** — signed in: stored in Neon (up to 200 documents, 1 MB of source
   each), available on every device; signed out: the last 25 conversions in
   `localStorage`. Whatever was collected locally is moved into the account on
-  first sign-in.
+  first sign-in. Rows can be selected in bulk to merge, download or delete them
+  (the selection bar is the design system's `ListSelectionBar`).
 - **Sign-in** — Google, through Neon Auth.
 
 ## UI

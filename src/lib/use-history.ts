@@ -126,6 +126,28 @@ export function useHistory(isSignedIn: boolean) {
     [isSignedIn, refresh]
   );
 
+  const removeMany = useCallback(
+    async (ids: string[]) => {
+      if (!isSignedIn) {
+        let next: HistoryEntry[] = [];
+
+        for (const id of ids) {
+          next = removeHistoryEntry(id);
+        }
+
+        setEntries(next.sort(byNewest));
+        return;
+      }
+
+      setEntries((current) => current.filter((entry) => !ids.includes(entry.id)));
+
+      await Promise.all(ids.map((id) => api.deleteDocument(id))).catch(() =>
+        refresh()
+      );
+    },
+    [isSignedIn, refresh]
+  );
+
   const clear = useCallback(async () => {
     if (!isSignedIn) {
       setEntries(clearHistory());
@@ -136,5 +158,5 @@ export function useHistory(isSignedIn: boolean) {
     await api.clearDocuments().catch(() => refresh());
   }, [isSignedIn, refresh]);
 
-  return { entries, error, add, remove, clear, getSource, refresh };
+  return { entries, error, add, remove, removeMany, clear, getSource, refresh };
 }
