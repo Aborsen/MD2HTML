@@ -76,7 +76,7 @@ export function HistoryPage({
 }: HistoryPageProps) {
   const [selected, setSelected] = useState<string[]>([]);
   const [query, setQuery] = useState('');
-  const [format, setFormat] = useState<DocFormat>('md');
+  const [format, setFormat] = useState<DocFormat>('html');
   const filePicker = useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [sort, setSort] = useState<{ key: SortKey; direction: 'asc' | 'desc' }>({
@@ -262,7 +262,7 @@ export function HistoryPage({
       />
 
       <div className="flex flex-wrap items-center gap-2">
-        <InputGroup size="sm" className="max-w-xs">
+        <InputGroup size="sm">
           <InputGroupAddon>
             <Search className="size-4" />
           </InputGroupAddon>
@@ -290,8 +290,8 @@ export function HistoryPage({
       <FilterChips
         value={format}
         items={[
-          { value: 'md', label: 'Markdown' },
           { value: 'html', label: 'HTML' },
+          { value: 'md', label: 'Markdown' },
         ]}
         onValueChange={(value) => setFormat(value as DocFormat)}
       />
