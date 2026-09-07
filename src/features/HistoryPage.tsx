@@ -4,15 +4,24 @@ import {
   Download,
   FileText,
   MonitorSmartphone,
+  Search,
   Trash2,
+  Upload,
+  X,
 } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Hint } from '@/components/Hint';
 import { ListSelectionBar } from '@/components/ListSelectionBar';
+import { ACCEPTED_EXTENSIONS } from '@/components/Dropzone';
 import { formatBytes, formatDateTime, formatRelative } from '@/lib/format';
 import type { HistoryEntry } from '@/lib/history';
 import { Button } from '@/ui/components/Button';
 import { Checkbox } from '@/ui/components/Checkbox';
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+} from '@/ui/components/InputGroup';
 import { IconButton } from '@/ui/components/IconButton';
 import { StatusView } from '@/ui/components/StatusView';
 import {
@@ -31,6 +40,8 @@ interface HistoryPageProps {
   /** True when the list comes from the signed-in account rather than this browser. */
   isSynced: boolean;
   onOpen: (entry: HistoryEntry) => void;
+  /** Same handler the dropzone uses, so a new document can start from this page. */
+  onFiles: (files: File[]) => void;
   onDownload: (entry: HistoryEntry) => void;
   onDownloadMany: (entries: HistoryEntry[]) => void;
   onMerge: (entries: HistoryEntry[]) => void;
@@ -46,6 +57,7 @@ export function HistoryPage({
   entries,
   isSynced,
   onOpen,
+  onFiles,
   onDownload,
   onDownloadMany,
   onMerge,
@@ -55,6 +67,9 @@ export function HistoryPage({
   onGoToConverter,
 }: HistoryPageProps) {
   const [selected, setSelected] = useState<string[]>([]);
+  const [query, setQuery] = useState('');
+  const filePicker = useRef<HTMLInputElement>(null);
+  const [isDragging, setIsDragging] = useState(false);
   const [sort, setSort] = useState<{ key: SortKey; direction: 'asc' | 'desc' }>({
     key: 'createdAt',
     direction: 'desc',
@@ -67,13 +82,21 @@ export function HistoryPage({
     );
   }, [entries]);
 
-  // Only rows whose source is still available can be merged or downloaded.
+  const found = useMemo(() => {
+    const needle = query.trim().toLowerCase();
+
+    return needle
+      ? entries.filter((entry) => entry.name.toLowerCase().includes(needle))
+      : entries;
+  }, [entries, query]);
+
+  // Only rows whose source is still available — and are on screen — can be picked.
   const selectableIds = useMemo(
     () =>
-      entries
+      found
         .filter((entry) => entry.markdown !== undefined || entry.remote)
         .map((entry) => entry.id),
-    [entries]
+    [found]
   );
 
   const selectedEntries = useMemo(
@@ -102,7 +125,7 @@ export function HistoryPage({
       }
     };
 
-    return [...entries].sort((a, b) => {
+    return [...found].sort((a, b) => {
       const left = value(a);
       const right = value(b);
       const order =
@@ -112,7 +135,7 @@ export function HistoryPage({
 
       return sort.direction === 'asc' ? order : -order;
     });
-  }, [entries, sort]);
+  }, [found, sort]);
 
   /** Clicking a header sorts by it; clicking the active one flips the direction. */
   const sortBy = (key: SortKey) =>
@@ -177,9 +200,91 @@ export function HistoryPage({
         </Typography>
       </div>
 
+      <button
+        type="button"
+        onClick={() => filePicker.current?.click()}
+        onDragOver={(event) => {
+          event.preventDefault();
+          setIsDragging(true);
+        }}
+        onDragLeave={() => setIsDragging(false)}
+        onDrop={(event) => {
+          event.preventDefault();
+          setIsDragging(false);
+
+          const files = Array.from(event.dataTransfer.files ?? []);
+
+          if (files.length > 0) {
+            onFiles(files);
+          }
+        }}
+        className={cn(
+          'flex w-full cursor-pointer flex-col items-center gap-1 rounded-xl border border-dropzone-border border-dashed px-6 py-6 text-center',
+          'bg-surface-card transition-colors duration-base',
+          'hover:border-dropzone-border-active',
+          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring-brand focus-visible:ring-offset-2',
+          isDragging && 'border-dropzone-border-active bg-dropzone-bg-active'
+        )}
+      >
+        <span className="flex items-center gap-2 font-semibold text-ink-primary text-sm">
+          <Upload className="size-4 text-brand-tertiary" />
+          Drag &amp; drop Markdown here
+        </span>
+        <Typography variant="span" textColor="secondary" className="text-xs">
+          or click to browse — several files are chained into one document
+        </Typography>
+      </button>
+
+      <input
+        ref={filePicker}
+        type="file"
+        accept={ACCEPTED_EXTENSIONS.join(',')}
+        multiple
+        className="hidden"
+        onChange={(event) => {
+          const files = Array.from(event.target.files ?? []);
+
+          if (files.length > 0) {
+            onFiles(files);
+          }
+
+          event.target.value = '';
+        }}
+      />
+
+      <div className="flex flex-wrap items-center gap-2">
+        <InputGroup size="sm" className="max-w-xs">
+          <InputGroupAddon>
+            <Search className="size-4" />
+          </InputGroupAddon>
+          <InputGroupInput
+            value={query}
+            placeholder="Search by name"
+            aria-label="Search history by file name"
+            onChange={(event) => setQuery(event.target.value)}
+          />
+          {query && (
+            <InputGroupAddon align="inline-end">
+              <IconButton
+                variant="tertiary"
+                size="xs"
+                aria-label="Clear search"
+                onClick={() => setQuery('')}
+              >
+                <X />
+              </IconButton>
+            </InputGroupAddon>
+          )}
+        </InputGroup>
+      </div>
+
       <ListSelectionBar
         sticky
-        title={`${entries.length} ${entries.length === 1 ? 'file' : 'files'}`}
+        title={
+          query
+            ? `${found.length} of ${entries.length} ${entries.length === 1 ? 'file' : 'files'}`
+            : `${entries.length} ${entries.length === 1 ? 'file' : 'files'}`
+        }
         selectedCount={selected.length}
         allSelected={allSelected}
         isEmpty={selectableIds.length === 0}

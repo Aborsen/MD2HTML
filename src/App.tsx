@@ -314,6 +314,7 @@ function Shell() {
             entries={history.entries}
             isSynced={Boolean(user)}
             onOpen={handleOpenFromHistory}
+            onFiles={handleFiles}
             onDownload={handleDownloadFromHistory}
             onDownloadMany={(entries) => void handleDownloadMany(entries)}
             onMerge={(entries) => void handleMergeFromHistory(entries)}
