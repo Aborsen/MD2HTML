@@ -1,44 +1,41 @@
 import { LogOut, User } from 'lucide-react';
-import { useEffect, useRef } from 'react';
 import { useAuth } from '@/lib/auth';
+import { GoogleGlyph } from './GoogleGlyph';
 import { Hint } from './Hint';
+import { Button } from '@/ui/components/Button';
 import { IconButton } from '@/ui/components/IconButton';
 import { Skeleton } from '@/ui/components/Skeleton';
 import { Typography } from '@/ui/components/Typography';
 
-/** Google button when signed out, avatar + sign-out when signed in. */
+/** Sign-in button when signed out, avatar + sign-out when signed in. */
 export function UserMenu() {
-  const { user, isLoading, isConfigured, signOut, mountSignInButton } =
-    useAuth();
-  const buttonSlot = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (user || isLoading || !isConfigured || !buttonSlot.current) {
-      return;
-    }
-
-    buttonSlot.current.replaceChildren();
-    mountSignInButton(buttonSlot.current, 'dark');
-  }, [user, isLoading, isConfigured, mountSignInButton]);
-
-  if (!isConfigured) {
-    return null;
-  }
+  const { user, isLoading, isSigningIn, signIn, signOut } = useAuth();
 
   if (isLoading) {
     return <Skeleton className="h-8 w-28 rounded-full" />;
   }
 
   if (!user) {
-    return <div ref={buttonSlot} className="flex items-center" />;
+    return (
+      <Button
+        variant="secondary"
+        size="sm"
+        rounded="full"
+        isLoading={isSigningIn}
+        leftSlot={<GoogleGlyph />}
+        onClick={() => void signIn()}
+      >
+        Sign in
+      </Button>
+    );
   }
 
   return (
     <div className="flex items-center gap-2">
       <span className="flex items-center gap-2">
-        {user.picture ? (
+        {user.image ? (
           <img
-            src={user.picture}
+            src={user.image}
             alt=""
             referrerPolicy="no-referrer"
             className="size-7 rounded-full border border-stroke object-cover"
@@ -54,7 +51,7 @@ export function UserMenu() {
           textColor="secondary"
           className="hidden max-w-[12rem] truncate text-xs md:block"
         >
-          {user.name ?? user.email}
+          {user.name}
         </Typography>
       </span>
 

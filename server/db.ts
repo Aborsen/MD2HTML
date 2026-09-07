@@ -17,14 +17,6 @@ export function sql() {
   return cached;
 }
 
-export interface UserRow {
-  id: string;
-  google_sub: string;
-  email: string;
-  name: string | null;
-  picture: string | null;
-}
-
 export interface DocumentRow {
   id: string;
   name: string;

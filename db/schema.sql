@@ -1,24 +1,23 @@
 -- M2H schema. Safe to run repeatedly.
+--
+-- The signed-in user lives in `neon_auth."user"`, which Neon Auth owns and migrates. This table
+-- references that user by id only and deliberately does not declare a foreign key into it: a hard
+-- constraint into someone else's migrations is a good way to have a deploy fail at an awkward
+-- moment. The prefix keeps this app's one table distinct in a database it shares with others.
 
-create table if not exists users (
+create table if not exists m2h_document (
   id          uuid primary key default gen_random_uuid(),
-  google_sub  text not null unique,
-  email       text not null,
-  name        text,
-  picture     text,
-  created_at  timestamptz not null default now(),
-  last_seen_at timestamptz not null default now()
-);
-
-create table if not exists documents (
-  id          uuid primary key default gen_random_uuid(),
-  user_id     uuid not null references users (id) on delete cascade,
-  name        text not null,
-  size        integer not null,
-  markdown    text not null,
-  stats       jsonb not null default '{}'::jsonb,
+  -- Who it belongs to. Not a foreign key; see above.
+  user_id     uuid        not null,
+  name        text        not null,
+  size        integer     not null,
+  -- The markdown source, so a document can be re-opened and re-rendered anywhere.
+  markdown    text        not null,
+  -- Word/heading/table counts: cheap to show in the list without reading the source.
+  stats       jsonb       not null default '{}'::jsonb,
   created_at  timestamptz not null default now()
 );
 
-create index if not exists documents_user_created_idx
-  on documents (user_id, created_at desc);
+-- The only query the list makes: this user's documents, newest first.
+create index if not exists m2h_document_user_recent
+  on m2h_document (user_id, created_at desc);

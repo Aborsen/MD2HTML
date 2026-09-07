@@ -8,7 +8,8 @@
     "build": "tsc -b && vite build",
     "preview": "vite preview",
     "check-types": "tsc -b",
-    "db:init": "node scripts/init-db.mjs"
+    "db:init": "node scripts/init-db.mjs",
+    "auth:origin": "node scripts/auth-origin.mjs"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.1.0",
@@ -31,9 +32,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "dompurify": "^3.2.7",
-    "google-auth-library": "^11.0.2",
     "hono": "^4.13.7",
-    "jose": "^6.2.12",
     "lucide-react": "^0.562.0",
     "marked": "^15.0.12",
     "react": "^19.2.3",

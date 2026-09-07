@@ -9,7 +9,7 @@ Google to keep your documents in the account and reach them from any device.
 ```bash
 npm install
 cp .env.example .env.local   # then fill in the values (see Configuration)
-npm run db:init              # creates the tables in Neon
+npm run db:init              # creates the table in Neon
 npm run dev
 ```
 
@@ -19,33 +19,36 @@ app that runs as a Vercel function in production, so no extra process is needed.
 Other scripts: `npm run build`, `npm run preview`, `npm run check-types`,
 `npm run db:init`.
 
-Without `VITE_GOOGLE_CLIENT_ID` the app still works: sign-in is hidden and the
-history falls back to this browser's `localStorage`.
+Without `NEON_AUTH_BASE_URL` the app still converts files: sign-in answers 503 and the history
+falls back to this browser's `localStorage`.
 
 ## Configuration
 
-| Variable | Where it is used | Notes |
-| --- | --- | --- |
-| `DATABASE_URL` | server | Neon pooled connection string |
-| `GOOGLE_CLIENT_ID` | server | audience for verifying Google ID tokens |
-| `VITE_GOOGLE_CLIENT_ID` | browser | same value, renders the sign-in button |
-| `AUTH_SECRET` | server | 32+ random chars, signs the session cookie |
+| Variable | Notes |
+| --- | --- |
+| `DATABASE_URL` | Neon pooled connection string |
+| `NEON_AUTH_BASE_URL` | the project's Neon Auth endpoint |
 
-**Google Cloud console** → APIs & Services → Credentials → OAuth client ID
-(type *Web application*). Authorized JavaScript origins:
+Both are server-side only; the browser talks to `/api/*` and never to Neon directly.
 
-- `http://localhost:5180` and `http://127.0.0.1:5180` for local work
-- the production origin, e.g. `https://m2h.vercel.app`
+**Sign-in** is Neon Auth (Better Auth behind a Neon endpoint), which already carries Google — no
+separate Google OAuth client and no client secret here. `/api/auth/*` forwards to the auth service
+and rewrites `Set-Cookie` so the session cookie is first-party for this site; `/api/auth/finish`
+exchanges the one-time verifier for that cookie. See `server/auth.ts`.
 
-No client secret is needed: the browser gets an ID token from Google Identity
-Services, the server verifies it and issues its own httpOnly session cookie.
+Neon Auth only starts a sign-in for an origin it trusts, so each origin has to be added once:
 
-**Neon** → create a project → copy the pooled connection string → run
-`npm run db:init` (idempotent; schema lives in `db/schema.sql`).
+```bash
+npm run auth:origin                                # list what is trusted
+npm run auth:origin -- https://md-2-html.vercel.app
+npm run auth:origin -- http://127.0.0.1:5180       # for local work
+```
 
-**Vercel** → project settings → Environment Variables: add all four variables,
-then redeploy. The build is auto-detected (Vite → `dist`), `/api/*` is routed to
-the Hono function by `vercel.json`.
+**Neon** → copy the pooled connection string → `npm run db:init` (idempotent; the schema lives in
+`db/schema.sql` and creates one table, `m2h_document`; users come from `neon_auth."user"`).
+
+**Vercel** → project settings → Environment Variables: add both variables, then redeploy. The build
+is auto-detected (Vite → `dist`) and `/api/*` is routed to the Hono function by `vercel.json`.
 
 ## What it does
 
@@ -58,6 +61,7 @@ the Hono function by `vercel.json`.
   each), available on every device; signed out: the last 25 conversions in
   `localStorage`. Whatever was collected locally is moved into the account on
   first sign-in.
+- **Sign-in** — Google, through Neon Auth.
 
 ## UI
 
@@ -76,9 +80,10 @@ themes — it is meant to be shared and printed.
 
 ```
 api/index.ts            Vercel entry point (wraps the Hono app)
-server/                 API: routes, Neon client, session cookie, dev middleware
-db/schema.sql           tables (users, documents)
+server/                 API: routes, Neon Auth proxy, Neon client, dev middleware
+db/schema.sql           the m2h_document table
 scripts/init-db.mjs     applies the schema
+scripts/auth-origin.mjs manages Neon Auth's trusted origins
 src/
   App.tsx               app shell and state
   components/           header, user menu, dropzone, preview, stats

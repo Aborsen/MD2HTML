@@ -59,7 +59,7 @@ function downloadHtml(name: string, html: string, createdAt: number) {
 }
 
 function Shell() {
-  const { user } = useAuth();
+  const { user, error: authError } = useAuth();
   const [view, setView] = useState<AppView>('converter');
   const [doc, setDoc] = useState<ConvertedDoc | null>(null);
   const [isBusy, setIsBusy] = useState(false);
@@ -71,6 +71,12 @@ function Shell() {
       toast.error(history.error);
     }
   }, [history.error]);
+
+  useEffect(() => {
+    if (authError) {
+      toast.error('Sign-in did not complete', { description: authError });
+    }
+  }, [authError]);
 
   const handleFile = useCallback(
     async (file: File) => {

@@ -1,9 +1,11 @@
 import type { HistoryEntry } from './history';
 
+/** The signed-in user, as Neon Auth describes them. */
 export interface AuthUser {
-  email: string;
-  name: string | null;
-  picture: string | null;
+  id: string;
+  name: string;
+  email: string | null;
+  image: string | null;
 }
 
 interface ServerDocument {
@@ -23,11 +25,13 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   });
 
   if (!response.ok) {
-    const detail = await response.json().catch(() => null);
+    const detail = (await response.json().catch(() => null)) as {
+      error?: string;
+      message?: string;
+    } | null;
 
     throw new Error(
-      (detail as { error?: string } | null)?.error ??
-        `Request failed (${response.status})`
+      detail?.error ?? detail?.message ?? `Request failed (${response.status})`
     );
   }
 
@@ -48,15 +52,48 @@ function toEntry(doc: ServerDocument): HistoryEntry {
 }
 
 export const api = {
-  me: () => request<{ user: AuthUser | null }>('/api/auth/me'),
+  /** Null when nobody is signed in — Better Auth answers null rather than erroring, and so does this. */
+  me: async (): Promise<AuthUser | null> => {
+    try {
+      const body = await request<{ user?: AuthUser } | null>(
+        '/api/auth/get-session'
+      );
 
-  signInWithGoogle: (credential: string) =>
-    request<{ user: AuthUser }>('/api/auth/google', {
+      return body?.user ?? null;
+    } catch {
+      return null;
+    }
+  },
+
+  /**
+   * Starts Google sign-in and returns the URL to send the browser to. The callback lands on
+   * /api/auth/finish, which exchanges the one-time verifier for a session cookie — only a server
+   * can do that — and sends the browser back where it started.
+   */
+  startGoogleSignIn: async (returnTo: string): Promise<string> => {
+    const body = await request<{ url?: string; message?: string }>(
+      '/api/auth/sign-in/social',
+      {
+        method: 'POST',
+        body: JSON.stringify({
+          provider: 'google',
+          callbackURL: `${location.origin}/api/auth/finish?to=${encodeURIComponent(returnTo)}`,
+        }),
+      }
+    );
+
+    if (!body.url) {
+      throw new Error(body.message ?? 'Sign-in could not be started');
+    }
+
+    return body.url;
+  },
+
+  signOut: () =>
+    request<{ success?: boolean }>('/api/auth/sign-out', {
       method: 'POST',
-      body: JSON.stringify({ credential }),
+      body: '{}',
     }),
-
-  signOut: () => request<{ ok: true }>('/api/auth/logout', { method: 'POST' }),
 
   listDocuments: async () => {
     const { documents } = await request<{ documents: ServerDocument[] }>(

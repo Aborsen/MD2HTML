@@ -8,91 +8,82 @@ import {
   type ReactNode,
 } from 'react';
 import { api, type AuthUser } from './api';
-import { GOOGLE_CLIENT_ID, loadGoogleIdentity } from './google';
 
 interface AuthState {
   user: AuthUser | null;
   isLoading: boolean;
-  /** False when VITE_GOOGLE_CLIENT_ID is missing — the app stays local-only. */
-  isConfigured: boolean;
+  /** Set while the browser is on its way to Google. */
+  isSigningIn: boolean;
+  /** Why the last sign-in attempt did not finish, in the auth service's own words. */
+  error: string | null;
+  signIn: () => Promise<void>;
   signOut: () => Promise<void>;
-  /** Renders Google's own button into the given element. */
-  mountSignInButton: (element: HTMLElement, theme: 'dark' | 'light') => void;
 }
 
 const AuthContext = createContext<AuthState | null>(null);
 
+/**
+ * Reads the outcome /api/auth/finish left in the query string and clears it, so a reload does not
+ * show a stale message.
+ */
+function takeSignInOutcome(): string | null {
+  const url = new URL(window.location.href);
+  const outcome = url.searchParams.get('auth');
+
+  if (!outcome) {
+    return null;
+  }
+
+  const why = url.searchParams.get('why');
+
+  url.searchParams.delete('auth');
+  url.searchParams.delete('why');
+  window.history.replaceState(null, '', url.pathname + url.search + url.hash);
+
+  return outcome === 'ok' ? null : why ? `${outcome} — ${why}` : outcome;
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const isConfigured = Boolean(GOOGLE_CLIENT_ID);
+  const [isSigningIn, setIsSigningIn] = useState(false);
+  const [error, setError] = useState<string | null>(() => takeSignInOutcome());
 
   useEffect(() => {
-    if (!isConfigured) {
-      setIsLoading(false);
-      return;
-    }
-
     api
       .me()
-      .then((result) => setUser(result.user))
-      .catch(() => setUser(null))
+      .then(setUser)
       .finally(() => setIsLoading(false));
-  }, [isConfigured]);
-
-  const handleCredential = useCallback(async (credential: string) => {
-    const result = await api.signInWithGoogle(credential);
-
-    setUser(result.user);
   }, []);
 
-  const mountSignInButton = useCallback(
-    (element: HTMLElement, theme: 'dark' | 'light') => {
-      const clientId = GOOGLE_CLIENT_ID;
+  const signIn = useCallback(async () => {
+    setIsSigningIn(true);
+    setError(null);
 
-      if (!clientId) {
-        return;
-      }
+    try {
+      const returnTo = window.location.pathname + window.location.search;
 
-      loadGoogleIdentity()
-        .then((google) => {
-          google.accounts.id.initialize({
-            client_id: clientId,
-            callback: (response) => {
-              if (response.credential) {
-                void handleCredential(response.credential);
-              }
-            },
-            cancel_on_tap_outside: true,
-          });
-
-          google.accounts.id.renderButton(element, {
-            type: 'standard',
-            theme: theme === 'dark' ? 'filled_black' : 'outline',
-            size: 'medium',
-            shape: 'pill',
-            text: 'signin_with',
-            logo_alignment: 'left',
-          });
-        })
-        .catch(() => undefined);
-    },
-    [handleCredential]
-  );
+      window.location.href = await api.startGoogleSignIn(returnTo);
+    } catch (cause) {
+      setIsSigningIn(false);
+      setError(
+        cause instanceof Error ? cause.message : 'Sign-in could not be started'
+      );
+    }
+  }, []);
 
   const signOut = useCallback(async () => {
-    await api.signOut().catch(() => undefined);
-
-    if (window.google?.accounts?.id) {
-      window.google.accounts.id.disableAutoSelect();
+    try {
+      await api.signOut();
+      setUser(null);
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Sign-out failed');
     }
-
-    setUser(null);
   }, []);
 
   const value = useMemo<AuthState>(
-    () => ({ user, isLoading, isConfigured, signOut, mountSignInButton }),
-    [user, isLoading, isConfigured, signOut, mountSignInButton]
+    () => ({ user, isLoading, isSigningIn, error, signIn, signOut }),
+    [user, isLoading, isSigningIn, error, signIn, signOut]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

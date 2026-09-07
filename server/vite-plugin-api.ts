@@ -1,7 +1,7 @@
 import { getRequestListener } from '@hono/node-server';
 import { loadEnv, type Plugin } from 'vite';
 
-const SERVER_ENV_KEYS = ['DATABASE_URL', 'GOOGLE_CLIENT_ID', 'AUTH_SECRET'];
+const SERVER_ENV_KEYS = ['DATABASE_URL', 'NEON_AUTH_BASE_URL'];
 
 /**
  * Serves the same Hono app the Vercel function uses, so `npm run dev` gives a
