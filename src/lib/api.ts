@@ -145,6 +145,21 @@ export const api = {
   clearDocuments: () =>
     request<{ ok: true }>('/api/documents', { method: 'DELETE' }),
 
+  /** Documents other people shared with this address, newest share first. */
+  listSharedWithMe: async (): Promise<HistoryEntry[]> => {
+    const { documents } = await request<{
+      documents: Array<
+        ServerDocument & { share_token: string; owner_email: string }
+      >;
+    }>('/api/shared-with-me');
+
+    return documents.map((doc) => ({
+      ...toEntry(doc),
+      sharedBy: doc.owner_email,
+      shareToken: doc.share_token,
+    }));
+  },
+
   getShare: (id: string) => request<ShareState>(`/api/documents/${id}/share`),
 
   setShareMode: (id: string, mode: ShareMode) =>

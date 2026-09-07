@@ -6,11 +6,12 @@ import {
   MonitorSmartphone,
   Search,
   Share2,
+  Users,
   Trash2,
   Upload,
   X,
 } from 'lucide-react';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Hint } from '@/components/Hint';
 import { FilterChips } from '@/components/FilterChips';
 import { ListSelectionBar } from '@/components/ListSelectionBar';
@@ -23,6 +24,7 @@ import {
   formatRelative,
   toFileName,
 } from '@/lib/format';
+import { api } from '@/lib/api';
 import type { HistoryEntry } from '@/lib/history';
 import { Badge } from '@/ui/components/Badge';
 import { Button } from '@/ui/components/Button';
@@ -78,7 +80,13 @@ export function HistoryPage({
 }: HistoryPageProps) {
   const [selected, setSelected] = useState<string[]>([]);
   const [query, setQuery] = useState('');
-  const [format, setFormat] = useState<DocFormat>('html');
+  /** One row of chips over two axes: which format of my files, or somebody else's files. */
+  const [chip, setChip] = useState<'html' | 'md' | 'shared'>('html');
+  const [shared, setShared] = useState<HistoryEntry[]>([]);
+  const [isLoadingShared, setIsLoadingShared] = useState(false);
+
+  const isShared = chip === 'shared';
+  const format: DocFormat = chip === 'md' ? 'md' : 'html';
   const filePicker = useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [sharing, setSharing] = useState<HistoryEntry | null>(null);
@@ -87,6 +95,29 @@ export function HistoryPage({
     direction: 'desc',
   });
 
+  const loadShared = useCallback(() => {
+    setIsLoadingShared(true);
+
+    api
+      .listSharedWithMe()
+      .then(setShared)
+      .catch(() => setShared([]))
+      .finally(() => setIsLoadingShared(false));
+  }, []);
+
+  /*
+   * Loaded up front, not only when the chip is picked: an account whose own history is empty must
+   * still be told that something was shared with it, and the empty state is decided before any
+   * chip is touched.
+   */
+  useEffect(() => {
+    if (isSynced) {
+      loadShared();
+    } else {
+      setShared([]);
+    }
+  }, [isSynced, loadShared]);
+
   // A row that has gone — deleted here or on another device — must not stay selected.
   useEffect(() => {
     setSelected((current) =>
@@ -94,21 +125,28 @@ export function HistoryPage({
     );
   }, [entries]);
 
+  const source = isShared ? shared : entries;
+
   const found = useMemo(() => {
     const needle = query.trim().toLowerCase();
 
     return needle
-      ? entries.filter((entry) => entry.name.toLowerCase().includes(needle))
-      : entries;
-  }, [entries, query]);
+      ? source.filter((entry) => entry.name.toLowerCase().includes(needle))
+      : source;
+  }, [source, query]);
 
-  // Only rows whose source is still available — and are on screen — can be picked.
+  /*
+   * Only rows whose source is still available — and are on screen — can be picked. Somebody
+   * else's documents are not selectable at all: merge, delete and clear are owner's verbs.
+   */
   const selectableIds = useMemo(
     () =>
-      found
-        .filter((entry) => entry.markdown !== undefined || entry.remote)
-        .map((entry) => entry.id),
-    [found]
+      isShared
+        ? []
+        : found
+            .filter((entry) => entry.markdown !== undefined || entry.remote)
+            .map((entry) => entry.id),
+    [found, isShared]
   );
 
   const selectedEntries = useMemo(
@@ -171,7 +209,7 @@ export function HistoryPage({
         : [...current, id]
     );
 
-  if (entries.length === 0) {
+  if (entries.length === 0 && shared.length === 0) {
     return (
       <StatusView
         tone="muted"
@@ -291,14 +329,39 @@ export function HistoryPage({
       </div>
 
       <FilterChips
-        value={format}
+        value={chip}
         items={[
           { value: 'html', label: 'HTML' },
           { value: 'md', label: 'Markdown' },
+          // Nobody can share with a browser: the chip belongs to an account.
+          ...(isSynced
+            ? [
+                {
+                  value: 'shared',
+                  label: 'Shared with me',
+                  count: shared.length,
+                },
+              ]
+            : []),
         ]}
-        onValueChange={(value) => setFormat(value as DocFormat)}
+        onValueChange={(value) => {
+          setSelected([]);
+          setChip(value as 'html' | 'md' | 'shared');
+        }}
       />
 
+      {isShared ? (
+        <Typography
+          variant="p"
+          textColor="secondary"
+          className="flex min-h-[37px] items-center gap-1.5 text-sm"
+        >
+          <Users className="size-4" />
+          {isLoadingShared
+            ? 'Loading…'
+            : `${found.length} ${found.length === 1 ? 'document' : 'documents'} shared with you`}
+        </Typography>
+      ) : (
       <ListSelectionBar
         sticky
         title={
@@ -368,10 +431,12 @@ export function HistoryPage({
           )
         }
       />
+      )}
 
       <Table className="table-fixed" wrapperClassName="shadow-rest">
         <TableHeader>
           <TableRow>
+            {!isShared && (
             <TableHead className="w-10">
               <Checkbox
                 aria-label={allSelected ? 'Deselect all' : 'Select all'}
@@ -388,6 +453,7 @@ export function HistoryPage({
                 }
               />
             </TableHead>
+            )}
             <TableHead
               sortable
               sortDirection={directionOf('name')}
@@ -395,7 +461,9 @@ export function HistoryPage({
             >
               File
             </TableHead>
-            <TableHead className="hidden w-20 sm:table-cell">Type</TableHead>
+            <TableHead className="hidden w-52 sm:table-cell">
+              {isShared ? 'Shared by' : 'Type'}
+            </TableHead>
             <TableHead
               className="hidden w-32 sm:table-cell"
               sortable
@@ -451,6 +519,7 @@ export function HistoryPage({
                   }
                 }}
               >
+                {!isShared && (
                 <TableCell onClick={stopRowClick} onKeyDown={stopRowClick}>
                   <Checkbox
                     aria-label={`Select ${entry.name}`}
@@ -459,6 +528,7 @@ export function HistoryPage({
                     onCheckedChange={() => toggle(entry.id)}
                   />
                 </TableCell>
+                )}
 
                 <TableCell className="max-w-0">
                   <Hint
@@ -478,14 +548,20 @@ export function HistoryPage({
                 </TableCell>
 
                 <TableCell className="hidden sm:table-cell">
-                  <Badge
-                    variant={format === 'html' ? 'primary' : 'secondary'}
-                    size="sm"
-                    rounded="full"
-                    className="w-14 justify-center"
-                  >
-                    {format === 'html' ? 'HTML' : 'MD'}
-                  </Badge>
+                  {isShared ? (
+                    <span className="truncate text-ink-secondary">
+                      {entry.sharedBy || 'someone'}
+                    </span>
+                  ) : (
+                    <Badge
+                      variant={format === 'html' ? 'primary' : 'secondary'}
+                      size="sm"
+                      rounded="full"
+                      className="w-14 justify-center"
+                    >
+                      {format === 'html' ? 'HTML' : 'MD'}
+                    </Badge>
+                  )}
                 </TableCell>
 
                 <TableCell className="hidden sm:table-cell">
@@ -511,7 +587,7 @@ export function HistoryPage({
                   onKeyDown={stopRowClick}
                 >
                   <span className="flex items-center justify-end gap-1">
-                    {entry.remote && (
+                    {entry.remote && !isShared && (
                       <Hint content="Share">
                         <IconButton
                           variant="tertiary"
@@ -538,18 +614,20 @@ export function HistoryPage({
                       </span>
                     </Hint>
 
-                    <Hint content="Remove from history">
-                      <span>
-                        <IconButton
-                          variant="destructiveTertiary"
-                          size="sm"
-                          aria-label="Remove from history"
-                          onClick={() => onRemove(entry.id)}
-                        >
-                          <Trash2 />
-                        </IconButton>
-                      </span>
-                    </Hint>
+                    {!isShared && (
+                      <Hint content="Remove from history">
+                        <span>
+                          <IconButton
+                            variant="destructiveTertiary"
+                            size="sm"
+                            aria-label="Remove from history"
+                            onClick={() => onRemove(entry.id)}
+                          >
+                            <Trash2 />
+                          </IconButton>
+                        </span>
+                      </Hint>
+                    )}
                   </span>
                 </TableCell>
               </TableRow>

@@ -12,6 +12,10 @@ export interface HistoryEntry {
   markdown?: string;
   /** True for rows stored in the account (Neon) rather than in this browser. */
   remote?: boolean;
+  /** Set on documents someone else shared with this account. */
+  sharedBy?: string;
+  /** The share token such a document is read through. */
+  shareToken?: string;
   stats: {
     words: number;
     headings: number;

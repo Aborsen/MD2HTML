@@ -108,12 +108,16 @@ export function useHistory(isSignedIn: boolean) {
         return entry.markdown;
       }
 
-      if (!entry.remote) {
-        return null;
-      }
-
       try {
-        return (await api.getDocument(entry.id)).markdown ?? null;
+        // Someone else's document is read through its share token — the one place that decides
+        // whether this account may have it.
+        if (entry.shareToken) {
+          return (await api.getShared(entry.shareToken)).markdown;
+        }
+
+        return entry.remote
+          ? ((await api.getDocument(entry.id)).markdown ?? null)
+          : null;
       } catch {
         return null;
       }

@@ -95,6 +95,40 @@ const requireUser = createMiddleware<Env>(async (c, next) => {
 
 app.use('/documents', requireUser);
 app.use('/documents/*', requireUser);
+app.use('/shared-with-me', requireUser);
+
+/**
+ * Documents other people shared with this address.
+ *
+ * Only 'people' shares appear: a link share is addressed to whoever holds the link, not to anyone
+ * in particular, so it has no business showing up in someone's list. The content is not returned
+ * here — the row carries the token and reads it through /shared/:token, which is the one place
+ * access is decided.
+ */
+app.get('/shared-with-me', async (c) => {
+  const user = c.get('user');
+
+  const rows = (await sql()`
+    select d.id,
+           d.name,
+           d.size,
+           d.stats,
+           d.created_at,
+           d.share_token,
+           coalesce(u.email, '') as owner_email,
+           s.created_at as shared_at
+    from m2h_document_share s
+    join m2h_document d on d.id = s.document_id
+    left join neon_auth."user" u on u.id = d.user_id
+    where s.email = ${normaliseEmail(user.email)}
+      and d.share_mode = 'people'
+      and d.user_id <> ${user.id}
+    order by s.created_at desc
+    limit ${MAX_DOCUMENTS_PER_USER}
+  `) as Array<DocumentRow & { share_token: string; owner_email: string }>;
+
+  return c.json({ documents: rows });
+});
 
 app.get('/documents', async (c) => {
   const rows = (await sql()`

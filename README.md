@@ -70,6 +70,9 @@ step; a deployment made before them needs a redeploy to see them. The build is a
   addresses you list (they sign in with that address). `/s/<token>` is a read-only page: the
   document and a download, nothing else. Revoking drops the token, so a link already sent stops
   working. No email is sent — you pass the link on yourself.
+- **Shared with me** — a chip in the history lists documents other people addressed to you, with
+  who shared each one. They are read-only: open and download, no delete, no re-share. Only
+  addressed shares appear; a link share belongs to whoever holds the link, not to a list.
 - **Fullscreen reading** — the preview takes the whole screen, the sheet keeps a readable measure
   and scrolls; Escape comes back.
 - **HTML source** tab — the exact standalone document that gets downloaded.
