@@ -18,10 +18,21 @@ import { config } from 'dotenv';
 config({ path: ['.env.local', '.env'], quiet: true });
 
 const write = process.argv.includes('--write');
-const token = process.env.BLOB_READ_WRITE_TOKEN;
 
-if (!process.env.DATABASE_URL || !token) {
-  console.error('DATABASE_URL and BLOB_READ_WRITE_TOKEN are both needed');
+/* Either a read-write token or the OIDC identity a connected store hands out. */
+const blobAuth = process.env.BLOB_READ_WRITE_TOKEN
+  ? { token: process.env.BLOB_READ_WRITE_TOKEN }
+  : {};
+
+if (!process.env.DATABASE_URL) {
+  console.error('DATABASE_URL is not set (put it in .env.local)');
+  process.exit(1);
+}
+
+if (!process.env.BLOB_READ_WRITE_TOKEN && !process.env.BLOB_STORE_ID) {
+  console.error(
+    'No Blob store configured — connect it to the project, then `vercel env pull .env.local`'
+  );
   process.exit(1);
 }
 
@@ -36,7 +47,7 @@ const stored = new Set();
 let cursor;
 
 do {
-  const page = await list({ token, cursor, limit: 1000, prefix: 'sources/' });
+  const page = await list({ ...blobAuth, cursor, limit: 1000, prefix: 'sources/' });
 
   for (const blob of page.blobs) stored.add(blob.pathname);
   cursor = page.hasMore ? page.cursor : undefined;
@@ -58,7 +69,7 @@ if (orphans.length > 0) {
   for (const path of orphans) console.log(`  - ${path}`);
 
   if (write) {
-    await del(orphans, { token });
+    await del(orphans, blobAuth);
     console.log(`\nDeleted ${orphans.length} orphaned file(s).`);
   } else {
     console.log('\nRun again with --write to delete them.');

@@ -16,6 +16,9 @@ import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 
 const KEYS = ['DATABASE_URL', 'NEON_AUTH_BASE_URL'];
+/* Kept in .env.local but never pushed: the store id belongs to the project already, and the OIDC
+ * token is short-lived — `vercel env pull` refreshes it. */
+const LOCAL_ONLY = ['BLOB_STORE_ID', 'VERCEL_OIDC_TOKEN'];
 const FILE = '.env.local';
 const ENVIRONMENTS = ['production', 'preview', 'development'];
 
@@ -42,14 +45,28 @@ if (missing.length) {
   process.exit(1);
 }
 
+// Carried through the prune but never pushed anywhere: the store id already belongs to the
+// project, and the OIDC token is short-lived — `vercel env pull` refreshes it.
+const carried = LOCAL_ONLY.filter((key) => {
+  const found = source.match(new RegExp(`^${key}="?([^"\\n]+)"?$`, 'm'));
+
+  if (found) {
+    values.set(key, found[1]);
+  }
+
+  return Boolean(found);
+});
+
+const kept = [...KEYS, ...carried];
+
 writeFileSync(
   FILE,
   `# M2H server variables. Gitignored — never committed.\n` +
-    KEYS.map((key) => `${key}="${values.get(key)}"`).join('\n') +
+    kept.map((key) => `${key}="${values.get(key)}"`).join('\n') +
     '\n'
 );
 
-console.log(`${FILE} now holds: ${KEYS.join(', ')}`);
+console.log(`${FILE} now holds: ${kept.join(', ')}`);
 
 if (!process.argv.includes('--vercel')) {
   process.exit(0);

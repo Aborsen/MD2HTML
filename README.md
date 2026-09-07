@@ -126,10 +126,20 @@ fetched whole, and it is the only part that grows, so it goes to a Vercel Blob s
 The store is **private**. A source is read on the server with the store's token and its URL never
 reaches a browser — a shared document is served by our own route, which is where access is decided.
 
-Without `BLOB_READ_WRITE_TOKEN` the source is written to the `markdown` column exactly as before, so
-a checkout with no store still works and rows written earlier still open. `npm run blob:migrate`
-moves those rows into the store; `npm run blob:reconcile` reports where store and database disagree
-— an orphaned file is safe to delete, a row whose file is gone is only reported.
+Connecting the store to the project hands the function an OIDC identity and a `BLOB_STORE_ID`
+rather than a long-lived key, and that is the normal path; a `BLOB_READ_WRITE_TOKEN` is still
+honoured where one exists. With neither, the source is written to the `markdown` column exactly as
+before — so a checkout without store access still works, and rows written earlier still open.
+
+Those older rows do not need a flag day: each moves into the store the first time it is read
+somewhere the store is reachable, and the reader gets its text either way. `npm run blob:migrate`
+does the same in one pass where that is preferred, and `npm run blob:reconcile` reports where store
+and database disagree — an orphaned file is safe to delete, a row whose file is gone is only
+reported.
+
+One gap worth knowing: a locally pulled OIDC token is always scoped to `development`, so unless
+that environment is allowed under Secure Backend Access, `npm run dev` writes sources to the column
+while production writes them to the store.
 
 ## Rendering
 

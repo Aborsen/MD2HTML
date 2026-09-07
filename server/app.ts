@@ -239,7 +239,10 @@ api.get('/documents/:id', async (c) => {
   const { blob_path: _stored, ...document } = rows[0];
 
   return c.json({
-    document: { ...document, markdown: await readSource(rows[0]) },
+    document: {
+      ...document,
+      markdown: await readSource({ ...rows[0], user_id: c.get('user').id }),
+    },
   });
 });
 

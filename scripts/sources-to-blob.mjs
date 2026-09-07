@@ -21,9 +21,14 @@ if (!process.env.DATABASE_URL) {
   process.exit(1);
 }
 
-if (!process.env.BLOB_READ_WRITE_TOKEN) {
+/* Either a read-write token or the OIDC identity a connected store hands out. */
+const blobAuth = process.env.BLOB_READ_WRITE_TOKEN
+  ? { token: process.env.BLOB_READ_WRITE_TOKEN }
+  : {};
+
+if (!process.env.BLOB_READ_WRITE_TOKEN && !process.env.BLOB_STORE_ID) {
   console.error(
-    'BLOB_READ_WRITE_TOKEN is not set — connect the Blob store to the project, then `vercel env pull .env.local`'
+    'No Blob store configured — connect it to the project, then `vercel env pull .env.local`'
   );
   process.exit(1);
 }
@@ -67,7 +72,7 @@ for (const row of pending) {
     contentType: 'text/markdown; charset=utf-8',
     addRandomSuffix: false,
     allowOverwrite: true,
-    token: process.env.BLOB_READ_WRITE_TOKEN,
+    ...blobAuth,
   });
 
   await sql`
