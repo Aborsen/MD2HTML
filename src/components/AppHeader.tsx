@@ -11,6 +11,8 @@ interface AppHeaderProps {
   view: AppView;
   historyCount: number;
   onViewChange: (view: AppView) => void;
+  /** The logo doubles as "start over": back to the converter with no file open. */
+  onHome: () => void;
 }
 
 const NAV_ITEMS = [
@@ -22,11 +24,23 @@ export function AppHeader({
   view,
   historyCount,
   onViewChange,
+  onHome,
 }: AppHeaderProps) {
   return (
     <header className="sticky top-0 z-20 border-stroke border-b bg-surface-card/85 backdrop-blur">
       <div className="mx-auto flex h-14 w-full max-w-container-content items-center gap-4 px-6">
-        <Logo />
+        <button
+          type="button"
+          onClick={onHome}
+          aria-label="New file"
+          className={cn(
+            'cursor-pointer rounded-md px-1 py-0.5 transition-opacity',
+            'hover:opacity-80',
+            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring-brand focus-visible:ring-offset-2'
+          )}
+        >
+          <Logo />
+        </button>
 
         <Separator orientation="vertical" className="h-5" />
 

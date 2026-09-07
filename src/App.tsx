@@ -150,6 +150,11 @@ function Shell() {
     [history]
   );
 
+  const startOver = useCallback(() => {
+    setDoc(null);
+    setView('converter');
+  }, []);
+
   const handleClear = useCallback(async () => {
     await history.clear();
     toast.info('History cleared');
@@ -161,6 +166,7 @@ function Shell() {
         view={view}
         historyCount={history.entries.length}
         onViewChange={setView}
+        onHome={startOver}
       />
 
       <main className="mx-auto w-full max-w-container-content flex-1 px-6 py-8">
@@ -169,7 +175,7 @@ function Shell() {
             doc={doc}
             isBusy={isBusy}
             onFile={handleFile}
-            onReset={() => setDoc(null)}
+            onReset={startOver}
           />
         ) : (
           <HistoryPage

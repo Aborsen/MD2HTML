@@ -8,26 +8,44 @@
  * and printed.
  */
 
-/** Palette of the document sheet (design-system light values). */
+/** Palette of the document sheet — the app's dark theme, frozen to literal values. */
 export const MD_DOC_THEME = `
 .md-doc {
-  --md-ink: #0f172a;
-  --md-body: #334155;
-  --md-secondary: #5a6a80;
-  --md-brand: #07807e;
-  --md-brand-2: #066867;
-  --md-brand-3: #0d8e97;
-  --md-card: #ffffff;
-  --md-page: #f8fafc;
-  --md-card-2: #f1f5f9;
-  --md-stroke: #e2e8f0;
-  --md-table-header: #eaeff5;
+  --md-ink: #f9fafb;
+  --md-body: #f4f4f5;
+  --md-secondary: #d1d5db;
+  --md-brand: #148f8d;
+  --md-brand-2: #2fa29b;
+  --md-brand-3: #14a8af;
+  --md-card: #17171e;
+  --md-page: #0f0e14;
+  --md-card-2: #21212c;
+  --md-stroke: #2a2834;
+  --md-table-header: #2a2834;
+}
+
+/* On paper a dark document is a wall of ink, so printing flips to the light values. */
+@media print {
+  .md-doc {
+    --md-ink: #0f172a;
+    --md-body: #334155;
+    --md-secondary: #5a6a80;
+    --md-brand: #07807e;
+    --md-brand-2: #066867;
+    --md-brand-3: #0d8e97;
+    --md-card: #ffffff;
+    --md-page: #f8fafc;
+    --md-card-2: #f1f5f9;
+    --md-stroke: #e2e8f0;
+    --md-table-header: #eaeff5;
+  }
 }
 `;
 
 /** Typography + block rules — identical in preview and export. */
 export const MD_DOC_STYLE = `
 .md-doc {
+  background: var(--md-card);
   color: var(--md-body);
   font-family: "DM Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
   font-size: 0.9375rem;
@@ -177,7 +195,7 @@ export const MD_DOC_PAGE_STYLE = `
 body {
   margin: 0;
   padding: 3rem 1.25rem 4rem;
-  background: #f8fafc;
+  background: #0f0e14;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -185,16 +203,16 @@ body {
   max-width: 48rem;
   margin: 0 auto;
   padding: 2.5rem 3rem 3rem;
-  border: 1px solid #e2e8f0;
+  border: 1px solid #2a2834;
   border-radius: 1rem;
-  background: #ffffff;
-  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+  background: #17171e;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
 }
 
 .md-footer {
   max-width: 48rem;
   margin: 1rem auto 0;
-  color: #7c8ca2;
+  color: #94a3b8;
   font-family: "DM Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
   font-size: 0.75rem;
   text-align: right;
@@ -207,7 +225,13 @@ body {
 
 @media print {
   body { padding: 0; background: #ffffff; }
-  .md-page { max-width: none; border: 0; border-radius: 0; box-shadow: none; }
+  .md-page {
+    max-width: none;
+    border: 0;
+    border-radius: 0;
+    background: #ffffff;
+    box-shadow: none;
+  }
   .md-footer { display: none; }
 }
 `;

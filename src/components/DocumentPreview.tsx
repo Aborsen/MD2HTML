@@ -8,8 +8,8 @@ interface DocumentPreviewProps {
 
 /**
  * Renders the converted fragment with exactly the stylesheet that ships inside
- * the exported file, so "preview" and "downloaded .html" always match — the
- * sheet therefore stays light even while the app runs in the dark theme.
+ * the exported file, so "preview" and "downloaded .html" always match — right
+ * down to the sheet's own background, which the stylesheet paints.
  */
 export function DocumentPreview({ html, className }: DocumentPreviewProps) {
   return (

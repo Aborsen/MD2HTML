@@ -81,9 +81,9 @@ extended by `tailwind.ui.config.ts` / `tailwind.config.ts` and loaded through
 switching to light is a matter of dropping that class.
 
 Markdown document styling (`src/lib/md-doc-css.ts`) is written once against
-`--md-*` variables and used both in the preview and in the exported file, so
-the two always match. The document sheet keeps its light "paper" look in both
-themes — it is meant to be shared and printed.
+`--md-*` variables and used both in the preview and in the exported file, so the two always match,
+down to the sheet's own background. The document is dark like the app; printing flips it back to
+the light values, because a dark page on paper is a wall of ink.
 
 ## Structure
 

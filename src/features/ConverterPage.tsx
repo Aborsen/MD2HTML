@@ -208,10 +208,10 @@ export function ConverterPage({
         </TabsList>
 
         <TabsContent value="preview" className="outline-none">
-          <div className="rounded-xl border border-stroke bg-surface-card2 p-3 sm:p-6">
+          <div className="rounded-xl border border-stroke bg-surface-page p-3 sm:p-6">
             <DocumentPreview
               html={doc.html}
-              className="mx-auto max-w-3xl rounded-lg bg-white p-6 shadow-rest sm:p-10"
+              className="mx-auto max-w-3xl rounded-lg border border-stroke p-6 shadow-rest sm:p-10"
             />
           </div>
         </TabsContent>
