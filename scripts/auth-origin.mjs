@@ -14,11 +14,14 @@
  *
  * Additive and idempotent: adding an origin twice changes nothing.
  *
- * The column holds objects — [{ "domain": "https://example.com" }] — which is what the console
- * writes and what Neon reads; a bare string is accepted on read so an older row stays readable.
+ * The column is `neon_auth.project_config.trusted_origins`. It holds plain origin strings; older
+ * projects wrote objects — [{ "domain": "https://example.com" }] — so both are accepted on read.
  */
 import { neon } from '@neondatabase/serverless';
-import 'dotenv/config';
+import { config } from 'dotenv';
+
+// Vercel writes pulled values to .env.local; dotenv reads .env unless told otherwise.
+config({ path: ['.env.local', '.env'], quiet: true });
 
 if (!process.env.DATABASE_URL) {
   console.error('DATABASE_URL is not set (put it in .env.local)');
@@ -51,7 +54,7 @@ const removing = first === '--remove';
 const target = removing ? second : first;
 
 const rows = await sql`
-  select id, trusted_domains
+  select id, trusted_origins
   from neon_auth.project_config
   limit 1
 `;
@@ -61,7 +64,7 @@ if (rows.length === 0) {
   process.exit(1);
 }
 
-const current = (rows[0].trusted_domains ?? []).map(domainOf).filter(Boolean);
+const current = (rows[0].trusted_origins ?? []).map(domainOf).filter(Boolean);
 
 if (!target) {
   console.log('Trusted origins:');
@@ -87,7 +90,8 @@ if (next.length === current.length && !removing) {
 
 await sql`
   update neon_auth.project_config
-  set trusted_domains = ${JSON.stringify(next.map((domain) => ({ domain })))}::jsonb
+  set trusted_origins = ${JSON.stringify(next)}::jsonb,
+      updated_at = now()
   where id = ${rows[0].id}
 `;
 
