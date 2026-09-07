@@ -10,6 +10,8 @@ export interface HistoryEntry {
   createdAt: number;
   /** Markdown source; absent when the file was too large to keep locally. */
   markdown?: string;
+  /** True for rows stored in the account (Neon) rather than in this browser. */
+  remote?: boolean;
   stats: {
     words: number;
     headings: number;

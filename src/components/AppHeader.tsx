@@ -1,5 +1,6 @@
 import { FileCode2, History } from 'lucide-react';
 import { Logo } from './Logo';
+import { UserMenu } from './UserMenu';
 import { Separator } from '@/ui/components/Separator';
 import { Typography } from '@/ui/components/Typography';
 import { cn } from '@/ui/lib/utils';
@@ -67,6 +68,10 @@ export function AppHeader({
             );
           })}
         </nav>
+
+        <Separator orientation="vertical" className="h-5" />
+
+        <UserMenu />
       </div>
     </header>
   );

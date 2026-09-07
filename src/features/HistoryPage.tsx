@@ -1,4 +1,4 @@
-import { Download, Eye, FileText, Trash2 } from 'lucide-react';
+import { Cloud, Download, Eye, FileText, MonitorSmartphone, Trash2 } from 'lucide-react';
 import { formatBytes, formatDateTime, formatRelative } from '@/lib/format';
 import type { HistoryEntry } from '@/lib/history';
 import { Button } from '@/ui/components/Button';
@@ -17,6 +17,8 @@ import { Typography } from '@/ui/components/Typography';
 
 interface HistoryPageProps {
   entries: HistoryEntry[];
+  /** True when the list comes from the signed-in account rather than this browser. */
+  isSynced: boolean;
   onOpen: (entry: HistoryEntry) => void;
   onDownload: (entry: HistoryEntry) => void;
   onRemove: (id: string) => void;
@@ -26,6 +28,7 @@ interface HistoryPageProps {
 
 export function HistoryPage({
   entries,
+  isSynced,
   onOpen,
   onDownload,
   onRemove,
@@ -37,7 +40,11 @@ export function HistoryPage({
       <StatusView
         tone="muted"
         title="No conversions yet"
-        description="Every file you convert shows up here — reopen the preview or download the HTML again in one click."
+        description={
+          isSynced
+            ? 'Every file you convert is saved to your account — open it from any device.'
+            : 'Every file you convert shows up here. Sign in to keep the list across devices.'
+        }
         actions={
           <Button variant="primary" size="sm" onClick={onGoToConverter}>
             Convert a file
@@ -54,9 +61,18 @@ export function HistoryPage({
           <Typography variant="h4" weight="semibold" textColor="primary">
             History
           </Typography>
-          <Typography variant="p" textColor="secondary">
-            {entries.length} {entries.length === 1 ? 'file' : 'files'} converted
-            on this device.
+          <Typography
+            variant="p"
+            textColor="secondary"
+            className="flex items-center gap-1.5"
+          >
+            {isSynced ? (
+              <Cloud className="size-4 text-brand-tertiary" />
+            ) : (
+              <MonitorSmartphone className="size-4" />
+            )}
+            {entries.length} {entries.length === 1 ? 'file' : 'files'}
+            {isSynced ? ' in your account' : ' converted on this device'}
           </Typography>
         </div>
 
@@ -83,7 +99,7 @@ export function HistoryPage({
 
         <TableBody>
           {entries.map((entry) => {
-            const isReopenable = entry.markdown !== undefined;
+            const isReopenable = entry.markdown !== undefined || entry.remote === true;
 
             return (
               <TableRow key={entry.id}>

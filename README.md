@@ -1,19 +1,51 @@
 # M2H — Markdown to HTML
 
-Small web app: upload a Markdown file, see exactly how it renders as HTML, and
-download a ready-to-use `.html` document. Everything runs in the browser — no
-backend, no uploads to a server.
+Upload a Markdown file, see exactly how it renders as HTML, and download a
+ready-to-use `.html` document. Conversion happens in the browser; sign in with
+Google to keep your documents in the account and reach them from any device.
 
 ## Run locally
 
 ```bash
 npm install
+cp .env.example .env.local   # then fill in the values (see Configuration)
+npm run db:init              # creates the tables in Neon
 npm run dev
 ```
 
-The app starts on http://127.0.0.1:5180
+The app starts on http://127.0.0.1:5180 — `/api/*` is served by the same Hono
+app that runs as a Vercel function in production, so no extra process is needed.
 
-Other scripts: `npm run build`, `npm run preview`, `npm run check-types`.
+Other scripts: `npm run build`, `npm run preview`, `npm run check-types`,
+`npm run db:init`.
+
+Without `VITE_GOOGLE_CLIENT_ID` the app still works: sign-in is hidden and the
+history falls back to this browser's `localStorage`.
+
+## Configuration
+
+| Variable | Where it is used | Notes |
+| --- | --- | --- |
+| `DATABASE_URL` | server | Neon pooled connection string |
+| `GOOGLE_CLIENT_ID` | server | audience for verifying Google ID tokens |
+| `VITE_GOOGLE_CLIENT_ID` | browser | same value, renders the sign-in button |
+| `AUTH_SECRET` | server | 32+ random chars, signs the session cookie |
+
+**Google Cloud console** → APIs & Services → Credentials → OAuth client ID
+(type *Web application*). Authorized JavaScript origins:
+
+- `http://localhost:5180` and `http://127.0.0.1:5180` for local work
+- the production origin, e.g. `https://m2h.vercel.app`
+
+No client secret is needed: the browser gets an ID token from Google Identity
+Services, the server verifies it and issues its own httpOnly session cookie.
+
+**Neon** → create a project → copy the pooled connection string → run
+`npm run db:init` (idempotent; schema lives in `db/schema.sql`).
+
+**Vercel** → project settings → Environment Variables: add all four variables,
+then redeploy. The build is auto-detected (Vite → `dist`), `/api/*` is routed to
+the Hono function by `vercel.json`.
 
 ## What it does
 
@@ -22,9 +54,10 @@ Other scripts: `npm run build`, `npm run preview`, `npm run check-types`.
   autolinks), sanitized with DOMPurify, styled with the design-system tokens.
 - **HTML source** tab — the exact standalone document that gets downloaded.
 - **Download / Copy** — self-contained `.html` with inline styles, print-ready.
-- **History** — the last 25 conversions, stored in `localStorage`; reopen the
-  preview or download the file again. Sources over 400 KB are not kept (the
-  entry stays in the list, marked as not re-openable).
+- **History** — signed in: stored in Neon (up to 200 documents, 1 MB of source
+  each), available on every device; signed out: the last 25 conversions in
+  `localStorage`. Whatever was collected locally is moved into the account on
+  first sign-in.
 
 ## UI
 
@@ -42,10 +75,14 @@ themes — it is meant to be shared and printed.
 ## Structure
 
 ```
+api/index.ts            Vercel entry point (wraps the Hono app)
+server/                 API: routes, Neon client, session cookie, dev middleware
+db/schema.sql           tables (users, documents)
+scripts/init-db.mjs     applies the schema
 src/
-  App.tsx               app shell, state, file handling
-  components/           header, dropzone, preview, stats, tooltip helper
+  App.tsx               app shell and state
+  components/           header, user menu, dropzone, preview, stats
   features/             ConverterPage, HistoryPage
-  lib/                  markdown conversion, doc styles, history, formatting
+  lib/                  conversion, doc styles, auth, api client, history
   ui/                   design system (vendored)
 ```

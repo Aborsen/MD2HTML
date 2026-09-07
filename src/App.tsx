@@ -1,23 +1,19 @@
 import { useCallback, useEffect, useState } from 'react';
 import { AppHeader, type AppView } from './components/AppHeader';
-import {
-  ACCEPTED_EXTENSIONS,
-  MAX_FILE_SIZE,
-} from './components/Dropzone';
+import { ACCEPTED_EXTENSIONS, MAX_FILE_SIZE } from './components/Dropzone';
 import { ConverterPage } from './features/ConverterPage';
 import { HistoryPage } from './features/HistoryPage';
+import { AuthProvider, useAuth } from './lib/auth';
 import { toHtmlFileName } from './lib/format';
+import type { HistoryEntry } from './lib/history';
 import {
-  addHistoryEntry,
-  clearHistory,
-  type HistoryEntry,
-  loadHistory,
-  removeHistoryEntry,
-} from './lib/history';
-import { buildStandaloneHtml, getDocStats, markdownToHtml } from './lib/markdown';
+  buildStandaloneHtml,
+  getDocStats,
+  markdownToHtml,
+} from './lib/markdown';
 import type { ConvertedDoc } from './lib/types';
-import { Toaster } from './ui/components/Toast';
-import { toast } from './ui/components/Toast';
+import { useHistory } from './lib/use-history';
+import { toast, Toaster } from './ui/components/Toast';
 import { TooltipProvider } from './ui/components/Tooltip';
 import { Typography } from './ui/components/Typography';
 
@@ -62,129 +58,150 @@ function downloadHtml(name: string, html: string, createdAt: number) {
   URL.revokeObjectURL(url);
 }
 
-export default function App() {
+function Shell() {
+  const { user } = useAuth();
   const [view, setView] = useState<AppView>('converter');
   const [doc, setDoc] = useState<ConvertedDoc | null>(null);
   const [isBusy, setIsBusy] = useState(false);
-  const [history, setHistory] = useState<HistoryEntry[]>([]);
+
+  const history = useHistory(Boolean(user));
 
   useEffect(() => {
-    setHistory(loadHistory());
-  }, []);
-
-  const handleFile = useCallback(async (file: File) => {
-    if (!hasAcceptedExtension(file.name)) {
-      toast.error('Unsupported file type', {
-        description: `Pick one of: ${ACCEPTED_EXTENSIONS.join(', ')}`,
-      });
-      return;
+    if (history.error) {
+      toast.error(history.error);
     }
+  }, [history.error]);
 
-    if (file.size > MAX_FILE_SIZE) {
-      toast.error('File is too large', {
-        description: 'The limit is 10 MB.',
-      });
-      return;
-    }
+  const handleFile = useCallback(
+    async (file: File) => {
+      if (!hasAcceptedExtension(file.name)) {
+        toast.error('Unsupported file type', {
+          description: `Pick one of: ${ACCEPTED_EXTENSIONS.join(', ')}`,
+        });
+        return;
+      }
 
-    setIsBusy(true);
+      if (file.size > MAX_FILE_SIZE) {
+        toast.error('File is too large', { description: 'The limit is 10 MB.' });
+        return;
+      }
 
-    try {
-      const markdown = await file.text();
-      const converted = convert(file.name, file.size, markdown);
+      setIsBusy(true);
 
-      setDoc(converted);
+      try {
+        const markdown = await file.text();
+        const converted = convert(file.name, file.size, markdown);
+
+        setDoc(converted);
+        setView('converter');
+
+        await history.add({
+          name: converted.name,
+          size: converted.size,
+          markdown: converted.markdown,
+          stats: converted.stats,
+        });
+
+        toast.success('Converted to HTML', { description: file.name });
+      } catch {
+        toast.error('Could not read the file');
+      } finally {
+        setIsBusy(false);
+      }
+    },
+    [history]
+  );
+
+  const handleOpenFromHistory = useCallback(
+    async (entry: HistoryEntry) => {
+      const markdown = await history.getSource(entry);
+
+      if (!markdown) {
+        toast.error('The source of this file is no longer available');
+        return;
+      }
+
+      setDoc(convert(entry.name, entry.size, markdown, entry.createdAt));
       setView('converter');
+    },
+    [history]
+  );
 
-      const { history: nextHistory } = addHistoryEntry({
-        name: converted.name,
-        size: converted.size,
-        markdown: converted.markdown,
-        stats: converted.stats,
+  const handleDownloadFromHistory = useCallback(
+    async (entry: HistoryEntry) => {
+      const markdown = await history.getSource(entry);
+
+      if (!markdown) {
+        toast.error('The source of this file is no longer available');
+        return;
+      }
+
+      downloadHtml(entry.name, markdownToHtml(markdown), entry.createdAt);
+      toast.success('HTML file downloaded', {
+        description: toHtmlFileName(entry.name),
       });
-      setHistory(nextHistory.sort((a, b) => b.createdAt - a.createdAt));
+    },
+    [history]
+  );
 
-      toast.success('Converted to HTML', { description: file.name });
-    } catch {
-      toast.error('Could not read the file');
-    } finally {
-      setIsBusy(false);
-    }
-  }, []);
-
-  const handleOpenFromHistory = useCallback((entry: HistoryEntry) => {
-    if (!entry.markdown) {
-      return;
-    }
-
-    setDoc(
-      convert(entry.name, entry.size, entry.markdown, entry.createdAt)
-    );
-    setView('converter');
-  }, []);
-
-  const handleDownloadFromHistory = useCallback((entry: HistoryEntry) => {
-    if (!entry.markdown) {
-      return;
-    }
-
-    downloadHtml(entry.name, markdownToHtml(entry.markdown), entry.createdAt);
-    toast.success('HTML file downloaded', {
-      description: toHtmlFileName(entry.name),
-    });
-  }, []);
-
-  const handleRemove = useCallback((id: string) => {
-    setHistory(removeHistoryEntry(id).sort((a, b) => b.createdAt - a.createdAt));
-  }, []);
-
-  const handleClear = useCallback(() => {
-    setHistory(clearHistory());
+  const handleClear = useCallback(async () => {
+    await history.clear();
     toast.info('History cleared');
-  }, []);
+  }, [history]);
 
   return (
-    <TooltipProvider delayDuration={200}>
-      <div className="flex min-h-full flex-col bg-surface-page">
-        <AppHeader
-          view={view}
-          historyCount={history.length}
-          onViewChange={setView}
-        />
+    <div className="flex min-h-full flex-col bg-surface-page">
+      <AppHeader
+        view={view}
+        historyCount={history.entries.length}
+        onViewChange={setView}
+      />
 
-        <main className="mx-auto w-full max-w-container-content flex-1 px-6 py-8">
-          {view === 'converter' ? (
-            <ConverterPage
-              doc={doc}
-              isBusy={isBusy}
-              onFile={handleFile}
-              onReset={() => setDoc(null)}
-            />
-          ) : (
-            <HistoryPage
-              entries={history}
-              onOpen={handleOpenFromHistory}
-              onDownload={handleDownloadFromHistory}
-              onRemove={handleRemove}
-              onClear={handleClear}
-              onGoToConverter={() => setView('converter')}
-            />
-          )}
-        </main>
+      <main className="mx-auto w-full max-w-container-content flex-1 px-6 py-8">
+        {view === 'converter' ? (
+          <ConverterPage
+            doc={doc}
+            isBusy={isBusy}
+            onFile={handleFile}
+            onReset={() => setDoc(null)}
+          />
+        ) : (
+          <HistoryPage
+            entries={history.entries}
+            isSynced={Boolean(user)}
+            onOpen={handleOpenFromHistory}
+            onDownload={handleDownloadFromHistory}
+            onRemove={(id) => void history.remove(id)}
+            onClear={() => void handleClear()}
+            onGoToConverter={() => setView('converter')}
+          />
+        )}
+      </main>
 
-        <footer className="border-stroke border-t py-4">
-          <div className="mx-auto flex w-full max-w-container-content items-center justify-between px-6">
-            <Typography variant="span" textColor="light" className="text-xs">
-              Files never leave your browser
-            </Typography>
-            <Typography variant="span" textColor="light" className="text-xs">
-              Self-contained HTML export
-            </Typography>
-          </div>
-        </footer>
+      <footer className="border-stroke border-t py-4">
+        <div className="mx-auto flex w-full max-w-container-content items-center justify-between px-6">
+          <Typography variant="span" textColor="light" className="text-xs">
+            {user
+              ? 'Your files are saved to your account'
+              : 'Files never leave your browser'}
+          </Typography>
+          <Typography variant="span" textColor="light" className="text-xs">
+            Self-contained HTML export
+          </Typography>
+        </div>
+      </footer>
 
-        <Toaster />
-      </div>
-    </TooltipProvider>
+      <Toaster />
+    </div>
+  );
+}
+
+export default function App() {
+  return (
+    <AuthProvider>
+      <TooltipProvider delayDuration={200}>
+        <Shell />
+      </TooltipProvider>
+    </AuthProvider>
   );
 }
