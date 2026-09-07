@@ -1,0 +1,47 @@
+import type { FaqEntry } from '@/ui/components/Faq';
+
+/*
+ * The questions people arrive with, answered once.
+ *
+ * They live here rather than in a page because two pages need them — the converter, where someone
+ * is deciding whether to drop a file at all, and the documentation, where they are looking for the
+ * same answer in a different mood. Two copies would drift, and the copy that drifts is always the
+ * one being read.
+ */
+export const FAQ_ENTRIES: FaqEntry[] = [
+  {
+    question: 'Does my file get uploaded anywhere?',
+    answer:
+      'Signed out, no. The file is read by this browser, converted here, and never sent to a server — close the tab and nothing of it remains anywhere but your own machine. Signed in, the Markdown source is stored in your account so the document can follow you to another device, and it stays private until you share it.',
+  },
+  {
+    question: 'Which Markdown does it understand?',
+    answer:
+      'GitHub Flavored Markdown: tables, task lists, strikethrough, autolinks and fenced code blocks, on top of everything CommonMark defines. Raw HTML inside the document is passed through a sanitiser first, so a script tag in a file someone sent you cannot run.',
+  },
+  {
+    question: 'What exactly do I get when I download?',
+    answer:
+      'One .html file with its styles inline. No scripts, no fonts to fetch, no requests of any kind — it opens the same on a machine with no network, and it carries the theme it was made in. Printing always flips it to the light palette, because a dark page on paper is a wall of ink.',
+  },
+  {
+    question: 'Can I send a converted document to someone?',
+    answer:
+      'Sign in and share it, either as a link anyone can open or addressed to particular people, who then sign in with that address. A shared page is read-only: the document and a download, nothing else. Revoking drops the link, so one you have already sent stops working.',
+  },
+  {
+    question: 'Is there a size limit?',
+    answer:
+      'A file dropped on the converter can be up to 10 MB. A document kept in an account can hold 1 MB of Markdown — around 150,000 words — and an account holds 500 documents or 100 MB, whichever comes first. Reaching a limit refuses the write and says so; nothing you saved is ever quietly deleted to make room.',
+  },
+  {
+    question: 'Can I convert files from a script?',
+    answer:
+      'Yes. Create an API key from the account menu and post Markdown to /api/v1/documents; there is also a command-line client and a GitHub Action that publishes the Markdown a pull request changed and comments the links on it. The documentation has the endpoints and the flags.',
+  },
+  {
+    question: 'What does it cost?',
+    answer:
+      'Nothing. Converting and downloading work without an account at all; an account adds history, sharing and the API, within the limits above.',
+  },
+];

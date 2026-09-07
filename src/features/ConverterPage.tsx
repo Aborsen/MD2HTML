@@ -17,6 +17,12 @@ import { Hint } from '@/components/Hint';
 import { ScrollToTop } from '@/components/ScrollToTop';
 import { ShareDialog } from '@/components/ShareDialog';
 import { Dropzone } from '@/components/Dropzone';
+import { ARTICLES, articlePath, formatArticleDate } from '@/lib/blog';
+import { FAQ_ENTRIES } from '@/lib/faq';
+import { ArticleCard } from '@/ui/components/ArticleCard';
+import { CodeBlock } from '@/ui/components/Code';
+import { Faq } from '@/ui/components/Faq';
+import { SectionHeading } from '@/ui/components/SectionHeading';
 import { useTheme } from '@/lib/theme';
 import type { ConvertedDoc } from '@/lib/types';
 import { buildStandaloneHtml } from '@/lib/markdown';
@@ -40,6 +46,8 @@ interface ConverterPageProps {
   isBusy: boolean;
   onFiles: (files: File[]) => void;
   onReset: () => void;
+  onGoToBlog: () => void;
+  onOpenArticle: (slug: string) => void;
 }
 
 export function ConverterPage({
@@ -47,6 +55,8 @@ export function ConverterPage({
   isBusy,
   onFiles,
   onReset,
+  onGoToBlog,
+  onOpenArticle,
 }: ConverterPageProps) {
   const [isCopied, setIsCopied] = useState(false);
   const [tab, setTab] = useState<'preview' | 'source'>('preview');
@@ -134,6 +144,44 @@ export function ConverterPage({
             </Card>
           ))}
         </div>
+
+        {/* Below the fold: what to read while deciding, and the questions people arrive with. */}
+        {ARTICLES.length > 0 && (
+        <section className="flex flex-col gap-4 pt-4">
+          <SectionHeading
+            eyebrow="From the blog"
+            title="Making Markdown behave"
+            description="Syntax that breaks, documents that have to reach other people, and getting the whole thing to run without you."
+            action={
+              <Button variant="tertiary" size="sm" onClick={onGoToBlog}>
+                All articles
+              </Button>
+            }
+          />
+
+          <div className="grid gap-4 md:grid-cols-3">
+            {ARTICLES.slice(0, 3).map((article) => (
+              <ArticleCard
+                key={article.slug}
+                title={article.title}
+                description={article.description}
+                href={articlePath(article.slug)}
+                onOpen={() => onOpenArticle(article.slug)}
+                tag={article.tag}
+                meta={formatArticleDate(article.date)}
+              />
+            ))}
+          </div>
+        </section>
+        )}
+
+        <section className="flex flex-col gap-4 pt-2 pb-4">
+          <SectionHeading
+            eyebrow="FAQ"
+            title="Before you drop a file"
+          />
+          <Faq items={FAQ_ENTRIES} />
+        </section>
       </div>
     );
   }
@@ -302,9 +350,12 @@ export function ConverterPage({
         </TabsContent>
 
         <TabsContent value="source" className="outline-none">
-          <pre className="max-h-[70vh] overflow-auto rounded-xl border border-stroke bg-surface-page p-4 font-mono text-ink-body text-xs leading-relaxed">
-            <code>{standalone}</code>
-          </pre>
+          <CodeBlock
+            language="html"
+            className="max-h-[70vh] rounded-xl bg-surface-page"
+          >
+            {standalone}
+          </CodeBlock>
         </TabsContent>
       </Tabs>
 

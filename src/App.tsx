@@ -2,6 +2,8 @@ import { useCallback, useEffect, useState } from 'react';
 import { AppHeader } from './components/AppHeader';
 import { ACCEPTED_EXTENSIONS, MAX_FILE_SIZE } from './components/Dropzone';
 import { ConverterPage } from './features/ConverterPage';
+import { ArticlePage } from './features/ArticlePage';
+import { BlogPage } from './features/BlogPage';
 import { DocsPage } from './features/DocsPage';
 import { HistoryPage } from './features/HistoryPage';
 import { SharedDocumentPage } from './features/SharedDocumentPage';
@@ -15,7 +17,7 @@ import {
   markdownToHtml,
 } from './lib/markdown';
 import { mergedName, mergeMarkdown } from './lib/merge';
-import { type AppView, goTo, readRoute } from './lib/route';
+import { type AppView, goTo, goToArticle, readRoute } from './lib/route';
 import type { ConvertedDoc } from './lib/types';
 import { useHistory } from './lib/use-history';
 import { toast, Toaster } from './ui/components/Toast';
@@ -90,15 +92,31 @@ function Shell() {
   const { user, error: authError } = useAuth();
   const { theme } = useTheme();
   const [view, setViewState] = useState<AppView>(() => readRoute().view);
+  const [articleSlug, setArticleSlug] = useState<string | null>(
+    () => readRoute().articleSlug
+  );
 
   /* The view lives in the address, so a reload lands where you were and Back means something. */
   const setView = useCallback((next: AppView) => {
     setViewState(next);
+    setArticleSlug(null);
     goTo(next, readRoute().filter);
   }, []);
 
+  const openArticle = useCallback((slug: string) => {
+    setViewState('blog');
+    setArticleSlug(slug);
+    goToArticle(slug);
+    window.scrollTo({ top: 0 });
+  }, []);
+
   useEffect(() => {
-    const sync = () => setViewState(readRoute().view);
+    const sync = () => {
+      const route = readRoute();
+
+      setViewState(route.view);
+      setArticleSlug(route.articleSlug);
+    };
 
     window.addEventListener('popstate', sync);
 
@@ -354,12 +372,25 @@ function Shell() {
       <main className="mx-auto w-full max-w-container-content flex-1 px-6 py-8">
         {view === 'docs' ? (
           <DocsPage />
+        ) : view === 'blog' ? (
+          articleSlug ? (
+            <ArticlePage
+              slug={articleSlug}
+              onBack={() => setView('blog')}
+              onOpenArticle={openArticle}
+              onGoToConverter={startOver}
+            />
+          ) : (
+            <BlogPage onOpenArticle={openArticle} />
+          )
         ) : view === 'converter' ? (
           <ConverterPage
             doc={doc}
             isBusy={isBusy}
             onFiles={handleFiles}
             onReset={startOver}
+            onGoToBlog={() => setView('blog')}
+            onOpenArticle={openArticle}
           />
         ) : (
           <HistoryPage

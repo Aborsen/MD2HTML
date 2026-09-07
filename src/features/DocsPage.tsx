@@ -3,14 +3,19 @@ import {
   Boxes,
   FileCode2,
   Gauge,
+  HelpCircle,
   KeyRound,
   Share2,
   Terminal,
 } from 'lucide-react';
 import { useEffect, useState, type ReactNode } from 'react';
 import { ScrollToTop } from '@/components/ScrollToTop';
+import { FAQ_ENTRIES } from '@/lib/faq';
 import { useTheme } from '@/lib/theme';
 import { Badge } from '@/ui/components/Badge';
+import { CodeBlock, InlineCode } from '@/ui/components/Code';
+import { DefinitionTable } from '@/ui/components/DefinitionTable';
+import { Faq } from '@/ui/components/Faq';
 import { Typography } from '@/ui/components/Typography';
 import { cn } from '@/ui/lib/utils';
 
@@ -39,38 +44,53 @@ const SECTIONS: SectionSpec[] = [
   { id: 'cli', title: 'Command line', icon: Terminal },
   { id: 'action', title: 'GitHub Action', icon: Terminal },
   { id: 'limits', title: 'Limits', icon: Gauge },
+  { id: 'faq', title: 'Questions', icon: HelpCircle },
 ];
 
-/** Which heading the reader is on, so the contents list can say so. */
+/**
+ * Which heading the reader is on, so the contents list can say so.
+ *
+ * The last heading that has passed under the sticky header, rather than whichever one an observer
+ * happens to find intersecting: a long section has no heading on screen at all in the middle of it,
+ * and an observer answers that by keeping the previous section lit — which is the section the reader
+ * has already left. Positions are read on a frame, so the scroll handler itself does no layout.
+ */
 function useActiveSection(): string {
   const [active, setActive] = useState(SECTIONS[0].id);
 
   useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const visible = entries
-          .filter((entry) => entry.isIntersecting)
-          .sort(
-            (a, b) => a.boundingClientRect.top - b.boundingClientRect.top
-          )[0];
+    let frame = 0;
 
-        if (visible) {
-          setActive(visible.target.id);
+    const measure = () => {
+      frame = 0;
+
+      let current = SECTIONS[0].id;
+
+      for (const section of SECTIONS) {
+        const element = document.getElementById(section.id);
+
+        // 88px: the header plus the breathing room `scroll-mt-20` leaves under it.
+        if (element && element.getBoundingClientRect().top <= 88) {
+          current = section.id;
         }
-      },
-      // A band just under the sticky header: whatever sits there is what is being read.
-      { rootMargin: '-72px 0px -70% 0px' }
-    );
-
-    for (const section of SECTIONS) {
-      const element = document.getElementById(section.id);
-
-      if (element) {
-        observer.observe(element);
       }
-    }
 
-    return () => observer.disconnect();
+      setActive(current);
+    };
+
+    const onScroll = () => {
+      frame ||= requestAnimationFrame(measure);
+    };
+
+    measure();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll);
+
+    return () => {
+      cancelAnimationFrame(frame);
+      window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('resize', onScroll);
+    };
   }, []);
 
   return active;
@@ -94,48 +114,6 @@ function Section({
         {children}
       </div>
     </section>
-  );
-}
-
-function Code({ children }: { children: string }) {
-  return (
-    <pre className="overflow-x-auto rounded-md border border-stroke bg-surface-card2 p-4 font-mono text-ink-body text-xs leading-relaxed">
-      <code>{children}</code>
-    </pre>
-  );
-}
-
-/** An inline literal — a flag, a header, a path. */
-function K({ children }: { children: ReactNode }) {
-  return (
-    <code className="rounded bg-surface-card2 px-1 py-0.5 font-mono text-ink-primary text-xs">
-      {children}
-    </code>
-  );
-}
-
-function Rows({ rows }: { rows: { key: string; term: ReactNode; text: ReactNode }[] }) {
-  return (
-    <div className="overflow-hidden rounded-md border border-stroke">
-      <table className="w-full border-collapse text-sm">
-        <tbody>
-          {rows.map((row, index) => (
-            <tr
-              key={row.key}
-              className={cn('align-top', index > 0 && 'border-stroke border-t')}
-            >
-              <th
-                scope="row"
-                className="w-2/5 bg-surface-card2/60 px-4 py-2.5 text-left font-medium text-ink-primary"
-              >
-                {row.term}
-              </th>
-              <td className="px-4 py-2.5 text-ink-body">{row.text}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
   );
 }
 
@@ -221,7 +199,7 @@ export function DocsPage() {
 
         <Section id="start" title="Start here">
           <p>
-            Drop a <K>.md</K> file on the converter and you have the rendered document
+            Drop a <InlineCode>.md</InlineCode> file on the converter and you have the rendered document
             and a download. Nothing is stored and nothing is sent anywhere — the
             conversion runs in this browser.
           </p>
@@ -235,8 +213,8 @@ export function DocsPage() {
 
         <Section id="converting" title="Converting">
           <p>
-            Drag a file onto the dropzone or pick one — <K>.md</K>, <K>.markdown</K>,{' '}
-            <K>.mdown</K>, <K>.mkd</K> and <K>.txt</K>, up to 10 MB. Drop several at
+            Drag a file onto the dropzone or pick one — <InlineCode>.md</InlineCode>, <InlineCode>.markdown</InlineCode>,{' '}
+            <InlineCode>.mdown</InlineCode>, <InlineCode>.mkd</InlineCode> and <InlineCode>.txt</InlineCode>, up to 10 MB. Drop several at
             once and they are chained into a single document, in the order they arrive,
             separated by a rule.
           </p>
@@ -305,7 +283,7 @@ export function DocsPage() {
         <Section id="sharing" title="Sharing">
           <p>
             <strong>Anyone with the link</strong> publishes the document at{' '}
-            <K>/s/&lt;token&gt;</K> — a read-only page with the document and a
+            <InlineCode>/s/&lt;token&gt;</InlineCode> — a read-only page with the document and a
             download, nothing else. <strong>Only these addresses</strong> asks the
             reader to sign in with an address you listed.
           </p>
@@ -322,7 +300,7 @@ export function DocsPage() {
           </p>
           <p>
             A shared page carries someone's content on our domain, so it is served with{' '}
-            <K>script-src 'none'</K> and cannot be framed, and every one of them links
+            <InlineCode>script-src 'none'</InlineCode> and cannot be framed, and every one of them links
             to a report form that needs no JavaScript. Nothing is revoked automatically:
             a report is a stranger's claim about someone else's document, and both
             mistakes — leaving a bad page up, killing an innocent link — deserve a
@@ -346,69 +324,69 @@ export function DocsPage() {
         <Section id="api" title="API">
           <p>
             Everything the app does, a script can do. Send the key as{' '}
-            <K>Authorization: Bearer m2h_live_…</K>; a browser session works too, so the
+            <InlineCode>Authorization: Bearer m2h_live_…</InlineCode>; a browser session works too, so the
             same endpoints can be tried while signed in.
           </p>
-          <Code>{`curl -H "Authorization: Bearer m2h_live_…" \\
+          <CodeBlock>{`curl -H "Authorization: Bearer m2h_live_…" \\
      --data-binary @README.md \\
      "https://md-2-html.vercel.app/api/v1/documents?name=README.md&share=link"
 
-# → { "document": { "id": "…", "share": { "url": "https://…/s/…" } } }`}</Code>
-          <Rows
+# → { "document": { "id": "…", "share": { "url": "https://…/s/…" } } }`}</CodeBlock>
+          <DefinitionTable
             rows={[
               {
                 key: 'post',
-                term: <K>POST /api/v1/documents</K>,
+                term: <InlineCode>POST /api/v1/documents</InlineCode>,
                 text: (
                   <>
-                    Markdown as the body (<K>?name=</K>) or JSON{' '}
-                    <K>{'{name, markdown}'}</K>. <K>?share=link|people</K> publishes it
+                    Markdown as the body (<InlineCode>?name=</InlineCode>) or JSON{' '}
+                    <InlineCode>{'{name, markdown}'}</InlineCode>. <InlineCode>?share=link|people</InlineCode> publishes it
                     in the same call.
                   </>
                 ),
               },
               {
                 key: 'list',
-                term: <K>GET /api/v1/documents</K>,
+                term: <InlineCode>GET /api/v1/documents</InlineCode>,
                 text: 'The newest 500, with sizes, stats and share state.',
               },
               {
                 key: 'one',
-                term: <K>GET /api/v1/documents/:id</K>,
+                term: <InlineCode>GET /api/v1/documents/:id</InlineCode>,
                 text: 'Metadata and the Markdown source.',
               },
               {
                 key: 'html',
-                term: <K>GET /api/v1/documents/:id.html</K>,
+                term: <InlineCode>GET /api/v1/documents/:id.html</InlineCode>,
                 text: (
                   <>
-                    The standalone document. <K>?theme=dark</K> optional.
+                    The standalone document. <InlineCode>?theme=dark</InlineCode> optional.
                   </>
                 ),
               },
               {
                 key: 'delete',
-                term: <K>DELETE /api/v1/documents/:id</K>,
+                term: <InlineCode>DELETE /api/v1/documents/:id</InlineCode>,
                 text: 'Removes the row and its stored source.',
               },
               {
                 key: 'share',
-                term: <K>GET | PUT /api/v1/documents/:id/share</K>,
+                term: <InlineCode>GET | PUT /api/v1/documents/:id/share</InlineCode>,
                 text: (
                   <>
-                    <K>{'{mode, emails[]}'}</K>. <K>private</K> drops the token.
+                    <InlineCode>{'{mode, emails[]}'}</InlineCode>. <InlineCode>private</InlineCode> drops the token.
                   </>
                 ),
               },
               {
                 key: 'usage',
-                term: <K>GET /api/v1/usage</K>,
+                term: <InlineCode>GET /api/v1/usage</InlineCode>,
                 text: 'What the account is using, against the limits.',
               },
             ]}
           />
           <p>
-            Errors are <K>{'{ "error": "…" }'}</K> with a status that means what it
+            Errors are <InlineCode>{'{ "error": "…" }'}</InlineCode> with a status that means what it
             says: 401 unknown key, 404 not yours, 413 the document is over 1 MB, 403 the
             account is out of room, 429 too fast, 410 the source is gone.
           </p>
@@ -416,20 +394,20 @@ export function DocsPage() {
 
         <Section id="cli" title="Command line">
           <p>
-            <K>cli/m2h.mjs</K> in the repository is the same API with a friendlier face,
+            <InlineCode>cli/m2h.mjs</InlineCode> in the repository is the same API with a friendlier face,
             and no dependencies — a tool that runs in CI should not drag a package tree
             behind it.
           </p>
-          <Code>{`node cli/m2h.mjs login m2h_live_…          # remembers the key for this machine
+          <CodeBlock>{`node cli/m2h.mjs login m2h_live_…          # remembers the key for this machine
 node cli/m2h.mjs push README.md --share    # prints the link
 node cli/m2h.mjs push docs/*.md --merge --share --name handbook.md
 node cli/m2h.mjs list
 node cli/m2h.mjs rm <id>
-node cli/m2h.mjs usage                     # 65.8 kB of 100.0 MB · 3 of 500 documents`}</Code>
+node cli/m2h.mjs usage                     # 65.8 kB of 100.0 MB · 3 of 500 documents`}</CodeBlock>
           <p>
-            The key comes from <K>--key</K>, then <K>M2H_API_KEY</K>, then{' '}
-            <K>~/.config/m2h/config.json</K>. <K>M2H_HOST</K> points it at another
-            deployment, and <K>--json</K> prints the API's own answer.
+            The key comes from <InlineCode>--key</InlineCode>, then <InlineCode>M2H_API_KEY</InlineCode>, then{' '}
+            <InlineCode>~/.config/m2h/config.json</InlineCode>. <InlineCode>M2H_HOST</InlineCode> points it at another
+            deployment, and <InlineCode>--json</InlineCode> prints the API's own answer.
           </p>
         </Section>
 
@@ -439,49 +417,49 @@ node cli/m2h.mjs usage                     # 65.8 kB of 100.0 MB · 3 of 500 doc
             and comments the links on it — so a reviewer opens the rendered document
             instead of reading a diff of asterisks.
           </p>
-          <Code>{`- uses: Aborsen/MD2HTML@v1
+          <CodeBlock>{`- uses: Aborsen/MD2HTML@v1
   with:
-    api-key: \${{ secrets.M2H_API_KEY }}`}</Code>
+    api-key: \${{ secrets.M2H_API_KEY }}`}</CodeBlock>
           <p>
-            <K>examples/publish-markdown.yml</K> is a complete workflow to copy.
-            Checkout needs <K>fetch-depth: 0</K> for the base commit the file list is
-            compared against, and the comment needs <K>pull-requests: write</K>.
+            <InlineCode>examples/publish-markdown.yml</InlineCode> is a complete workflow to copy.
+            Checkout needs <InlineCode>fetch-depth: 0</InlineCode> for the base commit the file list is
+            compared against, and the comment needs <InlineCode>pull-requests: write</InlineCode>.
           </p>
-          <Rows
+          <DefinitionTable
             rows={[
               {
                 key: 'api-key',
-                term: <K>api-key</K>,
+                term: <InlineCode>api-key</InlineCode>,
                 text: 'Required. Keep it in a repository secret.',
               },
               {
                 key: 'files',
-                term: <K>files</K>,
+                term: <InlineCode>files</InlineCode>,
                 text: 'Space-separated paths. Defaults to what the pull request changed.',
               },
               {
                 key: 'share',
-                term: <K>share</K>,
+                term: <InlineCode>share</InlineCode>,
                 text: (
                   <>
-                    <K>link</K> (default), <K>people</K>, or <K>none</K> to publish
+                    <InlineCode>link</InlineCode> (default), <InlineCode>people</InlineCode>, or <InlineCode>none</InlineCode> to publish
                     privately.
                   </>
                 ),
               },
               {
                 key: 'merge',
-                term: <K>merge</K>,
+                term: <InlineCode>merge</InlineCode>,
                 text: 'Chain the files into one document instead of one each.',
               },
               {
                 key: 'comment',
-                term: <K>comment</K>,
+                term: <InlineCode>comment</InlineCode>,
                 text: 'Comment the links on the pull request.',
               },
               {
                 key: 'host',
-                term: <K>host</K>,
+                term: <InlineCode>host</InlineCode>,
                 text: 'Another deployment of M2H.',
               },
             ]}
@@ -493,7 +471,7 @@ node cli/m2h.mjs usage                     # 65.8 kB of 100.0 MB · 3 of 500 doc
         </Section>
 
         <Section id="limits" title="Limits">
-          <Rows
+          <DefinitionTable
             rows={[
               {
                 key: 'account',
@@ -522,6 +500,14 @@ node cli/m2h.mjs usage                     # 65.8 kB of 100.0 MB · 3 of 500 doc
             the oldest document to stay under its cap, which quietly destroyed something
             its owner had chosen to keep; now it says what to delete instead.
           </p>
+        </Section>
+
+        <Section id="faq" title="Questions">
+          <p>
+            The same answers the converter shows under its dropzone — one set of
+            them, so the two pages cannot drift apart.
+          </p>
+          <Faq items={FAQ_ENTRIES} />
         </Section>
 
         <footer className="border-stroke border-t pt-6 text-ink-secondary text-sm">

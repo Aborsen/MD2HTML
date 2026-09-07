@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "tsc -b && vite build && npm run prerender",
+    "prerender": "vite build --ssr scripts/prerender.ts --outDir .prerender --emptyOutDir && node .prerender/prerender.js",
     "preview": "vite preview",
     "check-types": "tsc -b",
     "db:init": "node scripts/init-db.mjs",
@@ -14,7 +15,8 @@
     "blob:migrate": "node scripts/sources-to-blob.mjs",
     "blob:reconcile": "node scripts/reconcile-blobs.mjs",
     "reports": "node scripts/reports.mjs",
-    "docs:shots": "node scripts/screenshots.mjs"
+    "docs:shots": "node scripts/screenshots.mjs",
+    "blog:check": "node scripts/check-blog.mjs"
   },
   "dependencies": {
     "@hono/node-server": "^2.1.1",

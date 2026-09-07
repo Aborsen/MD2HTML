@@ -9,3 +9,4 @@ dist
 
 .env*.local
 tsconfig.tsbuildinfo
+.prerender

@@ -4,6 +4,7 @@ import { api, type ApiKey } from '@/lib/api';
 import { formatRelative } from '@/lib/format';
 import { Hint } from './Hint';
 import { Button } from '@/ui/components/Button';
+import { CodeBlock, InlineCode } from '@/ui/components/Code';
 import { IconButton } from '@/ui/components/IconButton';
 import {
   InputGroup,
@@ -118,9 +119,9 @@ export function ApiKeysDialog({ open, onOpenChange }: ApiKeysDialogProps) {
               </Typography>
 
               <div className="flex items-center gap-2">
-                <code className="min-w-0 flex-1 truncate rounded bg-surface-card px-2 py-1.5 font-mono text-ink-body text-xs">
+                <InlineCode className="min-w-0 flex-1 truncate bg-surface-card px-2 py-1.5 text-ink-body">
                   {fresh}
-                </code>
+                </InlineCode>
                 <Button
                   variant="secondary"
                   size="sm"
@@ -139,11 +140,11 @@ export function ApiKeysDialog({ open, onOpenChange }: ApiKeysDialogProps) {
                 Publish a file in one request:
               </Typography>
 
-              <pre className="overflow-x-auto rounded bg-surface-card p-2 font-mono text-ink-body text-xs">
+              <CodeBlock language="bash" className="border-0 bg-surface-card p-2">
 {`curl -H "Authorization: Bearer ${fresh.slice(0, 15)}…" \\
      --data-binary @README.md \\
      "${window.location.origin}/api/v1/documents?name=README.md&share=link"`}
-              </pre>
+              </CodeBlock>
             </div>
           ) : (
             <div className="flex items-center gap-2">

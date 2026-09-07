@@ -25,6 +25,7 @@
     "shared",
     "server",
     "api",
+    "scripts/prerender.ts",
     "vite.config.ts",
     "tailwind.config.ts",
     "tailwind.ui.config.ts"

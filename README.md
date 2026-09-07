@@ -197,10 +197,36 @@ link and marks it handled, `-- --dismiss <id>` just marks it. A report is a stra
 someone else's document, and both mistakes — leaving a phishing page up, killing an innocent link —
 deserve a person reading it first.
 
+## Blog and documentation
+
+`/docs` is the manual and `/blog` is twenty articles about converting Markdown; both are pages of
+this app, built from the same design system, and the articles are Markdown files in `content/blog/`
+rendered by the converter itself. There is no second pipeline to keep in step, and a bug in the
+renderer shows on our own pages before it shows on anyone else's document.
+
+`content/keywords.md` is the keyword research the articles were written against — clusters by
+intent, each naming the article that targets it, and four marked as gaps that nothing covers yet. It
+carries no volume figures: they cannot be measured from here, and an invented number outlives the
+guess it came from.
+
+A single-page app is invisible to a crawler — every route answers with the same shell and the same
+title — so `npm run build` ends with `scripts/prerender.ts`. It runs in Node, renders each article
+with the server-side converter, and writes a real file per route: `dist/blog/<slug>/index.html` with
+its own title, description, canonical link and `BlogPosting` data, the home page with its `FAQPage`,
+plus `sitemap.xml` and `robots.txt` (shared documents are excluded — they are linked deliberately,
+not crawled). Vercel serves a matching file before it consults the rewrites, so those pages are
+static; the bundle still loads and takes over, and in-app navigation never touches them.
+
+The FAQ is one list in `src/lib/faq.ts`, shown under the converter's dropzone and again in the docs.
+`ArticleCard`, `SectionHeading` and `Faq` live in `src/ui/components` with the rest of the design
+system, because each of them is used from three places and three near-identical copies read as three
+different products.
+
 ## Addresses
 
 `/` is the converter, `/history` the list (with `?filter=html|md|shared` for the chip it is
-showing), `/s/<token>` a shared document. They are read straight from `location` rather than
+showing), `/docs` the manual, `/blog` and `/blog/<slug>` the articles, `/s/<token>` a shared
+document. They are read straight from `location` rather than
 through a router — three routes do not need one — which is what makes a reload land where you
 were and the Back button work. Each needs a rewrite to `index.html` in `vercel.json`.
 
@@ -264,12 +290,15 @@ server/                 API: routes, Neon Auth proxy, Neon client, dev middlewar
 db/schema.sql           m2h_document and its sharing tables
 scripts/init-db.mjs     applies the schema
 scripts/auth-origin.mjs manages Neon Auth's trusted origins
+scripts/prerender.ts    a real HTML file per route, after the bundle is built
+scripts/screenshots.mjs the documentation screenshots, captured from the running app
+content/blog/           the articles; content/keywords.md is what they were written against
 cli/m2h.mjs             the command line client
 action.yml              the GitHub Action (examples/ has a workflow to copy)
 src/
   App.tsx               app shell and state
   components/           header, user menu, dropzone, preview, stats
-  features/             ConverterPage, HistoryPage
+  features/             ConverterPage, HistoryPage, DocsPage, BlogPage, ArticlePage
   lib/                  conversion, doc styles, auth, api client, history
   ui/                   design system (vendored)
 ```
