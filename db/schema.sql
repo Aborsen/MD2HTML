@@ -52,3 +52,22 @@ alter table m2h_document
 
 alter table m2h_document
   alter column markdown drop not null;
+
+-- API keys.
+--
+-- The key itself is shown once, at creation, and never stored: the row keeps a SHA-256 hash and a
+-- short prefix, which is enough to recognise a key in a list and to look one up on a request.
+-- A revoked key keeps its row so an audit trail survives the revocation.
+
+create table if not exists m2h_api_key (
+  id           uuid primary key default gen_random_uuid(),
+  user_id      uuid not null,
+  name         text not null,
+  prefix       text not null,
+  token_hash   text not null unique,
+  created_at   timestamptz not null default now(),
+  last_used_at timestamptz,
+  revoked_at   timestamptz
+);
+
+create index if not exists m2h_api_key_owner on m2h_api_key (user_id, created_at desc);

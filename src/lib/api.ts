@@ -51,6 +51,15 @@ function toEntry(doc: ServerDocument): HistoryEntry {
   };
 }
 
+export interface ApiKey {
+  id: string;
+  name: string;
+  prefix: string;
+  created_at: string;
+  last_used_at: string | null;
+  revoked_at: string | null;
+}
+
 export type ShareMode = 'private' | 'link' | 'people';
 
 export interface ShareState {
@@ -159,6 +168,17 @@ export const api = {
       shareToken: doc.share_token,
     }));
   },
+
+  listKeys: async () => (await request<{ keys: ApiKey[] }>('/api/keys')).keys,
+
+  createKey: (name: string) =>
+    request<{ key: string; created: ApiKey }>('/api/keys', {
+      method: 'POST',
+      body: JSON.stringify({ name }),
+    }),
+
+  revokeKey: (id: string) =>
+    request<{ ok: true }>(`/api/keys/${id}`, { method: 'DELETE' }),
 
   getShare: (id: string) => request<ShareState>(`/api/documents/${id}/share`),
 

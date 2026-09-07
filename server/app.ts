@@ -8,7 +8,9 @@ import {
 } from '../shared/markdown.js';
 import { authProxy, currentUser, type SessionUser } from './auth.js';
 import { sql, type DocumentRow } from './db.js';
+import { createKey, listKeys, revokeKey } from './keys.js';
 import { deleteSources, putSource, readSource } from './source.js';
+import v1 from './v1.js';
 
 /** Server-side caps: a stored document is meant to be re-openable, not archival. */
 const MAX_MARKDOWN_BYTES = 1024 * 1024;
@@ -103,6 +105,37 @@ const requireUser = createMiddleware<Env>(async (c, next) => {
   c.set('user', user);
 
   return next();
+});
+
+/*
+ * Key management is session-only, deliberately: a leaked key must not be able to mint its
+ * replacement or revoke the owner's other keys.
+ */
+api.use('/keys', requireUser);
+api.use('/keys/*', requireUser);
+
+api.get('/keys', async (c) => c.json({ keys: await listKeys(c.get('user').id) }));
+
+api.post('/keys', async (c) => {
+  const body = await c.req
+    .json<{ name?: string }>()
+    .catch(() => ({}) as { name?: string });
+  const name = (body.name ?? '').trim();
+
+  if (!name) {
+    return c.json({ error: 'Give the key a name you will recognise' }, 400);
+  }
+
+  const created = await createKey(c.get('user').id, name);
+
+  // The only time the key itself is ever returned.
+  return c.json({ key: created.key, created: created.row }, 201);
+});
+
+api.delete('/keys/:id', async (c) => {
+  const revoked = await revokeKey(c.get('user').id, c.req.param('id'));
+
+  return revoked ? c.json({ ok: true }) : c.json({ error: 'Not found' }, 404);
 });
 
 api.use('/documents', requireUser);
@@ -513,6 +546,7 @@ app.get('/s/:token', async (c) => {
   );
 });
 
+app.route('/', v1);
 app.route('/', api);
 
 export default app;

@@ -109,6 +109,31 @@ dark page on paper is a wall of ink.
 The theme (dark by default) lives behind the account menu, remembered per browser in
 `localStorage`; signed out, a sun/moon button in the header does the same job.
 
+## API
+
+Everything the app does, a script can do with a key: **account menu → API keys**. The key is shown
+once, stored only as a hash, and can be revoked at any time. It reaches documents and shares — never
+the account or the keys themselves, so a leaked key cannot mint its replacement or lock you out.
+
+```bash
+# publish a file in one request
+curl -H "Authorization: Bearer m2h_live_…"      --data-binary @README.md      "https://md-2-html.vercel.app/api/v1/documents?name=README.md&share=link"
+# → { "document": { "id": "…", "share": { "mode": "link", "url": "https://…/s/…" } } }
+```
+
+| | |
+| --- | --- |
+| `POST /api/v1/documents` | Markdown as the body (`?name=`) or JSON `{name, markdown}`; `?share=link\|people` publishes it in the same call |
+| `GET /api/v1/documents` | the newest 200 |
+| `GET /api/v1/documents/:id` | metadata and the source |
+| `GET /api/v1/documents/:id.html` | the standalone document, `?theme=dark` optional |
+| `DELETE /api/v1/documents/:id` | removes the row and its source |
+| `GET \| PUT /api/v1/documents/:id/share` | `{mode, emails[]}`; `private` drops the token, so a link already sent stops working |
+
+A cookie works too, so the same endpoints can be tried from a signed-in browser. Errors are
+`{ "error": "…" }` with a status that means what it says: 401 unknown key, 404 not yours, 413 too
+large, 410 the source is gone.
+
 ## Addresses
 
 `/` is the converter, `/history` the list (with `?filter=html|md|shared` for the chip it is

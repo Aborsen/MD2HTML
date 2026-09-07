@@ -1,6 +1,8 @@
-import { LogOut, Moon, Sun, User } from 'lucide-react';
+import { KeyRound, LogOut, Moon, Sun, User } from 'lucide-react';
+import { useState } from 'react';
 import { useAuth } from '@/lib/auth';
 import { useTheme } from '@/lib/theme';
+import { ApiKeysDialog } from './ApiKeysDialog';
 import { GoogleGlyph } from './GoogleGlyph';
 import { Hint } from './Hint';
 import { Button } from '@/ui/components/Button';
@@ -49,6 +51,7 @@ function ThemeChoice() {
 export function UserMenu() {
   const { user, isLoading, isSigningIn, signIn, signOut } = useAuth();
   const { theme, toggle } = useTheme();
+  const [isKeysOpen, setIsKeysOpen] = useState(false);
 
   if (isLoading) {
     return <Skeleton className="h-8 w-28 rounded-full" />;
@@ -83,6 +86,7 @@ export function UserMenu() {
   }
 
   return (
+    <>
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <button
@@ -140,11 +144,19 @@ export function UserMenu() {
 
         <DropdownMenuSeparator className="my-1" />
 
+        <DropdownMenuItem onSelect={() => setIsKeysOpen(true)}>
+          <KeyRound />
+          API keys
+        </DropdownMenuItem>
+
         <DropdownMenuItem variant="danger" onSelect={() => void signOut()}>
           <LogOut />
           Log out
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
+
+    <ApiKeysDialog open={isKeysOpen} onOpenChange={setIsKeysOpen} />
+    </>
   );
 }
