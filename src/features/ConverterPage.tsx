@@ -11,6 +11,7 @@ import { useMemo, useState } from 'react';
 import { DocStats } from '@/components/DocStats';
 import { DocumentPreview } from '@/components/DocumentPreview';
 import { Dropzone } from '@/components/Dropzone';
+import { useTheme } from '@/lib/theme';
 import type { ConvertedDoc } from '@/lib/types';
 import { buildStandaloneHtml } from '@/lib/markdown';
 import { formatBytes, formatDateTime, toHtmlFileName } from '@/lib/format';
@@ -40,6 +41,7 @@ export function ConverterPage({
   onReset,
 }: ConverterPageProps) {
   const [isCopied, setIsCopied] = useState(false);
+  const { theme } = useTheme();
 
   const standalone = useMemo(
     () =>
@@ -48,9 +50,10 @@ export function ConverterPage({
             title: doc.name,
             body: doc.html,
             createdAt: doc.createdAt,
+            theme,
           })
         : '',
-    [doc]
+    [doc, theme]
   );
 
   if (!doc) {

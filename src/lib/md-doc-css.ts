@@ -8,39 +8,63 @@
  * and printed.
  */
 
-/** Palette of the document sheet — the app's dark theme, frozen to literal values. */
-export const MD_DOC_THEME = `
-.md-doc {
-  --md-ink: #f9fafb;
-  --md-body: #f4f4f5;
-  --md-secondary: #d1d5db;
-  --md-brand: #148f8d;
-  --md-brand-2: #2fa29b;
-  --md-brand-3: #14a8af;
-  --md-card: #17171e;
-  --md-page: #0f0e14;
-  --md-card-2: #21212c;
-  --md-stroke: #2a2834;
-  --md-table-header: #2a2834;
+type ThemeVars = Record<string, string>;
+
+const DARK: ThemeVars = {
+  '--md-ink': '#f9fafb',
+  '--md-body': '#f4f4f5',
+  '--md-secondary': '#d1d5db',
+  '--md-brand': '#148f8d',
+  '--md-brand-2': '#2fa29b',
+  '--md-brand-3': '#14a8af',
+  '--md-card': '#17171e',
+  '--md-page': '#0f0e14',
+  '--md-card-2': '#21212c',
+  '--md-stroke': '#2a2834',
+  '--md-table-header': '#2a2834',
+};
+
+const LIGHT: ThemeVars = {
+  '--md-ink': '#0f172a',
+  '--md-body': '#334155',
+  '--md-secondary': '#5a6a80',
+  '--md-brand': '#07807e',
+  '--md-brand-2': '#066867',
+  '--md-brand-3': '#0d8e97',
+  '--md-card': '#ffffff',
+  '--md-page': '#f8fafc',
+  '--md-card-2': '#f1f5f9',
+  '--md-stroke': '#e2e8f0',
+  '--md-table-header': '#eaeff5',
+};
+
+const declare = (vars: ThemeVars) =>
+  Object.entries(vars)
+    .map(([name, value]) => `  ${name}: ${value};`)
+    .join('\n');
+
+/**
+ * The document's own palette, frozen to literal values so the exported file needs nothing from
+ * its host page. `selector` widens the scope for the export, where the page chrome around the
+ * sheet reads the same variables.
+ */
+export function mdDocTheme(
+  theme: 'dark' | 'light',
+  selector = '.md-doc'
+): string {
+  return `${selector} {
+${declare(theme === 'dark' ? DARK : LIGHT)}
+}`;
 }
 
-/* On paper a dark document is a wall of ink, so printing flips to the light values. */
-@media print {
-  .md-doc {
-    --md-ink: #0f172a;
-    --md-body: #334155;
-    --md-secondary: #5a6a80;
-    --md-brand: #07807e;
-    --md-brand-2: #066867;
-    --md-brand-3: #0d8e97;
-    --md-card: #ffffff;
-    --md-page: #f8fafc;
-    --md-card-2: #f1f5f9;
-    --md-stroke: #e2e8f0;
-    --md-table-header: #eaeff5;
-  }
+/** On paper a dark document is a wall of ink, so printing always uses the light values. */
+export function mdDocPrintOverride(selector = '.md-doc'): string {
+  return `@media print {
+${selector} {
+${declare(LIGHT)}
 }
-`;
+}`;
+}
 
 /** Typography + block rules — identical in preview and export. */
 export const MD_DOC_STYLE = `
@@ -195,7 +219,7 @@ export const MD_DOC_PAGE_STYLE = `
 body {
   margin: 0;
   padding: 3rem 1.25rem 4rem;
-  background: #0f0e14;
+  background: var(--md-page);
   -webkit-font-smoothing: antialiased;
 }
 
@@ -203,16 +227,16 @@ body {
   max-width: 48rem;
   margin: 0 auto;
   padding: 2.5rem 3rem 3rem;
-  border: 1px solid #2a2834;
+  border: 1px solid var(--md-stroke);
   border-radius: 1rem;
-  background: #17171e;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+  background: var(--md-card);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.25);
 }
 
 .md-footer {
   max-width: 48rem;
   margin: 1rem auto 0;
-  color: #94a3b8;
+  color: var(--md-secondary);
   font-family: "DM Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
   font-size: 0.75rem;
   text-align: right;

@@ -82,8 +82,12 @@ switching to light is a matter of dropping that class.
 
 Markdown document styling (`src/lib/md-doc-css.ts`) is written once against
 `--md-*` variables and used both in the preview and in the exported file, so the two always match,
-down to the sheet's own background. The document is dark like the app; printing flips it back to
-the light values, because a dark page on paper is a wall of ink.
+down to the sheet's own background — the document follows whichever theme the app is in, and the
+downloaded file carries that palette with it. Printing always flips to the light values, because a
+dark page on paper is a wall of ink.
+
+The theme (dark by default) lives behind the account menu, remembered per browser in
+`localStorage`; signed out, a sun/moon button in the header does the same job.
 
 ## Structure
 

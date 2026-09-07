@@ -4,6 +4,7 @@ import { ACCEPTED_EXTENSIONS, MAX_FILE_SIZE } from './components/Dropzone';
 import { ConverterPage } from './features/ConverterPage';
 import { HistoryPage } from './features/HistoryPage';
 import { AuthProvider, useAuth } from './lib/auth';
+import { ThemeProvider, useTheme } from './lib/theme';
 import { toHtmlFileName } from './lib/format';
 import type { HistoryEntry } from './lib/history';
 import {
@@ -42,9 +43,14 @@ function convert(
   };
 }
 
-function downloadHtml(name: string, html: string, createdAt: number) {
+function downloadHtml(
+  name: string,
+  html: string,
+  createdAt: number,
+  theme: 'dark' | 'light'
+) {
   const blob = new Blob(
-    [buildStandaloneHtml({ title: name, body: html, createdAt })],
+    [buildStandaloneHtml({ title: name, body: html, createdAt, theme })],
     { type: 'text/html;charset=utf-8' }
   );
   const url = URL.createObjectURL(blob);
@@ -60,6 +66,7 @@ function downloadHtml(name: string, html: string, createdAt: number) {
 
 function Shell() {
   const { user, error: authError } = useAuth();
+  const { theme } = useTheme();
   const [view, setView] = useState<AppView>('converter');
   const [doc, setDoc] = useState<ConvertedDoc | null>(null);
   const [isBusy, setIsBusy] = useState(false);
@@ -142,12 +149,12 @@ function Shell() {
         return;
       }
 
-      downloadHtml(entry.name, markdownToHtml(markdown), entry.createdAt);
+      downloadHtml(entry.name, markdownToHtml(markdown), entry.createdAt, theme);
       toast.success('HTML file downloaded', {
         description: toHtmlFileName(entry.name),
       });
     },
-    [history]
+    [history, theme]
   );
 
   const startOver = useCallback(() => {
@@ -210,10 +217,12 @@ function Shell() {
 
 export default function App() {
   return (
-    <AuthProvider>
-      <TooltipProvider delayDuration={200}>
-        <Shell />
-      </TooltipProvider>
-    </AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <TooltipProvider delayDuration={200}>
+          <Shell />
+        </TooltipProvider>
+      </AuthProvider>
+    </ThemeProvider>
   );
 }

@@ -93,7 +93,7 @@ export function HistoryPage({
             <TableHead className="hidden sm:table-cell">Size</TableHead>
             <TableHead className="hidden md:table-cell">Content</TableHead>
             <TableHead>Converted</TableHead>
-            <TableHead className="w-28 text-right">Actions</TableHead>
+            <TableHead className="w-44 text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>
 
@@ -116,8 +116,11 @@ export function HistoryPage({
                   {formatBytes(entry.size)}
                 </TableCell>
 
-                <TableCell className="hidden md:table-cell text-ink-secondary">
-                  {entry.stats.words} words · {entry.stats.headings} headings
+                <TableCell className="hidden text-ink-secondary md:table-cell">
+                  {entry.stats.words} words ·{' '}
+                  {entry.stats.headings === 1
+                    ? '1 heading'
+                    : `${entry.stats.headings} headings`}
                 </TableCell>
 
                 <TableCell>
@@ -148,19 +151,15 @@ export function HistoryPage({
                       </span>
                     </Hint>
 
-                    <Hint content="Download .html">
-                      <span>
-                        <IconButton
-                          variant="tertiary"
-                          size="sm"
-                          aria-label="Download HTML"
-                          disabled={!isReopenable}
-                          onClick={() => onDownload(entry)}
-                        >
-                          <Download />
-                        </IconButton>
-                      </span>
-                    </Hint>
+                    <Button
+                      variant="secondary"
+                      size="xs"
+                      leftSlot={<Download />}
+                      disabled={!isReopenable}
+                      onClick={() => onDownload(entry)}
+                    >
+                      Download
+                    </Button>
 
                     <Hint content="Remove from history">
                       <span>
