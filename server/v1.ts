@@ -1,8 +1,8 @@
 import { randomBytes } from 'node:crypto';
-import { Hono } from 'hono';
+import { Hono, type Context } from 'hono';
 import { createMiddleware } from 'hono/factory';
 import { buildStandaloneHtml, getDocStats } from '../shared/markdown.js';
-import { currentUser } from './auth.js';
+import { currentUser, selfOrigin } from './auth.js';
 import { sql } from './db.js';
 import { ownerOfKey } from './keys.js';
 import { markdownToHtml } from './render.js';
@@ -69,19 +69,17 @@ interface DocumentRow {
   share_token: string | null;
 }
 
-const shareUrl = (c: { req: { url: string } }, token: string | null) => {
-  if (!token) {
-    return null;
-  }
-
-  const url = new URL(c.req.url);
-
-  return `${url.protocol}//${url.host}/s/${token}`;
-};
+/*
+ * Built from the forwarded protocol, not from the request URL: behind the platform's proxy the
+ * function sees a plain http:// address, and a share link that starts with http is one redirect
+ * away from working — which is exactly the kind of link people paste into a chat and blame us for.
+ */
+const shareUrl = (c: Context, token: string | null) =>
+  token ? `${selfOrigin(c)}/s/${token}` : null;
 
 /** One document, as the API describes it. Kept flat and boring on purpose. */
 const asDocument = (
-  c: { req: { url: string } },
+  c: Context,
   row: DocumentRow,
   extra: Record<string, unknown> = {}
 ) => ({

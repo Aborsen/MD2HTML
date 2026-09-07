@@ -40,7 +40,7 @@ const OUR_HOP = /^(x-forwarded-|x-vercel-|x-real-ip$|forwarded$|cdn-loop$)/i;
 const SESSION_COOKIE = /session_token/i;
 
 /** The origin this deployment is reached on; Better Auth checks it against its trusted list. */
-function selfOrigin(c: Context): string {
+export function selfOrigin(c: Context): string {
   const url = new URL(c.req.url);
   const host = c.req.header('x-forwarded-host') ?? c.req.header('host') ?? url.host;
   const proto =
