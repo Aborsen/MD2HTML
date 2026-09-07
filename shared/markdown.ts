@@ -1,9 +1,11 @@
 /*
- * Shared by the browser and the serverless function: the same converter must run in both, or a
- * document would look different depending on who asked for it. DOMPurify needs a DOM, which the
- * isomorphic build supplies on the server and skips in the browser bundle.
+ * Shared by the browser and the serverless function: the same parse, the same renderer overrides
+ * and the same sanitiser settings run in both, or a document would look one way in the app and
+ * another way to whoever it was sent to.
+ *
+ * Only the DOM differs. DOMPurify needs one, and the two runtimes get it from different places —
+ * so each passes its own `sanitize` in, built from the shared config below.
  */
-import DOMPurify from 'isomorphic-dompurify';
 import { Marked } from 'marked';
 import {
   mdDocPrintOverride,
@@ -26,7 +28,13 @@ function escapeHtml(value: string): string {
     .replace(/"/g, '&quot;');
 }
 
-/** GitHub-ish slug so headings stay linkable in the exported file. */
+/**
+ * A slug for each heading, so a document stays linkable — prefixed on purpose.
+ *
+ * A bare `id="title"` is a DOM-clobbering risk (it shadows `document.title`), and the browser's
+ * sanitiser drops exactly those while a server-side parser keeps them. The prefix removes the
+ * hazard, which is also what keeps both renderers producing the same document.
+ */
 function slugify(text: string, used: Map<string, number>): string {
   const base =
     text
@@ -38,11 +46,36 @@ function slugify(text: string, used: Map<string, number>): string {
   const seen = used.get(base) ?? 0;
   used.set(base, seen + 1);
 
-  return seen === 0 ? base : `${base}-${seen}`;
+  return `doc-${seen === 0 ? base : `${base}-${seen}`}`;
 }
 
+/**
+ * What survives sanitising: exactly what this converter can produce, and nothing else.
+ *
+ * The list lives here because the two runtimes sanitise with different tools — DOMPurify against
+ * the browser's own DOM, a parser in the function — and the one thing that must not drift between
+ * them is what a document is allowed to contain. A DOM-based sanitiser was tried on the server
+ * first: without a real DOM, DOMPurify quietly returns its input unchanged, script tag and all.
+ */
+export const ALLOWED_TAGS = [
+  'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+  'p', 'br', 'hr', 'div', 'span',
+  'strong', 'b', 'em', 'i', 'del', 's', 'mark', 'sub', 'sup', 'small',
+  'ul', 'ol', 'li',
+  'blockquote', 'pre', 'code', 'kbd', 'samp',
+  'table', 'thead', 'tbody', 'tfoot', 'tr', 'th', 'td', 'caption',
+  'a', 'img', 'input',
+];
+
+export const ALLOWED_ATTR = [
+  'href', 'src', 'alt', 'title', 'id', 'class', 'align',
+  'target', 'rel', 'type', 'checked', 'disabled', 'colspan', 'rowspan',
+];
+
+export type Sanitize = (html: string) => string;
+
 /** Markdown -> sanitized HTML fragment (no <html> wrapper). */
-export function markdownToHtml(markdown: string): string {
+export function renderMarkdown(markdown: string, sanitize: Sanitize): string {
   const used = new Map<string, number>();
 
   marked.use({
@@ -65,12 +98,7 @@ export function markdownToHtml(markdown: string): string {
     },
   });
 
-  const raw = marked.parse(markdown, { async: false }) as string;
-
-  return DOMPurify.sanitize(raw, {
-    USE_PROFILES: { html: true },
-    ADD_ATTR: ['target', 'rel', 'id', 'align'],
-  });
+  return sanitize(marked.parse(markdown, { async: false }) as string);
 }
 
 interface StandaloneOptions {

@@ -12,7 +12,7 @@ import {
   buildStandaloneHtml,
   getDocStats,
   markdownToHtml,
-} from '@shared/markdown';
+} from './lib/markdown';
 import { mergedName, mergeMarkdown } from './lib/merge';
 import { type AppView, goTo, readRoute } from './lib/route';
 import type { ConvertedDoc } from './lib/types';

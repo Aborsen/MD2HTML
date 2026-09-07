@@ -5,8 +5,8 @@ import {
   buildNoticePage,
   buildSharedPage,
   buildStandaloneHtml,
-  markdownToHtml,
 } from '../shared/markdown.js';
+import { markdownToHtml } from './render.js';
 import { authProxy, currentUser, type SessionUser } from './auth.js';
 import { sql, type DocumentRow } from './db.js';
 

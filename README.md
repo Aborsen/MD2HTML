@@ -118,10 +118,17 @@ were and the Back button work. Each needs a rewrite to `index.html` in `vercel.j
 
 ## Rendering
 
-The converter lives in `shared/` and runs in both places: the browser renders the preview, and the
-function renders the page a share link opens. One implementation, so a document cannot look one way
-in the app and another way to whoever it was sent to. DOMPurify comes from `isomorphic-dompurify`,
-which supplies a DOM on the server and stays out of the browser bundle.
+The parse, the renderer overrides and the allow-list live in `shared/` and run in both places: the
+browser renders the preview, the function renders the page a share link opens. One document, whoever
+asks for it.
+
+Only the sanitiser differs, because only one of the two runtimes has a DOM: `src/lib/markdown.ts`
+uses DOMPurify over the browser's own, `server/render.ts` uses `sanitize-html`, which parses the
+HTML itself. Emulating a DOM was tried first and is a trap worth writing down — jsdom broke the Node
+runtime outright (a CJS dependency requiring an ESM module), and the lighter stand-ins were worse:
+DOMPurify reported success and returned its input untouched, `<script>` and all. Heading ids carry a
+`doc-` prefix so both sanitisers keep them; a bare `id="title"` is DOM-clobbering, which the browser
+strips and a parser does not.
 
 `GET /s/<token>` is served by the function, not by the app:
 
