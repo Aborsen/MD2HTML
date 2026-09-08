@@ -38,6 +38,10 @@
       "destination": "/index.html"
     },
     {
+      "source": "/json-to-markdown",
+      "destination": "/index.html"
+    },
+    {
       "source": "/about",
       "destination": "/index.html"
     },

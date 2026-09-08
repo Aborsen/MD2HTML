@@ -70,7 +70,7 @@ export function AppFooter({
   return (
     <SiteFooter
       brand={<Logo />}
-      tagline="Markdown, HTML, Word and CSV documents, converted in your browser."
+      tagline="Markdown, HTML, Word, CSV and JSON documents, converted in your browser."
       builtBy="Built by Raudar Labs."
       columns={columns}
       note={`© Raudar Labs ${new Date().getFullYear()}`}

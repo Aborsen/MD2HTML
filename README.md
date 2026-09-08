@@ -6,7 +6,7 @@ the CLI and the Action name the new domain. Nothing in `server/` carries a domai
 come from the request through `selfOrigin`, which is what made the move a matter of one trusted
 origin and a rebuild.
 
-Upload a file, see exactly what it became, and download it. Four conversions, each with its own
+Upload a file, see exactly what it became, and download it. Five conversions, each with its own
 page and address:
 
 | Conversion | Takes | Produces |
@@ -15,11 +15,12 @@ page and address:
 | [HTML → Markdown](https://transformpipe.com/html-to-markdown) | `.html` `.htm` `.xhtml` | `.md` |
 | [Word → Markdown](https://transformpipe.com/word-to-markdown) | `.docx` | `.md` |
 | [CSV → Markdown table](https://transformpipe.com/csv-to-markdown) | `.csv` `.tsv` | `.md` |
+| [JSON → Markdown](https://transformpipe.com/json-to-markdown) | `.json` | `.md` |
 
 They all normalise to Markdown, which is what a document is stored, previewed, shared and reached
-by a script as — one shape rather than four. Any document can then be handed over as Markdown,
+by a script as — one shape rather than five. Any document can then be handed over as Markdown,
 HTML, plain text, or printed to PDF. `shared/conversions.ts` is the single list; the header menu,
-the screens, the history chips, the badges and the prerendered pages all read it, so a fifth
+the screens, the history chips, the badges and the prerendered pages all read it, so a sixth
 conversion is an entry there plus a converter.
 
 Conversion happens in the browser — the `.docx` reader and the HTML parser load only when their
@@ -150,7 +151,7 @@ curl -H "Authorization: Bearer tp_live_…"      --data-binary @README.md      "
 
 | | |
 | --- | --- |
-| `POST /api/v1/documents` | Markdown as the body (`?name=`) or JSON `{name, markdown}`; `?share=link\|people` publishes it in the same call |
+| `POST /api/v1/documents` | Markdown as the body (`?name=`) or JSON `{name, markdown}`; `?share=link\|people` publishes it in the same call; `?kind=html-to-markdown\|csv-to-markdown\|json-to-markdown` converts the body first, and `word-to-markdown` is refused here because reading a `.docx` happens in the browser |
 | `GET /api/v1/documents` | the newest 500 |
 | `GET /api/v1/documents/:id` | metadata and the source |
 | `GET /api/v1/documents/:id.html` | the standalone document, `?theme=dark` optional |

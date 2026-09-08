@@ -102,6 +102,29 @@ const cell = (value: string) =>
     .replace(/\n+/g, '<br>')
     .trim();
 
+/**
+ * Rows as a Markdown table: one writer, for every source of rows there is.
+ *
+ * A delimited file is one. A JSON array of objects is another, and it arrives here with its keys
+ * as the header. Two writers would mean two ways of escaping a pipe, and the one that got it wrong
+ * would be whichever was written second.
+ */
+export function markdownTable(head: string[], body: string[][]): string {
+  const width = Math.max(head.length, ...body.map((one) => one.length), 1);
+  const fill = (one: string[]) => [
+    ...one.map(cell),
+    ...Array(Math.max(0, width - one.length)).fill(''),
+  ];
+
+  const lines = [
+    `| ${fill(head).join(' | ')} |`,
+    `| ${Array(width).fill('---').join(' | ')} |`,
+    ...body.map((one) => `| ${fill(one).join(' | ')} |`),
+  ];
+
+  return `${lines.join('\n')}\n`;
+}
+
 export function delimitedToMarkdown(
   text: string,
   options: TableOptions = {}
@@ -114,25 +137,15 @@ export function delimitedToMarkdown(
   }
 
   const width = Math.max(...rows.map((one) => one.length));
-  const padded = rows.map((one) => [
-    ...one.map(cell),
-    ...Array(width - one.length).fill(''),
-  ]);
 
   /*
    * A table with no header row is not a table as far as Markdown is concerned — the separator is
    * what makes one — so a file whose first row is data gets numbered columns rather than losing it.
    */
-  const [head, body] =
-    options.header === false
-      ? [Array.from({ length: width }, (_, i) => `Column ${i + 1}`), padded]
-      : [padded[0], padded.slice(1)];
-
-  const lines = [
-    `| ${head.join(' | ')} |`,
-    `| ${head.map(() => '---').join(' | ')} |`,
-    ...body.map((one) => `| ${one.join(' | ')} |`),
-  ];
-
-  return `${lines.join('\n')}\n`;
+  return options.header === false
+    ? markdownTable(
+        Array.from({ length: width }, (_, i) => `Column ${i + 1}`),
+        rows
+      )
+    : markdownTable(rows[0], rows.slice(1));
 }

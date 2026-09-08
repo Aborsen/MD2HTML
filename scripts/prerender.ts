@@ -296,9 +296,9 @@ pages.push({
   path: '/docs',
   title: 'Documentation — transformpipe',
   description:
-    'What transformpipe does, in full: the four conversions, the history, sharing by link or by address, the API, the command line client, the GitHub Action and the limits.',
+    'What transformpipe does, in full: the five conversions, the history, sharing by link or by address, the API, the command line client, the GitHub Action and the limits.',
   listed: true,
-  body: `<h1>Everything transformpipe does</h1><p>Markdown, HTML, Word or CSV in — a document out as HTML, Markdown, plain text or print — from the app, from a terminal, or from a pull request.</p>${DOCS_SECTIONS.map(
+  body: `<h1>Everything transformpipe does</h1><p>Markdown, HTML, Word, CSV or JSON in — a document out as HTML, Markdown, plain text or print — from the app, from a terminal, or from a pull request.</p>${DOCS_SECTIONS.map(
     (section) =>
       `<section><h2>${escapeHtml(section.title)}</h2><p>${escapeHtml(section.summary)}</p></section>`
   ).join('')}`,

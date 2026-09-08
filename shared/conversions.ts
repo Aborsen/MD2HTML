@@ -15,7 +15,8 @@ export type ConversionId =
   | 'markdown-to-html'
   | 'html-to-markdown'
   | 'word-to-markdown'
-  | 'csv-to-markdown';
+  | 'csv-to-markdown'
+  | 'json-to-markdown';
 
 export interface Conversion {
   id: ConversionId;
@@ -111,6 +112,23 @@ export const CONVERSIONS: Conversion[] = [
       title: 'CSV to Markdown table converter — transformpipe',
       description:
         'Turn a CSV or TSV file into a Markdown table, quoted fields and embedded commas handled. Converts in your browser; nothing is uploaded.',
+    },
+  },
+  {
+    id: 'json-to-markdown',
+    to: 'markdown',
+    path: '/json-to-markdown',
+    label: 'JSON → Markdown',
+    short: 'JSON → MD',
+    title: 'JSON to Markdown',
+    blurb:
+      'Upload a JSON file and read it as a document: a list of records becomes a table, an object becomes sections with its fields above them.',
+    extensions: ['.json'],
+    hint: 'Upload a .json file. A list of records becomes a table; nested objects become headings. One value per line — a log export — is understood too.',
+    seo: {
+      title: 'JSON to Markdown converter — transformpipe',
+      description:
+        'Turn a JSON file into readable Markdown: arrays of records become tables, objects become sections. Converts in your browser; nothing is uploaded.',
     },
   },
 ];

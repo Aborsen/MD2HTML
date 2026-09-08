@@ -201,7 +201,7 @@ export function DocsPage() {
             Everything transformpipe does
           </Typography>
           <Typography variant="p" textColor="secondary" className="text-sm">
-            Markdown, HTML, Word or CSV in — a document out as HTML, Markdown, plain
+            Markdown, HTML, Word, CSV or JSON in — a document out as HTML, Markdown, plain
             text or print. From this page, from a terminal, from a pull request or
             from an assistant. This is the whole of it; nothing here sits behind a
             plan.
@@ -395,9 +395,10 @@ export function DocsPage() {
                   <>
                     Markdown as the body (<InlineCode>?name=</InlineCode>) or JSON{' '}
                     <InlineCode>{'{name, markdown}'}</InlineCode>. <InlineCode>?share=link|people</InlineCode> publishes it
-                    in the same call. <InlineCode>?kind=html-to-markdown</InlineCode> or{' '}
-                    <InlineCode>?kind=csv-to-markdown</InlineCode> converts the body first, so a
-                    page or a spreadsheet can be posted as it is;{' '}
+                    in the same call. <InlineCode>?kind=html-to-markdown</InlineCode>,{' '}
+                    <InlineCode>?kind=csv-to-markdown</InlineCode> or{' '}
+                    <InlineCode>?kind=json-to-markdown</InlineCode> converts the body first, so a
+                    page, a spreadsheet or an API response can be posted as it is;{' '}
                     <InlineCode>word-to-markdown</InlineCode> is refused here, because reading a{' '}
                     <InlineCode>.docx</InlineCode> happens in the browser.
                   </>
@@ -464,10 +465,11 @@ node cli/tp.mjs list
 node cli/tp.mjs rm <id>
 node cli/tp.mjs usage                     # 65.8 kB of 100.0 MB · 3 of 500 documents`}</CodeBlock>
           <p>
-            A pushed <InlineCode>.html</InlineCode>, <InlineCode>.csv</InlineCode> or{' '}
-            <InlineCode>.tsv</InlineCode> is converted by the endpoint rather than stored as if it
-            were already Markdown; a <InlineCode>.docx</InlineCode> is refused, with the page that
-            can read it. <InlineCode>--merge</InlineCode> chains Markdown only.
+            A pushed <InlineCode>.html</InlineCode>, <InlineCode>.csv</InlineCode>,{' '}
+            <InlineCode>.tsv</InlineCode> or <InlineCode>.json</InlineCode> is converted by the
+            endpoint rather than stored as if it were already Markdown; a{' '}
+            <InlineCode>.docx</InlineCode> is refused, with the page that can read it.{' '}
+            <InlineCode>--merge</InlineCode> chains Markdown only.
           </p>
           <p>
             The key comes from <InlineCode>--key</InlineCode>, then <InlineCode>TP_API_KEY</InlineCode>, then{' '}

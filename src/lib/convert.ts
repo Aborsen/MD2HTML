@@ -75,6 +75,22 @@ export async function convertFile(
       };
     }
 
+    case 'json-to-markdown': {
+      const { jsonToMarkdown } = await import('@shared/from-json');
+
+      /*
+       * The file's name becomes the document's heading. A table with nothing above it is a table
+       * nobody can place a week later, and JSON carries no title of its own.
+       */
+      return {
+        markdown: jsonToMarkdown(await readText(file), {
+          title: renamed(file.name, ''),
+        }),
+        name: renamed(file.name, '.md'),
+        kind: id,
+      };
+    }
+
     case 'word-to-markdown': {
       const [{ htmlToMarkdown }, mammoth] = await Promise.all([
         import('@shared/from-html'),

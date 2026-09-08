@@ -58,7 +58,7 @@ export const STATIC_PAGES: StaticPage[] = [
       {
         heading: 'What it is',
         body: [
-          'transformpipe turns documents into other documents. Markdown into a finished HTML page, and HTML, Word files and spreadsheets into Markdown. Drop a file, see what it became, take it away as Markdown, HTML, plain text or a PDF.',
+          'transformpipe turns documents into other documents. Markdown into a finished HTML page, and HTML, Word files, spreadsheets and JSON into Markdown. Drop a file, see what it became, take it away as Markdown, HTML, plain text or a PDF.',
           'Everything normalises to Markdown, because Markdown is a format you can read, diff, and keep for twenty years without owning the tool that made it.',
         ],
       },
@@ -85,7 +85,7 @@ export const STATIC_PAGES: StaticPage[] = [
     seo: {
       title: 'About transformpipe',
       description:
-        'transformpipe converts Markdown, HTML, Word and CSV documents in your browser, with an API, a CLI, a GitHub Action and an MCP server. Built by Raudar Labs.',
+        'transformpipe converts Markdown, HTML, Word, CSV and JSON documents in your browser, with an API, a CLI, a GitHub Action and an MCP server. Built by Raudar Labs.',
     },
   },
   {

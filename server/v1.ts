@@ -12,6 +12,7 @@ import {
   DEFAULT_CONVERSION,
 } from '../shared/conversions.js';
 import { htmlToMarkdown } from '../shared/from-html.js';
+import { jsonToMarkdown } from '../shared/from-json.js';
 import { delimitedToMarkdown } from '../shared/from-table.js';
 import { markdownToHtml } from './render.js';
 import { deleteSources, putSource, readSource } from './source.js';
@@ -246,6 +247,26 @@ v1.post('/documents', async (c) => {
     }
 
     markdown = table;
+  }
+
+  if (kind === 'json-to-markdown') {
+    try {
+      markdown = jsonToMarkdown(source, {
+        title: (name || 'document').replace(/\.[^.]+$/, ''),
+      });
+    } catch (cause) {
+      /*
+       * The parser says where it stopped, and that is the whole of what a caller can act on. A
+       * flat "could not convert" would send somebody hunting through a megabyte by eye.
+       */
+      return c.json(
+        {
+          error:
+            cause instanceof Error ? cause.message : 'That is not valid JSON',
+        },
+        400
+      );
+    }
   }
 
   if (!markdown.trim()) {

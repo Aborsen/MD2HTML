@@ -119,6 +119,7 @@ const KIND_BY_EXTENSION = {
   '.xhtml': 'html-to-markdown',
   '.csv': 'csv-to-markdown',
   '.tsv': 'csv-to-markdown',
+  '.json': 'json-to-markdown',
   '.docx': 'word-to-markdown',
 };
 

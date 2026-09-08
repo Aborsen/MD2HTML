@@ -39,7 +39,12 @@ export function ConversionPicker({
         Or convert something else
       </Typography>
 
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      {/*
+        * Five tracks at the top width, because there are five conversions and a grid of four
+        * would leave the fifth alone on a row of its own — which reads as a mistake rather than
+        * as the last item. Two on a phone, three in between.
+        */}
+      <div className="grid gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
         {CONVERSIONS.map((one) => {
           const isCurrent = one.id === current;
 

@@ -27,7 +27,7 @@ export const FAQ_ENTRIES: FaqEntry[] = [
   {
     question: 'What can it convert?',
     answer:
-      'Four things, each with its own page under Converter in the header: Markdown to HTML, HTML to Markdown, Word (.docx) to Markdown, and CSV or TSV to a Markdown table. Everything but the first ends as Markdown, which is what a document is stored, previewed and shared as here — so a Word file and a spreadsheet become the same kind of thing once they are in.',
+      'Five things, each with its own page under Converter in the header: Markdown to HTML, and HTML, Word (.docx), CSV or TSV, and JSON to Markdown. Everything but the first ends as Markdown, which is what a document is stored, previewed and shared as here — so a Word file, a spreadsheet and an API response become the same kind of thing once they are in.',
   },
   {
     question: 'Does my file get uploaded anywhere?',
