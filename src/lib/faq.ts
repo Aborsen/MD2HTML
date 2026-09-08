@@ -53,7 +53,7 @@ export const FAQ_ENTRIES: FaqEntry[] = [
   {
     question: 'Is there a size limit?',
     answer:
-      'A file dropped on the converter can be up to 10 MB. A document kept in an account can hold 1 MB of Markdown — around 150,000 words — and an account holds 500 documents or 100 MB, whichever comes first. Reaching a limit refuses the write and says so; nothing you saved is ever quietly deleted to make room.',
+      '10 MB a file, whether you are keeping it or not: the converter and the account take the same number, so a file that converts is a file that saves. That is around 1.5 million words of Markdown. An account holds 500 documents or 100 MB, whichever comes first. Reaching a limit refuses the write and says so; nothing you saved is ever quietly deleted to make room.',
   },
   {
     question: 'Can I convert files from a script?',

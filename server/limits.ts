@@ -1,3 +1,4 @@
+import { DOCUMENT_BYTES } from '../shared/limits.js';
 import { sql } from './db.js';
 
 /*
@@ -12,8 +13,11 @@ import { sql } from './db.js';
 export const QUOTA = {
   bytes: 100 * 1024 * 1024,
   documents: 500,
-  /** A single document. 1 MB of Markdown is around 150,000 words. */
-  documentBytes: 1024 * 1024,
+  /**
+   * A single document — the same number the dropzone enforces, from `shared/limits.ts`. 10 MB of
+   * Markdown is around 1.5 million words, which is more than anybody converts by accident.
+   */
+  documentBytes: DOCUMENT_BYTES,
 };
 
 /** Per caller per minute. A key that trips this is looping, not working. */

@@ -444,7 +444,7 @@ export function DocsPage() {
           />
           <p>
             Errors are <InlineCode>{'{ "error": "…" }'}</InlineCode> with a status that means what it
-            says: 401 unknown key, 404 not yours, 413 the document is over 1 MB, 403 the
+            says: 401 unknown key, 404 not yours, 413 the document is over 10 MB, 403 the
             account is out of room, 429 too fast, 410 the source is gone.
           </p>
         </Section>
@@ -586,12 +586,7 @@ node cli/tp.mjs usage                     # 65.8 kB of 100.0 MB · 3 of 500 docu
               {
                 key: 'document',
                 term: 'Per document',
-                text: '1 MB — roughly 150,000 words',
-              },
-              {
-                key: 'upload',
-                term: 'Per upload',
-                text: '10 MB a file in the browser',
+                text: '10 MB — roughly 1.5 million words. The dropzone and the account use the one number, so a file that converts is a file that can be kept; several files dropped together count as the one document they become',
               },
               {
                 key: 'caller',

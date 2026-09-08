@@ -15,7 +15,7 @@ import { HistoryPage } from './features/HistoryPage';
 import { SharedDocumentPage } from './features/SharedDocumentPage';
 import { AuthProvider, useAuth } from './lib/auth';
 import { ThemeProvider, useTheme } from './lib/theme';
-import { type DocFormat, toFileName } from './lib/format';
+import { type DocFormat, formatBytes, toFileName } from './lib/format';
 import { downloadDoc } from './lib/download';
 import type { HistoryEntry } from './lib/history';
 import { getDocStats, markdownToHtml } from './lib/markdown';
@@ -140,8 +140,17 @@ function Shell() {
         return;
       }
 
-      if (files.some((file) => file.size > MAX_FILE_SIZE)) {
-        toast.error('File is too large', { description: 'The limit is 10 MB.' });
+      /*
+       * The total, not each file: several dropped files become one document, and one document is
+       * what the limit is about. Checking them one at a time let three 4 MB files through to a
+       * save that then refused the 12 MB they made.
+       */
+      const dropped = files.reduce((total, file) => total + file.size, 0);
+
+      if (dropped > MAX_FILE_SIZE) {
+        toast.error(files.length > 1 ? 'Those files are too large' : 'File is too large', {
+          description: `${formatBytes(dropped)} — the limit for one document is ${formatBytes(MAX_FILE_SIZE)}.`,
+        });
         return;
       }
 
@@ -161,7 +170,7 @@ function Shell() {
         const converted = convert(
           id,
           mergedName(names),
-          files.reduce((total, file) => total + file.size, 0),
+          dropped,
           markdown,
           Date.now(),
           files.length > 1 ? names : undefined

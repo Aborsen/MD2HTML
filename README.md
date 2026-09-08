@@ -105,7 +105,7 @@ step; a deployment made before them needs a redeploy to see them. The build is a
   when it opens: no scripts, and no webfont either. It used to link DM Sans from Google, which made
   "self-contained" false in the one file that is actually handed to someone else, so the export
   falls back through `ui-sans-serif` to the system face and asks for nothing.
-- **History** — signed in: stored in the account (up to 500 documents, 1 MB of source
+- **History** — signed in: stored in the account (up to 500 documents, 10 MB of source
   each), available on every device; signed out: the last 25 conversions in
   `localStorage`. Whatever was collected locally is moved into the account on
   first sign-in. The page has its own dropzone, a search box over file names,
@@ -159,7 +159,7 @@ curl -H "Authorization: Bearer tp_live_…"      --data-binary @README.md      "
 
 A cookie works too, so the same endpoints can be tried from a signed-in browser. `GET
 /api/v1/usage` says what an account is using. Errors are `{ "error": "…" }` with a status that means
-what it says: 401 unknown key, 404 not yours, 413 the document is over 1 MB, 403 the account is out
+what it says: 401 unknown key, 404 not yours, 413 the document is over 10 MB, 403 the account is out
 of room, 429 too fast, 410 the source is gone.
 
 ## From a terminal
@@ -239,7 +239,7 @@ pressing Connect) is the one part it mints directly, exactly as `/approve` would
 | | |
 | --- | --- |
 | Per account | 100 MB, 500 documents |
-| Per document | 1 MB of Markdown — roughly 150,000 words |
+| Per document | 10 MB of Markdown — roughly 1.5 million words |
 | Per caller | 60 requests a minute, counted by key or by session |
 
 Reaching a limit is a refusal, not a silent eviction: this app used to drop the oldest document to

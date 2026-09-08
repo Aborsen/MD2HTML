@@ -1,10 +1,12 @@
 import { CloudUpload, FileText } from 'lucide-react';
+import { DOCUMENT_BYTES } from '@shared/limits';
 import { type DragEvent, type ChangeEvent, useRef, useState } from 'react';
 import { Button } from '@/ui/components/Button';
 import { Typography } from '@/ui/components/Typography';
 import { cn } from '@/ui/lib/utils';
 
-export const MAX_FILE_SIZE = 10 * 1024 * 1024;
+/** What the account will accept too, so a file that converts here can also be kept. */
+export const MAX_FILE_SIZE = DOCUMENT_BYTES;
 
 interface DropzoneProps {
   isBusy?: boolean;

@@ -91,7 +91,7 @@ curl -H "Authorization: Bearer $TP_API_KEY" \
 
 The response is JSON with the document id and, because of `?share=link`, a read-only URL that is already live. `GET /api/v1/documents/:id.html` gives you the HTML file if you want that too. A dependency-free CLI wraps the same endpoints: `login`, `push`, `list`, `rm`, `usage`, plus `--json` for scripts.
 
-Two numbers shape how you call it: 1 MB a document, 60 requests a minute per caller. Forty files clear that easily; thousands need a sleep, or one merged document.
+Two numbers shape how you call it: 10 MB a document, 60 requests a minute per caller. Forty files clear that easily; thousands need a sleep, or one merged document.
 
 The trade-off is honest: a network call and a secret. If the build must work offline, keep the local converter.
 
