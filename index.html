@@ -11,11 +11,32 @@
       content="Upload a Markdown file and see how it looks in HTML. Runs entirely in your browser."
     />
     <title>M2H — Markdown to HTML</title>
+    <!--
+      Every route ships with a prerendered copy of its content inside #root, for crawlers that do
+      not run scripts. A browser that does run them would show that copy for a moment first — a
+      column of unstyled prose, since the app's own reset removes the default heading and paragraph
+      styles — and then swap it for the app. Hiding it while scripts are working removes the flash;
+      the failsafe below puts it back if the bundle never arrives.
+    -->
+    <style>
+      html.js-ready #prerender {
+        display: none;
+      }
+    </style>
   </head>
   <body>
     <div id="root"></div>
     <script>
-      // Applied before first paint so a remembered light theme does not flash dark.
+      // Both of these run before first paint: one so a remembered light theme does not flash dark,
+      // one so the prerendered copy is never shown to a browser that is about to replace it.
+      document.documentElement.classList.add('js-ready');
+
+      setTimeout(function () {
+        if (document.getElementById('prerender')) {
+          document.documentElement.classList.remove('js-ready');
+        }
+      }, 4000);
+
       try {
         var stored = localStorage.getItem('m2h.theme');
         if (stored === 'light') {

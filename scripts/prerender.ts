@@ -62,6 +62,22 @@ const escapeHtml = (value: string) =>
 const jsonLd = (data: unknown) =>
   `<script type="application/ld+json">${JSON.stringify(data).replace(/</g, '\\u003c')}</script>`;
 
+/*
+ * The app's reset removes the default heading and paragraph styles, so without this the fallback is
+ * a column of same-sized text. index.html hides that copy outright while scripts are working; this
+ * is for the reader whose bundle never arrives, and it costs a few hundred bytes.
+ */
+const FALLBACK_STYLE = `<style>
+      #prerender { max-width: 44rem; margin: 0 auto; padding: 2.5rem 1.5rem; line-height: 1.65; }
+      #prerender h1 { font-size: 1.75rem; font-weight: 600; margin: 0 0 0.75rem; }
+      #prerender h2 { font-size: 1.15rem; font-weight: 600; margin: 1.75rem 0 0.4rem; }
+      #prerender p { margin: 0 0 0.85rem; }
+      #prerender ul { margin: 0 0 1rem 1.25rem; list-style: disc; }
+      #prerender li { margin: 0 0 0.4rem; }
+      #prerender a { color: inherit; text-decoration: underline; }
+      #prerender .md-doc { max-width: none; padding: 0; }
+    </style>`;
+
 interface Page {
   /** Route path, leading slash, no trailing one except the root. */
   path: string;
@@ -86,6 +102,7 @@ function render(page: Page): string {
     `<meta property="og:description" content="${escapeHtml(page.description)}" />`,
     `<meta property="og:url" content="${url}" />`,
     `<meta name="twitter:card" content="summary" />`,
+    FALLBACK_STYLE,
     page.head ?? '',
   ].join('\n    ');
 
@@ -100,7 +117,7 @@ function render(page: Page): string {
     .replace('</head>', `  ${HEAD_OPEN}\n    ${head}\n    ${HEAD_CLOSE}\n  </head>`)
     .replace(
       '<div id="root"></div>',
-      `${BODY_OPEN}${page.body}${BODY_CLOSE}`
+      `${BODY_OPEN}<div id="prerender">${page.body}</div>${BODY_CLOSE}`
     );
 }
 

@@ -122,8 +122,8 @@ export function ConverterPage({
         <div className="grid gap-4 sm:grid-cols-3">
           {[
             {
-              title: 'Nothing leaves your machine',
-              text: 'Parsing and sanitizing happen fully in the browser.',
+              title: 'Converted in this browser',
+              text: 'Signed out, the file is never sent anywhere. Sign in and the Markdown is kept in your account so the document follows you.',
             },
             {
               title: 'Several files, one document',
@@ -131,7 +131,7 @@ export function ConverterPage({
             },
             {
               title: 'Self-contained export',
-              text: 'The downloaded .html carries its styles inline.',
+              text: 'The downloaded .html carries its styles inline and asks the network for nothing.',
             },
           ].map((item) => (
             <Card
@@ -151,42 +151,49 @@ export function ConverterPage({
           ))}
         </div>
 
-        {/* Below the fold: what to read while deciding, and the questions people arrive with. */}
+        {/* Below the fold: two bands, each opening with a pill, so the page stops reading as one sheet. */}
         {ARTICLES.length > 0 && (
-        <section className="flex flex-col gap-4 pt-4">
-          <SectionHeading
-            eyebrow="From the blog"
-            title="Making Markdown behave"
-            description="Syntax that breaks, documents that have to reach other people, and getting the whole thing to run without you."
-            action={
-              <Button variant="tertiary" size="sm" onClick={onGoToBlog}>
-                All articles
-              </Button>
-            }
-          />
+          <section className="mt-6 flex flex-col items-center gap-6 border-stroke border-t pt-12">
+            <SectionHeading
+              align="center"
+              badge
+              size="lg"
+              eyebrow="From the blog"
+              title="Making Markdown behave"
+              description="Syntax that breaks, documents that have to reach other people, and getting the whole thing to run without you."
+            />
 
-          <div className="grid gap-4 md:grid-cols-3">
-            {ARTICLES.slice(0, 3).map((article) => (
-              <ArticleCard
-                key={article.slug}
-                title={article.title}
-                description={article.description}
-                href={articlePath(article.slug)}
-                onOpen={() => onOpenArticle(article.slug)}
-                tag={article.tag}
-                meta={formatArticleDate(article.date)}
-              />
-            ))}
-          </div>
-        </section>
+            <div className="grid w-full gap-4 md:grid-cols-3">
+              {ARTICLES.slice(0, 3).map((article) => (
+                <ArticleCard
+                  key={article.slug}
+                  title={article.title}
+                  description={article.description}
+                  href={articlePath(article.slug)}
+                  onOpen={() => onOpenArticle(article.slug)}
+                  tag={article.tag}
+                  meta={formatArticleDate(article.date)}
+                />
+              ))}
+            </div>
+
+            <Button variant="secondary" size="sm" onClick={onGoToBlog}>
+              All articles
+            </Button>
+          </section>
         )}
 
-        <section className="flex flex-col gap-4 pt-2 pb-4">
+        <section className="mt-10 flex flex-col items-center gap-8 rounded-2xl border border-stroke bg-surface-card2/40 px-4 py-12 sm:px-10">
           <SectionHeading
+            align="center"
+            badge
+            size="lg"
             eyebrow="FAQ"
-            title="Before you drop a file"
+            title="Questions people arrive with"
+            description="What happens to the file, what the download contains, and what an account adds."
           />
-          <Faq items={FAQ_ENTRIES} />
+
+          <Faq items={FAQ_ENTRIES} className="max-w-3xl" />
         </section>
       </div>
     );

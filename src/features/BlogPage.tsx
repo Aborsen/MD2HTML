@@ -48,12 +48,22 @@ export function BlogPage({ onOpenArticle }: BlogPageProps) {
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-col gap-6">
       <SectionHeading
+        align="center"
+        badge
+        size="lg"
         eyebrow="Blog"
         title="Markdown, and what to do with it"
         description="Conversion, syntax that breaks, publishing, and getting the whole thing to run without you."
+        className="pt-2 pb-2"
       />
 
-      <FilterChips items={chips} value={tag} onValueChange={setTag} />
+      {/* Centred under a centred heading; below `lg` they scroll, so they stay flush left there. */}
+      <FilterChips
+        items={chips}
+        value={tag}
+        onValueChange={setTag}
+        className="lg:justify-center"
+      />
 
       {shown.length === 0 ? (
         <Typography variant="p" textColor="secondary" className="py-8 text-sm">

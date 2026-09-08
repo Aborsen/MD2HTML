@@ -13,10 +13,10 @@ import { ScrollToTop } from '@/components/ScrollToTop';
 import { DOCS_SECTIONS } from '@/lib/docs-sections';
 import { FAQ_ENTRIES } from '@/lib/faq';
 import { useTheme } from '@/lib/theme';
-import { Badge } from '@/ui/components/Badge';
 import { CodeBlock, InlineCode } from '@/ui/components/Code';
 import { DefinitionTable } from '@/ui/components/DefinitionTable';
 import { Faq } from '@/ui/components/Faq';
+import { SectionBadge } from '@/ui/components/SectionBadge';
 import { Typography } from '@/ui/components/Typography';
 import { cn } from '@/ui/lib/utils';
 
@@ -187,7 +187,7 @@ export function DocsPage() {
 
       <div className="min-w-0 max-w-3xl flex-1 space-y-12 pb-8">
         <header className="space-y-3">
-          <Badge variant="secondary">Documentation</Badge>
+          <SectionBadge>Documentation</SectionBadge>
           <Typography variant="h1" className="text-2xl md:text-2xl">
             Everything M2H does
           </Typography>
