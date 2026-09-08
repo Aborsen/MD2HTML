@@ -83,7 +83,7 @@ If a converter offers an API, four questions settle it, and the documentation sh
 - [ ] What is the rate limit, and what does the response look like when you cross it?
 - [ ] What happens when the account is full — a refused write, or a quiet deletion of something older?
 
-The last one is the one people skip. A tool that drops your oldest document to make room for the new one has decided something about your data, and you find out at the worst moment. Refusing the write is the honest behaviour. transformpipe caps an account at 100 MB and 500 documents, a document at 10 MB and a caller at 60 requests a minute; reaching a limit refuses the write rather than deleting anything. The endpoints and the key format are in [the documentation](/docs).
+The last one is the one people skip. A tool that drops your oldest document to make room for the new one has decided something about your data, and you find out at the worst moment. Refusing the write is the honest behaviour. transformpipe caps an account at 100 MB and 500 documents, a conversion at 10 MB, a kept document at 4 MB and a caller at 60 requests a minute; reaching a limit refuses the write rather than deleting anything. The endpoints and the key format are in [the documentation](/docs).
 
 ## Run it twice
 

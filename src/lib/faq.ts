@@ -53,7 +53,7 @@ export const FAQ_ENTRIES: FaqEntry[] = [
   {
     question: 'Is there a size limit?',
     answer:
-      '10 MB a file, whether you are keeping it or not: the converter and the account take the same number, so a file that converts is a file that saves. That is around 1.5 million words of Markdown. An account holds 500 documents or 100 MB, whichever comes first. Reaching a limit refuses the write and says so; nothing you saved is ever quietly deleted to make room.',
+      '10 MB a file to convert — around 1.5 million words — because converting happens on your own machine. Keeping one in an account is capped at 4 MB, which is not our number: the platform refuses a larger request outright. A bigger file still converts, previews and downloads; it just stays out of the history, and the app says so instead of pretending it saved. An account holds 500 documents or 100 MB, whichever comes first. Reaching a limit refuses the write and says so; nothing you saved is ever quietly deleted to make room.',
   },
   {
     question: 'Can I convert files from a script?',

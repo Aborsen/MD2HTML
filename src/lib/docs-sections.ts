@@ -72,7 +72,7 @@ export const DOCS_SECTIONS: DocsSection[] = [
     id: 'limits',
     title: 'Limits',
     summary:
-      '100 MB and 500 documents an account, 10 MB a document, 60 requests a minute. Reaching one refuses the write rather than deleting anything.',
+      '10 MB a file to convert and 4 MB to keep one in an account, 100 MB and 500 documents an account, 60 requests a minute. Reaching one refuses the write rather than deleting anything.',
   },
   {
     id: 'faq',

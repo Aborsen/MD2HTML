@@ -444,7 +444,7 @@ export function DocsPage() {
           />
           <p>
             Errors are <InlineCode>{'{ "error": "…" }'}</InlineCode> with a status that means what it
-            says: 401 unknown key, 404 not yours, 413 the document is over 10 MB, 403 the
+            says: 401 unknown key, 404 not yours, 413 the document is over 4 MB, 403 the
             account is out of room, 429 too fast, 410 the source is gone.
           </p>
         </Section>
@@ -584,9 +584,14 @@ node cli/tp.mjs usage                     # 65.8 kB of 100.0 MB · 3 of 500 docu
                 text: '100 MB of Markdown, 500 documents',
               },
               {
+                key: 'convert',
+                term: 'Per conversion',
+                text: '10 MB — roughly 1.5 million words. Several files dropped together count as the one document they become',
+              },
+              {
                 key: 'document',
-                term: 'Per document',
-                text: '10 MB — roughly 1.5 million words. The dropzone and the account use the one number, so a file that converts is a file that can be kept; several files dropped together count as the one document they become',
+                term: 'Per kept document',
+                text: '4 MB, and not by our choice: a Vercel Function refuses a request or a response body over 4.5 MB before any of this code runs, so a larger document could be neither saved nor read back. It still converts, previews and downloads — it stays out of the history, and the app says so rather than reporting a save that did not happen',
               },
               {
                 key: 'caller',

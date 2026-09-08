@@ -350,9 +350,13 @@ export function HistoryPage({
           isDragging && 'border-dropzone-border-active bg-dropzone-bg-active'
         )}
       >
+        {/*
+          * This one takes everything, and the conversion is chosen from the extension — so the
+          * label had better not promise Markdown.
+          */}
         <span className="flex items-center gap-2 font-semibold text-ink-primary text-sm">
           <Upload className="size-4 text-brand-tertiary" />
-          Drag &amp; drop Markdown here
+          Drop files
         </span>
         <Typography variant="span" textColor="secondary" className="text-xs">
           or click to browse — several files are chained into one document

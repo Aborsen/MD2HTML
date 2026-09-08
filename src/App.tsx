@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { AppHeader } from './components/AppHeader';
 import { MAX_FILE_SIZE } from './components/Dropzone';
+import { KEEP_BYTES } from '@shared/limits';
 import {
   conversion,
   type ConversionId,
@@ -181,13 +182,24 @@ function Shell() {
         setViewState('converter');
         goToConversion(id);
 
-        const stored = await history.add({
-          name: converted.name,
-          kind: converted.kind,
-          size: converted.size,
-          markdown: converted.markdown,
-          stats: converted.stats,
-        });
+        /*
+         * Too big to keep is not too big to convert. The document is on screen and downloadable
+         * either way; what changes is whether the account can hold it, and saying so here beats
+         * a success toast over a save that never happened.
+         */
+        const tooBigToKeep =
+          user !== null &&
+          new TextEncoder().encode(converted.markdown).length > KEEP_BYTES;
+
+        const stored = tooBigToKeep
+          ? null
+          : await history.add({
+              name: converted.name,
+              kind: converted.kind,
+              size: converted.size,
+              markdown: converted.markdown,
+              stats: converted.stats,
+            });
 
         if (stored?.remote) {
           setDoc((current) =>
@@ -197,12 +209,20 @@ function Shell() {
           );
         }
 
-        toast.success(
-          files.length > 1
-            ? `Chained ${files.length} files into one document`
-            : `Converted to ${conversion(id).short.split(' → ')[1] ?? 'Markdown'}`,
-          { description: converted.name }
-        );
+        if (tooBigToKeep) {
+          toast.warning('Converted, but not saved to your account', {
+            description: `A kept document can be ${formatBytes(KEEP_BYTES)}; this one is ${formatBytes(
+              new TextEncoder().encode(converted.markdown).length
+            )}. Download it — it is ready.`,
+          });
+        } else {
+          toast.success(
+            files.length > 1
+              ? `Chained ${files.length} files into one document`
+              : `Converted to ${conversion(id).short.split(' → ')[1] ?? 'Markdown'}`,
+            { description: converted.name }
+          );
+        }
       } catch (cause) {
         /*
          * Say what went wrong. This used to be one sentence for every failure — "Could not read the
