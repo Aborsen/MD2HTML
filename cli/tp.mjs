@@ -1,12 +1,12 @@
 #!/usr/bin/env node
-/* m2h — publish Markdown from a terminal.
+/* tp — publish Markdown from a terminal.
  *
- *   m2h login m2h_live_…                  remember a key for this machine
- *   m2h push README.md --share            convert and publish; prints the link
- *   m2h push docs/*.md --merge --share    chain several files into one document
- *   m2h list                              what is in the account
- *   m2h rm <id>                           delete one
- *   m2h usage                             how much room is left
+ *   tp login tp_live_…                  remember a key for this machine
+ *   tp push README.md --share            convert and publish; prints the link
+ *   tp push docs/*.md --merge --share    chain several files into one document
+ *   tp list                              what is in the account
+ *   tp rm <id>                           delete one
+ *   tp usage                             how much room is left
  *
  * No dependencies on purpose: a tool people run in CI should not drag a tree of packages behind
  * it, and everything here is one fetch and some printing.
@@ -15,14 +15,14 @@ import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { basename, join } from 'node:path';
 
-const HOST = process.env.M2H_HOST ?? 'https://transformpipe.com';
-const CONFIG_DIR = join(homedir(), '.config', 'm2h');
+const HOST = process.env.TP_HOST ?? 'https://transformpipe.com';
+const CONFIG_DIR = join(homedir(), '.config', 'tp');
 const CONFIG = join(CONFIG_DIR, 'config.json');
 
 const args = process.argv.slice(2);
 const command = args.shift();
 
-/** Flags anywhere, files anywhere: `m2h push --share a.md b.md` reads the way people type it. */
+/** Flags anywhere, files anywhere: `tp push --share a.md b.md` reads the way people type it. */
 function parse(argv) {
   const flags = {};
   const rest = [];
@@ -62,11 +62,11 @@ function storedKey() {
 }
 
 function key() {
-  const found = flags.key ?? process.env.M2H_API_KEY ?? storedKey();
+  const found = flags.key ?? process.env.TP_API_KEY ?? storedKey();
 
   if (!found) {
     fail(
-      'No API key. Run `m2h login m2h_live_…`, set M2H_API_KEY, or pass --key.\n' +
+      'No API key. Run `tp login tp_live_…`, set TP_API_KEY, or pass --key.\n' +
         `Create one in the account menu at ${HOST}`
     );
   }
@@ -109,7 +109,7 @@ async function push() {
   const files = rest;
 
   if (files.length === 0) {
-    fail('Which file? `m2h push README.md --share`');
+    fail('Which file? `tp push README.md --share`');
   }
 
   const share = flags.share === true ? 'link' : flags.share;
@@ -180,7 +180,7 @@ async function list() {
   }
 
   if (documents.length === 0) {
-    console.log('Nothing here yet. `m2h push README.md --share`');
+    console.log('Nothing here yet. `tp push README.md --share`');
     return;
   }
 
@@ -195,7 +195,7 @@ async function list() {
 
 async function remove() {
   if (rest.length === 0) {
-    fail('Which one? `m2h rm <id>` — `m2h list` shows the ids.');
+    fail('Which one? `tp rm <id>` — `tp list` shows the ids.');
   }
 
   for (const id of rest) {
@@ -220,8 +220,8 @@ async function usage() {
 function login() {
   const token = rest[0];
 
-  if (!token?.startsWith('m2h_live_')) {
-    fail('Pass the key: `m2h login m2h_live_…`');
+  if (!token?.startsWith('tp_live_')) {
+    fail('Pass the key: `tp login tp_live_…`');
   }
 
   mkdirSync(CONFIG_DIR, { recursive: true });
@@ -234,24 +234,24 @@ const commands = { push, list, rm: remove, usage, login };
 if (!command || command === '--help' || command === '-h') {
   console.log(
     [
-      'm2h — publish Markdown from a terminal',
+      'tp — publish Markdown from a terminal',
       '',
-      '  m2h login m2h_live_…               remember a key for this machine',
-      '  m2h push README.md --share         convert and publish; prints the link',
-      '  m2h push docs/*.md --merge --share chain several files into one document',
-      '  m2h list                           what is in the account',
-      '  m2h rm <id>                        delete one',
-      '  m2h usage                          how much room is left',
+      '  tp login tp_live_…               remember a key for this machine',
+      '  tp push README.md --share         convert and publish; prints the link',
+      '  tp push docs/*.md --merge --share chain several files into one document',
+      '  tp list                           what is in the account',
+      '  tp rm <id>                        delete one',
+      '  tp usage                          how much room is left',
       '',
       'Options: --key, --name, --share link|people, --merge, --json',
-      `Host:    ${HOST}  (M2H_HOST to point elsewhere)`,
+      `Host:    ${HOST}  (TP_HOST to point elsewhere)`,
     ].join('\n')
   );
   process.exit(0);
 }
 
 if (!commands[command]) {
-  fail(`Unknown command: ${command}. Try \`m2h --help\`.`);
+  fail(`Unknown command: ${command}. Try \`tp --help\`.`);
 }
 
 await commands[command]();

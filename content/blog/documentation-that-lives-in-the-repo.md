@@ -75,7 +75,7 @@ Two details decide whether people use it. Put the command above the paragraph ex
 
 ## Publish the rendered pages
 
-The source of truth does not have to be the reading surface. Render the Markdown and hand people a page. That can be as small as dropping the file on M2H and sending the self-contained HTML, or [publishing a read-only link](/blog/share-a-markdown-document-as-a-link): "anyone with the link" for a public runbook, "only these addresses" for anything internal. Revoking drops the token, so a link already sent stops working. It scales up to [a GitHub Action that publishes the Markdown a pull request changed](/blog/publish-markdown-from-github-actions), or an `m2h push` step [in the release script](/blog/markdown-to-html-from-the-command-line).
+The source of truth does not have to be the reading surface. Render the Markdown and hand people a page. That can be as small as dropping the file on transformpipe and sending the self-contained HTML, or [publishing a read-only link](/blog/share-a-markdown-document-as-a-link): "anyone with the link" for a public runbook, "only these addresses" for anything internal. Revoking drops the token, so a link already sent stops working. It scales up to [a GitHub Action that publishes the Markdown a pull request changed](/blog/publish-markdown-from-github-actions), or an `tp push` step [in the release script](/blog/markdown-to-html-from-the-command-line).
 
 Know when this is the wrong shape. A large documentation set that needs navigation, versioning and full-text search wants a static site generator — MkDocs, Docusaurus, Hugo — and you should build one. A page per document suits the other case: runbooks, RFCs, release notes, a README going to a client.
 
@@ -89,4 +89,4 @@ Know when this is the wrong shape. A large documentation set that needs navigati
 
 The last one causes the most argument and matters most. A deleted page sends the reader to ask a person; a stale page sends them confidently to the wrong port.
 
-Pick the document that is most wrong today — usually the setup instructions, because only new joiners run them, and they assume the fault is theirs. Fix it in a branch, review it like code, then send the link to whoever needed it last week. M2H does that last part in the browser, free; the full options are in [the docs](/docs).
+Pick the document that is most wrong today — usually the setup instructions, because only new joiners run them, and they assume the fault is theirs. Fix it in a branch, review it like code, then send the link to whoever needed it last week. transformpipe does that last part in the browser, free; the full options are in [the docs](/docs).

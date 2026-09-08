@@ -61,7 +61,7 @@ const kept = [...KEYS, ...carried];
 
 writeFileSync(
   FILE,
-  `# M2H server variables. Gitignored — never committed.\n` +
+  `# transformpipe server variables. Gitignored — never committed.\n` +
     kept.map((key) => `${key}="${values.get(key)}"`).join('\n') +
     '\n'
 );

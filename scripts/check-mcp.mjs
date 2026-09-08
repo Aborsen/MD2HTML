@@ -358,19 +358,19 @@ check(
 
 console.log('\n— the tools');
 
-const help = await tool(tokens.access_token, 'm2h_help', { question: 'what are the limits' });
+const help = await tool(tokens.access_token, 'tp_help', { question: 'what are the limits' });
 check('help answers from the documentation', /100/.test(help.text) && !help.isError, help.text.slice(0, 80));
 
-const converted = await tool(tokens.access_token, 'm2h_convert_markdown', {
+const converted = await tool(tokens.access_token, 'tp_convert_markdown', {
   markdown: '# Hi\n\n<script>alert(1)</script>\n\n| a | b |\n| --- | --- |\n| 1 | 2 |',
 });
 check('convert renders a table', /<table>/.test(converted.text));
 check('and drops the script', !/<script/.test(converted.text), converted.text.slice(0, 120));
 
-const empty = await tool(tokens.access_token, 'm2h_convert_markdown', { markdown: '   ' });
+const empty = await tool(tokens.access_token, 'tp_convert_markdown', { markdown: '   ' });
 check('an empty conversion is refused in a sentence', empty.isError && /no Markdown/i.test(empty.text));
 
-const saved = await tool(tokens.access_token, 'm2h_save_document', {
+const saved = await tool(tokens.access_token, 'tp_save_document', {
   markdown: '# From an assistant\n\nHello.',
   name: 'mcp-e2e.md',
   share: 'link',
@@ -409,17 +409,17 @@ if (savedUrl) {
   check('which serves the document', page.ok && /From an assistant/.test(html));
 }
 
-const list = await tool(tokens.access_token, 'm2h_list_documents', { query: 'mcp-e2e' });
+const list = await tool(tokens.access_token, 'tp_list_documents', { query: 'mcp-e2e' });
 check('the list finds it and states what it showed', /1 of 1 shown/.test(list.text), list.text.slice(0, 100));
 
-const got = await tool(tokens.access_token, 'm2h_get_document', { id: savedId });
+const got = await tool(tokens.access_token, 'tp_get_document', { id: savedId });
 check('get returns the source', /Hello\./.test(got.text));
 
-const asHtml = await tool(tokens.access_token, 'm2h_get_document', { id: savedId, as: 'html' });
+const asHtml = await tool(tokens.access_token, 'tp_get_document', { id: savedId, as: 'html' });
 check('and the HTML', /<h1/.test(asHtml.text));
 }
 
-const missing = await tool(tokens.access_token, 'm2h_get_document', {
+const missing = await tool(tokens.access_token, 'tp_get_document', {
   id: '00000000-0000-0000-0000-000000000000',
 });
 check('a document that is not yours is simply not found', missing.isError, missing.text.slice(0, 80));
@@ -427,17 +427,17 @@ check('a document that is not yours is simply not found', missing.isError, missi
 if (blobless) {
   skip('sharing can be revoked', why);
 } else {
-  const shared = await tool(tokens.access_token, 'm2h_share_document', {
+  const shared = await tool(tokens.access_token, 'tp_share_document', {
     id: savedId,
     mode: 'private',
   });
   check('sharing can be revoked', /private/.test(shared.text) && /no longer opens/.test(shared.text), shared.text);
 }
 
-const usage = await tool(tokens.access_token, 'm2h_usage', {});
+const usage = await tool(tokens.access_token, 'tp_usage', {});
 check('usage names both ceilings', /of 100.0 MB/.test(usage.text) && /of 500 documents/.test(usage.text), usage.text);
 
-const unconfirmed = await tool(tokens.access_token, 'm2h_delete_document', {
+const unconfirmed = await tool(tokens.access_token, 'tp_delete_document', {
   id: savedId ?? '00000000-0000-0000-0000-000000000000',
   confirm: false,
 });
@@ -446,11 +446,11 @@ check('a delete without confirmation refuses and says why', unconfirmed.isError 
 if (blobless) {
   skip('and with it, the document goes', why);
 } else {
-  const deleted = await tool(tokens.access_token, 'm2h_delete_document', { id: savedId, confirm: true });
+  const deleted = await tool(tokens.access_token, 'tp_delete_document', { id: savedId, confirm: true });
   check('and with it, the document goes', /Deleted/.test(deleted.text), deleted.text);
 }
 
-const nonsenseId = await tool(tokens.access_token, 'm2h_get_document', { id: '../usage' });
+const nonsenseId = await tool(tokens.access_token, 'tp_get_document', { id: '../usage' });
 check(
   'an id that is not an id is not found, rather than a crash',
   nonsenseId.isError,
@@ -467,10 +467,10 @@ await sql`
           'documents:read', ${`${HOST}/api/mcp`}, now() + interval '1 hour')
 `;
 
-const refusedWrite = await tool(readOnly, 'm2h_save_document', { markdown: '# no' });
+const refusedWrite = await tool(readOnly, 'tp_save_document', { markdown: '# no' });
 check('a read-only grant cannot save', refusedWrite.isError && /read-only/.test(refusedWrite.text), refusedWrite.text);
 
-const allowedRead = await tool(readOnly, 'm2h_list_documents', {});
+const allowedRead = await tool(readOnly, 'tp_list_documents', {});
 check('but can still read', !allowedRead.isError);
 
 console.log('\n— refresh and revocation');
@@ -602,7 +602,7 @@ const [stranger] = await sql`
 `;
 
 if (stranger) {
-  const theirs = await tool(stillGood, 'm2h_get_document', { id: stranger.id });
+  const theirs = await tool(stillGood, 'tp_get_document', { id: stranger.id });
   check("another account's document is not found, id or no id", theirs.isError, theirs.text.slice(0, 80));
 } else {
   skip("another account's document is not found", 'only one account in this database');
@@ -658,7 +658,7 @@ const notification = await fetch(`${HOST}/api/mcp`, {
   body: JSON.stringify({
     jsonrpc: '2.0',
     method: 'tools/call',
-    params: { name: 'm2h_usage', arguments: {} },
+    params: { name: 'tp_usage', arguments: {} },
   }),
 });
 const notificationBody = await notification.text();

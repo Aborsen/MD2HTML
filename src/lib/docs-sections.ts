@@ -66,7 +66,7 @@ export const DOCS_SECTIONS: DocsSection[] = [
     id: 'assistant',
     title: 'In an assistant',
     summary:
-      'Add M2H to Claude as a connector and it can convert, save, share and delete documents in this account — signed in as you, with no key to paste.',
+      'Add transformpipe to Claude as a connector and it can convert, save, share and delete documents in this account — signed in as you, with no key to paste.',
   },
   {
     id: 'limits',

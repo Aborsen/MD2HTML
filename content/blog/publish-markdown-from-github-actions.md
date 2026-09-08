@@ -42,10 +42,10 @@ jobs:
 
       - uses: Aborsen/MD2HTML@v1
         with:
-          api-key: ${{ secrets.M2H_API_KEY }}
+          api-key: ${{ secrets.TP_API_KEY }}
 ```
 
-That is the whole thing. The key is an M2H API key, stored as a repository secret; the action ships with the converter, and `action.yml` and `/docs` list its inputs. Given no file list, it asks git which Markdown files the pull request touched, publishes each one, and comments a table of file name, word count and link. Files the branch deleted are skipped, so a removed document does not fail the run.
+That is the whole thing. The key is an transformpipe API key, stored as a repository secret; the action ships with the converter, and `action.yml` and `/docs` list its inputs. Given no file list, it asks git which Markdown files the pull request touched, publishes each one, and comments a table of file name, word count and link. Files the branch deleted are skipped, so a removed document does not fail the run.
 
 The `paths` filter keeps the job off pull requests that only change code.
 
@@ -58,7 +58,7 @@ The `paths` filter keeps the job off pull requests that only change code.
 ```yaml
       - uses: Aborsen/MD2HTML@v1
         with:
-          api-key: ${{ secrets.M2H_API_KEY }}
+          api-key: ${{ secrets.TP_API_KEY }}
           files: docs/handbook/intro.md docs/handbook/style.md
           merge: true
           name: Handbook preview
@@ -78,7 +78,7 @@ One limit is worth knowing up front. A `pull_request` event raised from a fork g
 
 The action publishes a fresh document each time it runs. Overwriting a single page would be tidier to look at and worse to use, because an overwrite makes every old link a liar. Someone reads the comment on Monday, follows the link on Thursday, and gets Thursday's text under Monday's approval.
 
-A new document per push keeps each link pinned to the commit that produced it. The comment thread becomes a record of what the branch said at each round of review. The cost is documents: each push spends one against the 500-document account limit, and reaching a limit refuses the write instead of quietly deleting anything. Clear old previews in bulk from the history, or with `m2h rm` from the [command line](/blog/markdown-to-html-from-the-command-line).
+A new document per push keeps each link pinned to the commit that produced it. The comment thread becomes a record of what the branch said at each round of review. The cost is documents: each push spends one against the 500-document account limit, and reaching a limit refuses the write instead of quietly deleting anything. Clear old previews in bulk from the history, or with `tp rm` from the [command line](/blog/markdown-to-html-from-the-command-line).
 
 ## Choosing what the links show
 
@@ -94,4 +94,4 @@ Public repository, public preview: `link` is fine. For a private handbook, `peop
 
 This pattern suits repositories where the Markdown is the deliverable — [documentation that lives beside the code](/blog/documentation-that-lives-in-the-repo), [release notes written for a reader, not a commit log](/blog/release-notes-from-markdown), RFCs, runbooks. If your Markdown feeds a static site with its own theme and navigation, a preview deployment from your host renders it properly and this does not.
 
-Start with a repository where the writing gets reviewed by someone who is not a developer. Add the workflow, open a pull request against a file that needs a real edit, and see whether the first comment is about the text rather than the formatting. To see the output before wiring up a key, drop the file on M2H first.
+Start with a repository where the writing gets reviewed by someone who is not a developer. Add the workflow, open a pull request against a file that needs a real edit, and see whether the first comment is about the text rather than the formatting. To see the output before wiring up a key, drop the file on transformpipe first.

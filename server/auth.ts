@@ -46,7 +46,7 @@ const HOST_SHAPE = /^[a-z0-9.-]+(:\d{1,5})?$/i;
 /** Hostnames this deployment answers on, from the platform. Empty in a plain checkout. */
 const OWN_HOSTS = new Set(
   [
-    process.env.M2H_HOST,
+    process.env.TP_HOST,
     process.env.VERCEL_PROJECT_PRODUCTION_URL,
     process.env.VERCEL_URL,
     process.env.VERCEL_BRANCH_URL,

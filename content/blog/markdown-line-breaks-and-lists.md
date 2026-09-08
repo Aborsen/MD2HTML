@@ -63,7 +63,7 @@ A checkbox is a list item whose text begins with brackets:
 - [ ] The brackets come first — text before them and it is an ordinary item
 - [ ] `x` or `X` ticks it, a single space leaves it empty, and that space is required
 
-A task list is a GitHub Flavored Markdown extension, not plain CommonMark, so a strict CommonMark converter hands you literal square brackets. M2H speaks GFM, so task lists, tables, strikethrough and autolinks come through as themselves. The checkbox in the output is a picture of the state in your file, not a control: GFM renders it as a disabled input, so there is nothing to click.
+A task list is a GitHub Flavored Markdown extension, not plain CommonMark, so a strict CommonMark converter hands you literal square brackets. transformpipe speaks GFM, so task lists, tables, strikethrough and autolinks come through as themselves. The checkbox in the output is a picture of the state in your file, not a control: GFM renders it as a disabled input, so there is nothing to click.
 
 ## Escaping a character that means something
 
@@ -79,4 +79,4 @@ The date is the classic case: a line starting with a number, a full stop and a s
 
 Two things that save you backslashes. Underscores inside a word are left alone, so `snake_case_name` survives untouched; asterisks are not, so `a*b*c` still emphasises. And a backslash does nothing inside a code span, which is the better answer anyway for a filename, a flag or a glob pattern.
 
-When a file still renders wrong, put it through [M2H](https://transformpipe.com) and read the HTML source tab beside the preview. A `<p>` where you expected a `<br>` means the break never happened, a `<pre>` means you indented too far, and a list that grew paragraphs means a blank line crept in. The [documentation](/docs) covers the rest of the pipeline.
+When a file still renders wrong, put it through [transformpipe](https://transformpipe.com) and read the HTML source tab beside the preview. A `<p>` where you expected a `<br>` means the break never happened, a `<pre>` means you indented too far, and a list that grew paragraphs means a blank line crept in. The [documentation](/docs) covers the rest of the pipeline.

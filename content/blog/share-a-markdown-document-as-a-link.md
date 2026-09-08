@@ -36,11 +36,11 @@ It comes in two shapes. The first is a file: convert the Markdown to a single se
 
 The second is a link. The Markdown is rendered once and hosted, and you pass on the URL. Nothing to download, nothing to install, and you can change or withdraw it later.
 
-M2H does both. Drop the .md file at [transformpipe.com](https://transformpipe.com) and take the download for a self-contained file; sign in and publish it for a read-only page at `/s/<token>`. Revoking drops the token, so a link you already sent stops working. From a terminal it is one command:
+transformpipe does both. Drop the .md file at [transformpipe.com](https://transformpipe.com) and take the download for a self-contained file; sign in and publish it for a read-only page at `/s/<token>`. Revoking drops the token, so a link you already sent stops working. From a terminal it is one command:
 
 ```bash
-node cli/m2h.mjs login m2h_live_…        # once, with an API key
-node cli/m2h.mjs push proposal.md --share link
+node cli/tp.mjs login tp_live_…        # once, with an API key
+node cli/tp.mjs push proposal.md --share link
 ```
 
 ## What a read-only link should and should not do
@@ -74,4 +74,4 @@ There is a middle case worth naming. When a document really is confidential, an 
 
 Publishing takes two rows: the file and the link. The last two columns usually decide it.
 
-Work out what happens to the file after it arrives. Short and final: paste it. Meant to be edited: attach the source. Part of a project: commit it. Meant to be read on a phone, in a meeting, by someone who has never heard of Markdown: convert it and send a link, then open that link in a private window, which is the only way to see what your reader sees. M2H's [/docs](/docs) covers the rest: publishing modes, revoking, and doing it from a script.
+Work out what happens to the file after it arrives. Short and final: paste it. Meant to be edited: attach the source. Part of a project: commit it. Meant to be read on a phone, in a meeting, by someone who has never heard of Markdown: convert it and send a link, then open that link in a private window, which is the only way to see what your reader sees. transformpipe's [/docs](/docs) covers the rest: publishing modes, revoking, and doing it from a script.

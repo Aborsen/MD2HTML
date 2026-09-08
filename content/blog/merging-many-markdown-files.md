@@ -54,7 +54,7 @@ done
 
 Heading ids come from heading text, so a `## Configuration` in the installing chapter and one in the jobs chapter both want the id `configuration`. Converters differ: some append a counter, some emit the id twice. Either way, `[see](#configuration)` lands somewhere its author did not intend.
 
-Two things help. Make the headings distinct — `## Configuring the agent` and `## Configuring a job` are better documentation anyway. And read the ids the converter produced rather than guessing the slug rule: M2H prefixes every heading id with `doc-`, and its HTML source tab shows the exact file.
+Two things help. Make the headings distinct — `## Configuring the agent` and `## Configuring a job` are better documentation anyway. And read the ids the converter produced rather than guessing the slug rule: transformpipe prefixes every heading id with `doc-`, and its HTML source tab shows the exact file.
 
 Cross-file links need the same pass: `[retries](30-running-jobs.md#retries)` was right in the folder, but the merged file's target is local, so the filename goes:
 
@@ -105,4 +105,4 @@ Merging is right when the output is one page. It stops being right once you want
 
 pandoc merges several input files in one call, with `--toc` for the contents list and `--shift-heading-level-by=1` to demote as it reads — two of these problems, handled by flags; [pandoc alternatives](/blog/pandoc-alternatives-for-markdown-to-html) covers the smaller options. mdBook and MkDocs go further, turning a folder and a chapter list — `SUMMARY.md` for mdBook, the nav in MkDocs' config — into a small site. A handbook kept for years is better as a site; one that goes out once is better merged.
 
-Start with the filenames, before there are twenty of them: ordering is the only one of these problems that gets worse with time. For the HTML, drop the parts onto [M2H](https://transformpipe.com) together: several files at once are chained into one document, in order, separated by a rule. From a terminal, `m2h push handbook/*.md --merge --share link` prints a link to pass on.
+Start with the filenames, before there are twenty of them: ordering is the only one of these problems that gets worse with time. For the HTML, drop the parts onto [transformpipe](https://transformpipe.com) together: several files at once are chained into one document, in order, separated by a rule. From a terminal, `tp push handbook/*.md --merge --share link` prints a link to pass on.

@@ -10,30 +10,30 @@
 export const MCP_PATH = '/api/mcp';
 
 export const MCP_TOOL_NAMES = [
-  'm2h_help',
-  'm2h_convert_markdown',
-  'm2h_save_document',
-  'm2h_list_documents',
-  'm2h_get_document',
-  'm2h_share_document',
-  'm2h_usage',
-  'm2h_delete_document',
+  'tp_help',
+  'tp_convert_markdown',
+  'tp_save_document',
+  'tp_list_documents',
+  'tp_get_document',
+  'tp_share_document',
+  'tp_usage',
+  'tp_delete_document',
 ] as const;
 
 export type McpToolName = (typeof MCP_TOOL_NAMES)[number];
 
 /** One line each, for the page. The server holds the long descriptions the model reads. */
 export const MCP_TOOLS: Record<McpToolName, string> = {
-  m2h_help: 'Answers questions about M2H from the documentation rather than from memory.',
-  m2h_convert_markdown:
+  tp_help: 'Answers questions about transformpipe from the documentation rather than from memory.',
+  tp_convert_markdown:
     'Markdown in, sanitised HTML out. Optionally the whole self-contained document.',
-  m2h_save_document:
+  tp_save_document:
     'Saves Markdown to the account, and publishes it in the same call when asked.',
-  m2h_list_documents: 'What is on the account, with the id each other tool takes.',
-  m2h_get_document: 'One document, as its Markdown source or as rendered HTML.',
-  m2h_share_document:
+  tp_list_documents: 'What is on the account, with the id each other tool takes.',
+  tp_get_document: 'One document, as its Markdown source or as rendered HTML.',
+  tp_share_document:
     'Changes who may open a document: a link, named addresses, or nobody.',
-  m2h_usage: 'What the account is using against its limits.',
-  m2h_delete_document:
+  tp_usage: 'What the account is using against its limits.',
+  tp_delete_document:
     'Deletes one document, permanently, and only with an explicit confirmation.',
 };

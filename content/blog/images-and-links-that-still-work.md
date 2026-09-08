@@ -63,13 +63,13 @@ The label is reused as often as you like, the URL written once, so a moved domai
 
 A markdown anchor link is a link to a heading in the same document: `[see below](#installing-the-cli)`. The id it points at is generated from the heading text, and the recipe is roughly the same everywhere. Lowercase the text, drop punctuation, turn runs of whitespace into hyphens, and add a number when two headings collide.
 
-Roughly the same is not the same. A markdown link to heading written for one renderer can miss on another, and nothing warns you: an anchor that matches nothing does nothing. M2H prefixes every heading id with `doc-`, so `## Installing the CLI` becomes `id="doc-installing-the-cli"` and the link has to be `#doc-installing-the-cli`. The prefix exists to keep ids out of DOM-clobbering territory, which is the same reasoning behind [sanitising the output at all](/blog/sanitising-markdown-safely).
+Roughly the same is not the same. A markdown link to heading written for one renderer can miss on another, and nothing warns you: an anchor that matches nothing does nothing. transformpipe prefixes every heading id with `doc-`, so `## Installing the CLI` becomes `id="doc-installing-the-cli"` and the link has to be `#doc-installing-the-cli`. The prefix exists to keep ids out of DOM-clobbering territory, which is the same reasoning behind [sanitising the output at all](/blog/sanitising-markdown-safely).
 
 So convert first and read the ids the converter produced instead of guessing. Renaming a heading silently breaks every anchor aimed at it, which is a reason to keep the contents list short in [documentation that lives in the repository](/blog/documentation-that-lives-in-the-repo).
 
 ## What self-contained HTML actually contains
 
-Self-contained HTML is a claim about presentation, rarely about content. In a single-file HTML document the styles are inline, there are no scripts and nothing is fetched to make the page look right — the M2H download works that way. What that never covers is a picture you pointed somewhere else. `<img src="diagram.png">` still means `diagram.png`, next to wherever the reader put the file.
+Self-contained HTML is a claim about presentation, rarely about content. In a single-file HTML document the styles are inline, there are no scripts and nothing is fetched to make the page look right — the transformpipe download works that way. What that never covers is a picture you pointed somewhere else. `<img src="diagram.png">` still means `diagram.png`, next to wherever the reader put the file.
 
 Check the document before you send it.
 

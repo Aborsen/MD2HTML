@@ -17,7 +17,7 @@ const SERVER_ENV_KEYS = [
  */
 export function apiDevServer(): Plugin {
   return {
-    name: 'm2h-api-dev-server',
+    name: 'transformpipe-api-dev-server',
     apply: 'serve',
     config(_config, { mode }) {
       // Vite only exposes VITE_* to the client; the server half reads

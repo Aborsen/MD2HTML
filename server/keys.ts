@@ -8,10 +8,10 @@ import { sql } from './db.js';
  * nothing to present. The prefix is kept in the clear because a list of keys has to be readable —
  * "which of these three is on the build server" is a question the owner must be able to answer.
  *
- * The `m2h_live_` prefix is not decoration either: a key pasted into the wrong box fails loudly,
+ * The `tp_live_` prefix is not decoration either: a key pasted into the wrong box fails loudly,
  * and a key committed to a repository is greppable by anyone sweeping for secrets, us included.
  */
-const PREFIX = 'm2h_live_';
+const PREFIX = 'tp_live_';
 
 export interface ApiKeyRow {
   id: string;

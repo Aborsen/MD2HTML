@@ -24,7 +24,7 @@ export interface Caller {
   scope: string | null;
 }
 
-const KEY_PREFIX = 'm2h_live_';
+const KEY_PREFIX = 'tp_live_';
 
 export async function resolveCaller(c: Context): Promise<Caller | null> {
   const header = c.req.header('authorization') ?? '';

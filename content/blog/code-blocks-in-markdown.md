@@ -54,7 +54,7 @@ lets a stylesheet colour them. That step runs either in the reader's browser aft
 or ahead of time while the HTML is built. Markdown syntax highlighting, in other words, is not a
 Markdown feature: it is a class name plus something else you arrange.
 
-That distinction decides which tool you want. [M2H](https://transformpipe.com) converts fenced
+That distinction decides which tool you want. [transformpipe](https://transformpipe.com) converts fenced
 code as part of GitHub Flavored Markdown, and the `.html` it hands back is self-contained: inline
 styles, no scripts, no network requests. Code arrives as styled monospaced text in a `<pre>` rather
 than coloured tokens, because nothing is left in the file to do the colouring. If colour is the
@@ -134,7 +134,7 @@ nested lists and hard line breaks, which is [its own small subject](/blog/markdo
 ## Read the HTML, not the preview
 
 Every editor previews Markdown with its own settings, so a block that looks right in yours proves
-little about the file someone else opens. The HTML settles it. Drop the file into M2H and open the
+little about the file someone else opens. The HTML settles it. Drop the file into transformpipe and open the
 "HTML source" tab: a fence that worked shows `<pre><code>`, and one that did not shows a paragraph
 with backticks in it — that is your indentation or your fence length. Fix the source, convert
 again, and read [the docs](/docs) when you want the same conversion from the API, the CLI or a

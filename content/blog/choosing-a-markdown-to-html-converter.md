@@ -66,7 +66,7 @@ A bare fragment gives you `<h1>` and `<p>` and nothing else: correct HTML, opens
 
 The missing image is in the test for the same reason. A converter copies an image `src` through as written unless you ask it to embed the file, so a relative path resolves against wherever the HTML lands, not where the Markdown lived.
 
-Print it too, or open the print preview. A dark theme that stays dark on paper wastes a cartridge. M2H writes one self-contained file with inline styles and no scripts, and flips to light values when printed.
+Print it too, or open the print preview. A dark theme that stays dark on paper wastes a cartridge. transformpipe writes one self-contained file with inline styles and no scripts, and flips to light values when printed.
 
 ## Where your file goes, and whether it stays
 
@@ -83,7 +83,7 @@ If a converter offers an API, four questions settle it, and the documentation sh
 - [ ] What is the rate limit, and what does the response look like when you cross it?
 - [ ] What happens when the account is full — a refused write, or a quiet deletion of something older?
 
-The last one is the one people skip. A tool that drops your oldest document to make room for the new one has decided something about your data, and you find out at the worst moment. Refusing the write is the honest behaviour. M2H caps an account at 100 MB and 500 documents, a document at 1 MB and a caller at 60 requests a minute; reaching a limit refuses the write rather than deleting anything. The endpoints and the key format are in [the documentation](/docs).
+The last one is the one people skip. A tool that drops your oldest document to make room for the new one has decided something about your data, and you find out at the worst moment. Refusing the write is the honest behaviour. transformpipe caps an account at 100 MB and 500 documents, a document at 1 MB and a caller at 60 requests a minute; reaching a limit refuses the write rather than deleting anything. The endpoints and the key format are in [the documentation](/docs).
 
 ## Run it twice
 

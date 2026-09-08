@@ -197,7 +197,7 @@ export function DocsPage() {
             Documentation
           </Typography>
           <Typography variant="h1" className="text-2xl md:text-2xl">
-            Everything M2H does
+            Everything transformpipe does
           </Typography>
           <Typography variant="p" textColor="secondary" className="text-sm">
             Markdown in, a self-contained HTML document out — from this page, from a
@@ -229,7 +229,7 @@ export function DocsPage() {
           </p>
           <Shot
             name="converter"
-            alt="The M2H converter with an empty dropzone"
+            alt="The transformpipe converter with an empty dropzone"
             caption="The converter. The logo doubles as “start over”."
           />
           <p>
@@ -333,11 +333,11 @@ export function DocsPage() {
         <Section id="api" title="API">
           <p>
             Everything the app does, a script can do. Send the key as{' '}
-            <InlineCode>Authorization: Bearer m2h_live_…</InlineCode>; a browser session works too, so the
+            <InlineCode>Authorization: Bearer tp_live_…</InlineCode>; a browser session works too, so the
             same endpoints can be tried while signed in.
           </p>
           {/* The origin comes from the page, so this stays right on whatever domain it is read from. */}
-          <CodeBlock>{`curl -H "Authorization: Bearer m2h_live_…" \\
+          <CodeBlock>{`curl -H "Authorization: Bearer tp_live_…" \\
      --data-binary @README.md \\
      "${window.location.origin}/api/v1/documents?name=README.md&share=link"
 
@@ -404,19 +404,19 @@ export function DocsPage() {
 
         <Section id="cli" title="Command line">
           <p>
-            <InlineCode>cli/m2h.mjs</InlineCode> in the repository is the same API with a friendlier face,
+            <InlineCode>cli/tp.mjs</InlineCode> in the repository is the same API with a friendlier face,
             and no dependencies — a tool that runs in CI should not drag a package tree
             behind it.
           </p>
-          <CodeBlock>{`node cli/m2h.mjs login m2h_live_…          # remembers the key for this machine
-node cli/m2h.mjs push README.md --share    # prints the link
-node cli/m2h.mjs push docs/*.md --merge --share --name handbook.md
-node cli/m2h.mjs list
-node cli/m2h.mjs rm <id>
-node cli/m2h.mjs usage                     # 65.8 kB of 100.0 MB · 3 of 500 documents`}</CodeBlock>
+          <CodeBlock>{`node cli/tp.mjs login tp_live_…          # remembers the key for this machine
+node cli/tp.mjs push README.md --share    # prints the link
+node cli/tp.mjs push docs/*.md --merge --share --name handbook.md
+node cli/tp.mjs list
+node cli/tp.mjs rm <id>
+node cli/tp.mjs usage                     # 65.8 kB of 100.0 MB · 3 of 500 documents`}</CodeBlock>
           <p>
-            The key comes from <InlineCode>--key</InlineCode>, then <InlineCode>M2H_API_KEY</InlineCode>, then{' '}
-            <InlineCode>~/.config/m2h/config.json</InlineCode>. <InlineCode>M2H_HOST</InlineCode> points it at another
+            The key comes from <InlineCode>--key</InlineCode>, then <InlineCode>TP_API_KEY</InlineCode>, then{' '}
+            <InlineCode>~/.config/tp/config.json</InlineCode>. <InlineCode>TP_HOST</InlineCode> points it at another
             deployment, and <InlineCode>--json</InlineCode> prints the API's own answer.
           </p>
         </Section>
@@ -429,7 +429,7 @@ node cli/m2h.mjs usage                     # 65.8 kB of 100.0 MB · 3 of 500 doc
           </p>
           <CodeBlock>{`- uses: Aborsen/MD2HTML@v1
   with:
-    api-key: \${{ secrets.M2H_API_KEY }}`}</CodeBlock>
+    api-key: \${{ secrets.TP_API_KEY }}`}</CodeBlock>
           <p>
             <InlineCode>examples/publish-markdown.yml</InlineCode> is a complete workflow to copy.
             Checkout needs <InlineCode>fetch-depth: 0</InlineCode> for the base commit the file list is
@@ -470,7 +470,7 @@ node cli/m2h.mjs usage                     # 65.8 kB of 100.0 MB · 3 of 500 doc
               {
                 key: 'host',
                 term: <InlineCode>host</InlineCode>,
-                text: 'Another deployment of M2H.',
+                text: 'Another deployment of transformpipe.',
               },
             ]}
           />
@@ -482,7 +482,7 @@ node cli/m2h.mjs usage                     # 65.8 kB of 100.0 MB · 3 of 500 doc
 
         <Section id="assistant" title="In an assistant">
           <p>
-            M2H is an MCP server, so it can be added to Claude as a connector. The
+            transformpipe is an MCP server, so it can be added to Claude as a connector. The
             address is this deployment plus <InlineCode>{MCP_PATH}</InlineCode>:
           </p>
 
@@ -493,7 +493,7 @@ node cli/m2h.mjs usage                     # 65.8 kB of 100.0 MB · 3 of 500 doc
             From a terminal:
           </p>
 
-          <CodeBlock>{`claude mcp add --transport http m2h ${window.location.origin}${MCP_PATH}`}</CodeBlock>
+          <CodeBlock>{`claude mcp add --transport http transformpipe ${window.location.origin}${MCP_PATH}`}</CodeBlock>
 
           <p>
             There is no key to paste. The first call comes back unauthorised, your

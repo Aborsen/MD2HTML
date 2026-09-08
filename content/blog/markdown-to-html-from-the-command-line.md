@@ -81,10 +81,10 @@ awk 'FNR==1 && NR>1 {print ""} 1' docs/*.md > all.md
 
 Sometimes the output is not a file on disk but a page a colleague can open, on a machine with no Node and no permission to install anything. Then the converter is a request.
 
-M2H exposes an API at `/api/v1` with revocable keys. Post the Markdown as the body:
+transformpipe exposes an API at `/api/v1` with revocable keys. Post the Markdown as the body:
 
 ```bash
-curl -H "Authorization: Bearer $M2H_API_KEY" \
+curl -H "Authorization: Bearer $TP_API_KEY" \
      --data-binary @README.md \
      "https://transformpipe.com/api/v1/documents?name=README.md&share=link"
 ```
@@ -111,4 +111,4 @@ Exit codes are the other half. A redirect keeps the converter's own status; a pi
 
 For a pull request rather than a nightly build, an action is less work than a shell step; [publishing Markdown from GitHub Actions](/blog/publish-markdown-from-github-actions) shows that path.
 
-Pick the smallest shape that answers the problem. For HTML on disk, write the four-line Node script, add the loop, and stop there. For a link a colleague can open with no toolchain of their own, put the curl call in the build step and let M2H hold the published page.
+Pick the smallest shape that answers the problem. For HTML on disk, write the four-line Node script, add the loop, and stop there. For a link a colleague can open with no toolchain of their own, put the curl call in the build step and let transformpipe hold the published page.

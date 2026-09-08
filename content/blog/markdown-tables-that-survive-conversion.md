@@ -67,7 +67,7 @@ For a break inside a cell, use `<br>` directly in the Markdown:
 | Publish | Creates the token.<br>Sending the link is your job. |
 ```
 
-GFM allows inline HTML, so this survives the parser. Whether it survives the next step depends on your converter's sanitiser: one that strips unknown tags drops the break and runs the two sentences together. M2H sanitises the preview and the downloaded file against one shared allow-list — DOMPurify in the browser, a parser-based sanitiser on the server — so the two agree. [Sanitising Markdown safely](/blog/sanitising-markdown-safely) explains why one list rather than two.
+GFM allows inline HTML, so this survives the parser. Whether it survives the next step depends on your converter's sanitiser: one that strips unknown tags drops the break and runs the two sentences together. transformpipe sanitises the preview and the downloaded file against one shared allow-list — DOMPurify in the browser, a parser-based sanitiser on the server — so the two agree. [Sanitising Markdown safely](/blog/sanitising-markdown-safely) explains why one list rather than two.
 
 If a cell genuinely needs a list or a code block, the table is the wrong shape. Keep it as the summary and put the detail in short sections underneath.
 
@@ -95,4 +95,4 @@ Fixes, roughly in the order you should like them:
 
 That last one only helps where you control the CSS. In a standalone file, whether a wide table scrolls or overflows is decided by the stylesheet your converter ships.
 
-Take the widest table you have, drop the file into [M2H](https://transformpipe.com), and read the HTML source tab beside the preview. A missing column means the dashes are miscounted; a cell split in two means an unescaped pipe. The [documentation](/docs) covers the rest.
+Take the widest table you have, drop the file into [transformpipe](https://transformpipe.com), and read the HTML source tab beside the preview. A missing column means the dashes are miscounted; a cell split in two means an unescaped pipe. The [documentation](/docs) covers the rest.

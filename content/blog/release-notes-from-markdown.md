@@ -78,12 +78,12 @@ Real figures belong here — sizes, timeouts, retry counts, dates. "Improved per
 
 The file in the repository serves people who read the repository. Support, sales and customers need a link, and that is where release notes usually stall.
 
-Dropping `CHANGELOG.md` into M2H gives you one self-contained `.html` file — inline styles, no scripts, no network requests — to attach to an email or publish as a read-only page. Revoking that link later stops one you have already sent, which [sharing a Markdown document as a link](/blog/share-a-markdown-document-as-a-link) covers in full. If the release also ships with a covering note and an upgrade guide, dropping all three at once [chains them into one document](/blog/merging-many-markdown-files) in order.
+Dropping `CHANGELOG.md` into transformpipe gives you one self-contained `.html` file — inline styles, no scripts, no network requests — to attach to an email or publish as a read-only page. Revoking that link later stops one you have already sent, which [sharing a Markdown document as a link](/blog/share-a-markdown-document-as-a-link) covers in full. If the release also ships with a covering note and an upgrade guide, dropping all three at once [chains them into one document](/blog/merging-many-markdown-files) in order.
 
 For a release that is cut by CI, the same thing runs unattended:
 
 ```bash
-node cli/m2h.mjs push CHANGELOG.md --name "Release 1.4.0" --share link
+node cli/tp.mjs push CHANGELOG.md --name "Release 1.4.0" --share link
 ```
 
 The GitHub Action covers the pull-request half, publishing the Markdown a pull request changed and commenting the links back — see [publishing Markdown from GitHub Actions](/blog/publish-markdown-from-github-actions).
@@ -95,4 +95,4 @@ Before any of that, a short check on the top section:
 - [ ] The version and date match the tag.
 - [ ] Someone outside the team read it and could say what changed.
 
-Open your changelog and read its most recent section as a customer would. Cut the lines that fail the three tests, add the missing action to every breaking change, then convert it and send the link. The M2H CLI, API and Action are documented at [/docs](/docs).
+Open your changelog and read its most recent section as a customer would. Cut the lines that fail the three tests, add the missing action to every breaking change, then convert it and send the link. The transformpipe CLI, API and Action are documented at [/docs](/docs).

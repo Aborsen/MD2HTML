@@ -1,4 +1,4 @@
--- M2H schema. Safe to run repeatedly.
+-- transformpipe schema. Safe to run repeatedly.
 --
 -- The signed-in user lives in `neon_auth."user"`, which Neon Auth owns and migrates. This table
 -- references that user by id only and deliberately does not declare a foreign key into it: a hard
@@ -106,7 +106,7 @@ create index if not exists m2h_report_open on m2h_report (created_at desc) where
 
 -- Connecting an AI assistant.
 --
--- M2H is its own OAuth authorization server for the MCP endpoint. It has to be: the protocol
+-- transformpipe is its own OAuth authorization server for the MCP endpoint. It has to be: the protocol
 -- forbids handing a client a token issued by somebody else, so a Neon Auth session cannot be passed
 -- through. The person signs in here as they always do, approves a named client on a page they
 -- looked at, and the client gets a token of ours that acts as them and reaches nothing else.

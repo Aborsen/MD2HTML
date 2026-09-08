@@ -113,7 +113,7 @@ export const render = (markdown) =>
 `stripIgnoreTag` removes an unknown tag rather than escaping it; `stripIgnoreTagBody` takes its
 contents too, so a removed `<script>` leaves no source behind.
 
-This is how M2H is built: marked for the parse, DOMPurify in the browser, the `xss` package on the
+This is how transformpipe is built: marked for the parse, DOMPurify in the browser, the `xss` package on the
 server, one allow-list imported by both, so a document reads the same in the app and on a shared
 page. One detail worth stealing: heading ids get a `doc-` prefix. An id becomes a named property on
 `window`, and DOMPurify strips ids that look like clobbering risks while a parser-based sanitiser
@@ -127,5 +127,5 @@ Write the allow-list before the renderer, and call the sanitiser in the same fun
 so nobody can reach one without the other. Serve user-supplied output under a content security
 policy as well: `script-src 'none'` costs nothing on a page that is only ever a document. If you
 needed the HTML once rather than a library in your bundle,
-[M2H](https://transformpipe.com) runs this pipeline in the browser and hands back a
+[transformpipe](https://transformpipe.com) runs this pipeline in the browser and hands back a
 self-contained file.

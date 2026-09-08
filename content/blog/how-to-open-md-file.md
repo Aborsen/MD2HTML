@@ -63,7 +63,7 @@ Four routes, at different costs:
 
 ### Viewing an .md file in the browser
 
-The last route is quickest, with one thing to check first: online usually means uploaded. If the document is a draft contract or an internal runbook, read what the page says it does with your file. M2H runs the conversion in the browser — signed out, the file never leaves your machine — so you can view an md file in the browser without an account and without sending it anywhere.
+The last route is quickest, with one thing to check first: online usually means uploaded. If the document is a draft contract or an internal runbook, read what the page says it does with your file. transformpipe runs the conversion in the browser — signed out, the file never leaves your machine — so you can view an md file in the browser without an account and without sending it anywhere.
 
 Viewers also disagree about Markdown. Tables, task lists and strikethrough come from GitHub Flavored Markdown rather than the original syntax, so a strict viewer shows raw pipes instead of a table. The file is fine; the viewer is old-fashioned. [The flavours](/blog/commonmark-gfm-and-the-flavours) are worth knowing if you handle Markdown from several sources.
 
@@ -75,4 +75,4 @@ If you have to email the document, print it, attach it to a ticket, or still be 
 
 The trade-off runs the other way while you are still writing: an editor with a live preview earns its download then. A converter is for when you have finished and someone else needs to read it.
 
-Open the file in Notepad or TextEdit first. It tells you exactly what you are holding. If the raw text answers your question, stop there. If it does not, or the document has to reach someone who should never see a hash sign, drop it into M2H at https://transformpipe.com and take the HTML: one self-contained file, no scripts, opens anywhere.
+Open the file in Notepad or TextEdit first. It tells you exactly what you are holding. If the raw text answers your question, stop there. If it does not, or the document has to reach someone who should never see a hash sign, drop it into transformpipe at https://transformpipe.com and take the HTML: one self-contained file, no scripts, opens anywhere.

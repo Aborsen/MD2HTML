@@ -13,7 +13,7 @@ export interface FaqEntry {
 
 /*
  * Plain strings, not nodes: the same list is read by the server — the MCP tool that answers "how
- * does M2H work" hands these to an assistant — and the server has no React in it.
+ * does transformpipe work" hands these to an assistant — and the server has no React in it.
  */
 export const FAQ_ENTRIES: FaqEntry[] = [
   {

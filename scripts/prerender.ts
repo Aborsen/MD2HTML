@@ -97,7 +97,7 @@ function render(page: Page): string {
   const head = [
     `<link rel="canonical" href="${url}" />`,
     `<meta property="og:type" content="${page.path.startsWith('/blog/') ? 'article' : 'website'}" />`,
-    `<meta property="og:site_name" content="M2H" />`,
+    `<meta property="og:site_name" content="transformpipe" />`,
     `<meta property="og:title" content="${escapeHtml(page.title)}" />`,
     `<meta property="og:description" content="${escapeHtml(page.description)}" />`,
     `<meta property="og:url" content="${url}" />`,
@@ -143,7 +143,7 @@ const pages: Page[] = [];
 for (const article of ARTICLES) {
   pages.push({
     path: articlePath(article.slug),
-    title: `${article.title} — M2H`,
+    title: `${article.title} — transformpipe`,
     description: article.description,
     lastmod: article.date,
     listed: true,
@@ -161,8 +161,8 @@ for (const article of ARTICLES) {
         articleSection: article.tag,
         inLanguage: 'en',
         mainEntityOfPage: `${SITE}${articlePath(article.slug)}`,
-        publisher: { '@type': 'Organization', name: 'M2H', url: SITE },
-        author: { '@type': 'Organization', name: 'M2H', url: SITE },
+        publisher: { '@type': 'Organization', name: 'transformpipe', url: SITE },
+        author: { '@type': 'Organization', name: 'transformpipe', url: SITE },
       }),
       DOC_STYLE,
     ].join('\n    '),
@@ -175,7 +175,7 @@ for (const article of ARTICLES) {
 // ---------------------------------------------------------------- the blog index
 pages.push({
   path: '/blog',
-  title: 'Blog — Markdown, and what to do with it — M2H',
+  title: 'Blog — Markdown, and what to do with it — transformpipe',
   description:
     'Converting Markdown, the syntax that breaks on the way to HTML, publishing documents for people who do not use Markdown, and automating the whole thing.',
   listed: true,
@@ -183,7 +183,7 @@ pages.push({
   head: jsonLd({
     '@context': 'https://schema.org',
     '@type': 'Blog',
-    name: 'M2H Blog',
+    name: 'transformpipe Blog',
     url: `${SITE}/blog`,
     blogPost: ARTICLES.map((article) => ({
       '@type': 'BlogPosting',
@@ -204,7 +204,7 @@ pages.push({
 // ---------------------------------------------------------------- the converter
 pages.push({
   path: '/',
-  title: 'M2H — Markdown to HTML converter',
+  title: 'transformpipe — Markdown to HTML converter',
   description:
     'Drop a Markdown file and get the rendered document and a self-contained .html to download. Converts in your browser; sign in to keep, share and publish documents.',
   listed: true,
@@ -226,11 +226,11 @@ pages.push({
 // ---------------------------------------------------------------- the documentation
 pages.push({
   path: '/docs',
-  title: 'Documentation — M2H',
+  title: 'Documentation — transformpipe',
   description:
-    'What M2H does, in full: converting, the history, sharing by link or by address, the API, the command line client, the GitHub Action and the limits.',
+    'What transformpipe does, in full: converting, the history, sharing by link or by address, the API, the command line client, the GitHub Action and the limits.',
   listed: true,
-  body: `<h1>Everything M2H does</h1><p>Markdown in, a self-contained HTML document out — from the app, from a terminal, or from a pull request.</p>${DOCS_SECTIONS.map(
+  body: `<h1>Everything transformpipe does</h1><p>Markdown in, a self-contained HTML document out — from the app, from a terminal, or from a pull request.</p>${DOCS_SECTIONS.map(
     (section) =>
       `<section><h2>${escapeHtml(section.title)}</h2><p>${escapeHtml(section.summary)}</p></section>`
   ).join('')}`,

@@ -26,7 +26,7 @@ interface ArticlePageProps {
 }
 
 /** What index.html ships with; the tab goes back to it when an article closes. */
-const DEFAULT_TITLE = 'M2H — Markdown to HTML';
+const DEFAULT_TITLE = 'transformpipe — Markdown to HTML';
 
 /** The app's own addresses, as an article would write them. */
 const VIEW_FOR_PATH: Record<string, AppView> = {
@@ -67,7 +67,7 @@ export function ArticlePage({
       return;
     }
 
-    document.title = `${article.title} — M2H`;
+    document.title = `${article.title} — transformpipe`;
 
     return () => {
       document.title = DEFAULT_TITLE;

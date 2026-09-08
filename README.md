@@ -1,4 +1,4 @@
-# M2H — Markdown to HTML
+# transformpipe — Markdown to HTML
 
 Live at **[transformpipe.com](https://transformpipe.com)**. The old `md-2-html.vercel.app` still
 answers, so links already shared keep working; the canonical URLs, the sitemap and every default in
@@ -52,7 +52,7 @@ npm run auth:origin -- https://transformpipe.com   # the live site
 npm run auth:origin -- http://127.0.0.1:5180       # for local work
 ```
 
-**Neon** — M2H has its **own** Neon project (`m2h`): its own database and its own Neon Auth, with
+**Neon** — transformpipe has its **own** Neon project (`tp`): its own database and its own Neon Auth, with
 no accounts or tables shared with any other app. It was provisioned through the Vercel Marketplace,
 which also connects it and writes `DATABASE_URL` / `NEON_AUTH_BASE_URL` into the project:
 
@@ -128,7 +128,7 @@ the account or the keys themselves, so a leaked key cannot mint its replacement 
 
 ```bash
 # publish a file in one request
-curl -H "Authorization: Bearer m2h_live_…"      --data-binary @README.md      "https://transformpipe.com/api/v1/documents?name=README.md&share=link"
+curl -H "Authorization: Bearer tp_live_…"      --data-binary @README.md      "https://transformpipe.com/api/v1/documents?name=README.md&share=link"
 # → { "document": { "id": "…", "share": { "mode": "link", "url": "https://…/s/…" } } }
 ```
 
@@ -148,19 +148,19 @@ of room, 429 too fast, 410 the source is gone.
 
 ## From a terminal
 
-`cli/m2h.mjs` is the same API with a friendlier face. No dependencies — it is one `fetch` and some
+`cli/tp.mjs` is the same API with a friendlier face. No dependencies — it is one `fetch` and some
 printing, because a tool people run in CI should not drag a package tree behind it.
 
 ```bash
-node cli/m2h.mjs login m2h_live_…              # remembers the key in ~/.config/m2h/config.json
-node cli/m2h.mjs push README.md --share        # prints the link
-node cli/m2h.mjs push docs/*.md --merge --share --name handbook.md
-node cli/m2h.mjs list
-node cli/m2h.mjs rm <id>
-node cli/m2h.mjs usage                         # 65.8 kB of 100.0 MB · 3 of 500 documents
+node cli/tp.mjs login tp_live_…              # remembers the key in ~/.config/tp/config.json
+node cli/tp.mjs push README.md --share        # prints the link
+node cli/tp.mjs push docs/*.md --merge --share --name handbook.md
+node cli/tp.mjs list
+node cli/tp.mjs rm <id>
+node cli/tp.mjs usage                         # 65.8 kB of 100.0 MB · 3 of 500 documents
 ```
 
-The key comes from `--key`, `M2H_API_KEY`, or that config file, in that order; `M2H_HOST` points it
+The key comes from `--key`, `TP_API_KEY`, or that config file, in that order; `TP_HOST` points it
 at another deployment. `--json` prints the API's own response, which is what the Action reads.
 
 ## As a GitHub Action
@@ -172,7 +172,7 @@ reviewer opens the rendered document instead of reading a diff of asterisks.
 ```yaml
 - uses: Aborsen/MD2HTML@main
   with:
-    api-key: ${{ secrets.M2H_API_KEY }}
+    api-key: ${{ secrets.TP_API_KEY }}
 ```
 
 `examples/publish-markdown.yml` is a complete workflow to copy. Inputs: `api-key`, `files`,
@@ -184,11 +184,11 @@ said. `share: none` publishes privately if the links should not be public.
 
 ## In an assistant
 
-M2H is an MCP server at `/api/mcp`, so it can be added to Claude as a connector and convert, save,
+transformpipe is an MCP server at `/api/mcp`, so it can be added to Claude as a connector and convert, save,
 share and delete documents in one account. There is no key to paste:
 
 ```bash
-claude mcp add --transport http m2h https://transformpipe.com/api/mcp
+claude mcp add --transport http transformpipe https://transformpipe.com/api/mcp
 ```
 
 The first call is answered `401` with a `WWW-Authenticate` header naming
@@ -343,7 +343,7 @@ server/wellknown.ts     the two discovery documents
 scripts/prerender.ts    a real HTML file per route, after the bundle is built
 scripts/screenshots.mjs the documentation screenshots, captured from the running app
 content/blog/           the articles; content/keywords.md is what they were written against
-cli/m2h.mjs             the command line client
+cli/tp.mjs             the command line client
 action.yml              the GitHub Action (examples/ has a workflow to copy)
 src/
   App.tsx               app shell and state

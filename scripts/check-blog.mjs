@@ -123,7 +123,7 @@ for (const file of files) {
   // fences are counted with everything else — this is a smoke alarm, not a judge.
   const words = body.split(/\s+/).filter(Boolean).length;
   const headings = (prose.match(/^## /gm) ?? []).length;
-  const mentions = (prose.match(/\bM2H\b/g) ?? []).length;
+  const mentions = (prose.match(/\btransformpipe\b/g) ?? []).length;
 
   if (words < 750) {
     problems.push(`${slug}: ${words} words — too thin to rank or to help`);
@@ -134,7 +134,7 @@ for (const file of files) {
   }
 
   if (mentions > 4) {
-    problems.push(`${slug}: M2H named ${mentions} times — it reads as an advertisement`);
+    problems.push(`${slug}: transformpipe named ${mentions} times — it reads as an advertisement`);
   }
 
   if (links.length === 0) {

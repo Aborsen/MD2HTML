@@ -1,6 +1,6 @@
-name: Publish Markdown with M2H
+name: Publish Markdown with transformpipe
 description: Convert Markdown files to shareable HTML pages and, on a pull request, comment the links.
-author: M2H
+author: transformpipe
 
 branding:
   icon: file-text
@@ -8,7 +8,7 @@ branding:
 
 inputs:
   api-key:
-    description: An M2H API key. Store it as a repository secret and pass it here.
+    description: An transformpipe API key. Store it as a repository secret and pass it here.
     required: true
   files:
     description: Space-separated files or globs. Defaults to the Markdown a pull request changed.
@@ -31,7 +31,7 @@ inputs:
     required: false
     default: 'true'
   host:
-    description: Where M2H is deployed.
+    description: Where transformpipe is deployed.
     required: false
     default: https://transformpipe.com
 
@@ -66,8 +66,8 @@ runs:
     - id: publish
       shell: bash
       env:
-        M2H_API_KEY: ${{ inputs.api-key }}
-        M2H_HOST: ${{ inputs.host }}
+        TP_API_KEY: ${{ inputs.api-key }}
+        TP_HOST: ${{ inputs.host }}
         FILES: ${{ steps.files.outputs.list }}
         SHARE: ${{ inputs.share }}
         MERGE: ${{ inputs.merge }}
@@ -91,16 +91,16 @@ runs:
 
         read -r -a files <<< "$FILES"
 
-        node "$GITHUB_ACTION_PATH/cli/m2h.mjs" push "${files[@]}" "${args[@]}" --json > documents.json
+        node "$GITHUB_ACTION_PATH/cli/tp.mjs" push "${files[@]}" "${args[@]}" --json > documents.json
         cat documents.json
 
         {
-          echo "documents<<M2H"
+          echo "documents<<transformpipe"
           cat documents.json
-          echo "M2H"
-          echo "urls<<M2H"
+          echo "transformpipe"
+          echo "urls<<transformpipe"
           node -e "JSON.parse(require('fs').readFileSync('documents.json','utf8')).forEach(d => d.share.url && console.log(d.share.url))"
-          echo "M2H"
+          echo "transformpipe"
         } >> "$GITHUB_OUTPUT"
 
     - if: ${{ inputs.comment == 'true' && github.event_name == 'pull_request' }}

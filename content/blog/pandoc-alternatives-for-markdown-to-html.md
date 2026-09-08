@@ -68,7 +68,7 @@ Three shapes, in order of how much they ask of you.
 
 A script suits a project that already has Node or Python. marked and markdown-it in JavaScript, Python-Markdown and markdown-it-py in Python, are each one dependency, and the HTML around the output is HTML you wrote rather than a template language you inherited. [Converting Markdown from a terminal](/blog/markdown-to-html-from-the-command-line) has the script in full.
 
-A browser converter suits a document that is not part of a build at all. [M2H](https://transformpipe.com) is free and converts in the browser — signed out, the file never leaves the machine — and the download is one self-contained .html with inline styles, no scripts and no network requests. It reads GFM, so tables, task lists and fenced code survive, and the HTML is sanitised against one shared allow-list in the browser and on the server. [Sanitising Markdown safely](/blog/sanitising-markdown-safely) explains why the two have to agree.
+A browser converter suits a document that is not part of a build at all. [transformpipe](https://transformpipe.com) is free and converts in the browser — signed out, the file never leaves the machine — and the download is one self-contained .html with inline styles, no scripts and no network requests. It reads GFM, so tables, task lists and fenced code survive, and the HTML is sanitised against one shared allow-list in the browser and on the server. [Sanitising Markdown safely](/blog/sanitising-markdown-safely) explains why the two have to agree.
 
 ## Pandoc without installing it
 
@@ -82,4 +82,4 @@ That is the honest middle: you skip the install without handing your document to
 
 ## What to do next
 
-Write down every output format this document has to produce over its life. If DOCX, EPUB, LaTeX or a typeset PDF is on that list, install pandoc — the template language is a fair price for what it does. If HTML is the only entry, convert the file you already have and read the source before it goes anywhere: M2H does that in a browser tab, and the API, CLI and GitHub Action at [/docs](/docs) do it from a script when the page has to be rebuilt on every commit. If the small options still look interchangeable, [choosing a Markdown to HTML converter](/blog/choosing-a-markdown-to-html-converter) lists what to check.
+Write down every output format this document has to produce over its life. If DOCX, EPUB, LaTeX or a typeset PDF is on that list, install pandoc — the template language is a fair price for what it does. If HTML is the only entry, convert the file you already have and read the source before it goes anywhere: transformpipe does that in a browser tab, and the API, CLI and GitHub Action at [/docs](/docs) do it from a script when the page has to be rebuilt on every commit. If the small options still look interchangeable, [choosing a Markdown to HTML converter](/blog/choosing-a-markdown-to-html-converter) lists what to check.

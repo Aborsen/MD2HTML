@@ -76,7 +76,7 @@ export function SharedDocumentPage({ token }: { token: string }) {
     <div className="flex min-h-full flex-col bg-surface-page">
       <header className="sticky top-0 z-20 border-stroke border-b bg-surface-card/85 backdrop-blur">
         <div className="mx-auto flex h-14 w-full max-w-container-content items-center gap-4 px-6">
-          <a href="/" aria-label="M2H">
+          <a href="/" aria-label="transformpipe">
             <Logo />
           </a>
 

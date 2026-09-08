@@ -38,7 +38,7 @@ const requireCaller = createMiddleware<Env>(async (c, next) => {
       {
         error: c.req.header('authorization')
           ? 'Unknown or revoked credential'
-          : 'Send an API key as `Authorization: Bearer m2h_live_…`',
+          : 'Send an API key as `Authorization: Bearer tp_live_…`',
       },
       401
     );

@@ -104,7 +104,7 @@ safe = nh3.clean(
 )
 ```
 
-Clean the HTML, not the Markdown. Filtering the source text is guesswork, because the parser is what decides which characters become a tag. [Sanitising Markdown safely](/blog/sanitising-markdown-safely) works through the failure cases. M2H is built the same way: marked renders, then DOMPurify in the browser and the `xss` package on the server clean the result against one shared allow-list, so both sides produce the same document. Its heading ids carry a `doc-` prefix, which keeps them out of DOM-clobbering territory.
+Clean the HTML, not the Markdown. Filtering the source text is guesswork, because the parser is what decides which characters become a tag. [Sanitising Markdown safely](/blog/sanitising-markdown-safely) works through the failure cases. transformpipe is built the same way: marked renders, then DOMPurify in the browser and the `xss` package on the server clean the result against one shared allow-list, so both sides produce the same document. Its heading ids carry a `doc-` prefix, which keeps them out of DOM-clobbering territory.
 
 ## A script that converts a directory
 
@@ -132,4 +132,4 @@ Three details do the work. `encoding="utf-8"` on both the read and the write, be
 
 One trap the script above walks into: `nh3.clean` with no arguments uses ammonia's default allow-list, and `id` is not on it, so the heading anchors `toc` just added are stripped straight back out. Allow the attribute per tag — `attributes={"h1": {"id"}, "h2": {"id"}}` — and prefix the values yourself, because a bare `id` on a heading can shadow a DOM property of the same name.
 
-Choose by requirement: Python-Markdown for extensions and plugins, markdown2 when one call with a list of extras is the whole job, mistune when the HTML has to come out a particular shape, markdown-it-py when it must match the spec. Then write the script and pin the library in your requirements file. If all you need is a page a colleague can open, skip the build — drop the file into [M2H](https://transformpipe.com), or have the script POST it to `/api/v1/documents?share=link`, which stores the document and returns the read-only link in one call; the endpoints are in [/docs](/docs).
+Choose by requirement: Python-Markdown for extensions and plugins, markdown2 when one call with a list of extras is the whole job, mistune when the HTML has to come out a particular shape, markdown-it-py when it must match the spec. Then write the script and pin the library in your requirements file. If all you need is a page a colleague can open, skip the build — drop the file into [transformpipe](https://transformpipe.com), or have the script POST it to `/api/v1/documents?share=link`, which stores the document and returns the read-only link in one call; the endpoints are in [/docs](/docs).

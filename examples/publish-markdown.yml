@@ -25,4 +25,4 @@ jobs:
 
       - uses: Aborsen/MD2HTML@main
         with:
-          api-key: ${{ secrets.M2H_API_KEY }}
+          api-key: ${{ secrets.TP_API_KEY }}

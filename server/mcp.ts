@@ -11,7 +11,7 @@ import { markdownToHtml } from './render.js';
 import v1 from './v1.js';
 
 /*
- * M2H as an MCP server, so a person can add it to an assistant and convert, save and share
+ * transformpipe as an MCP server, so a person can add it to an assistant and convert, save and share
  * documents from a conversation.
  *
  * Two decisions worth stating before the code.
@@ -30,16 +30,16 @@ import v1 from './v1.js';
 /** Versions this server will speak if a client asks for one of them. */
 const SPOKEN = new Set(['2024-11-05', '2025-03-26', '2025-06-18', '2025-11-25']);
 const NEWEST = '2025-11-25';
-const SERVER = { name: 'm2h', version: '1.0.0' };
+const SERVER = { name: 'transformpipe', version: '1.0.0' };
 
 /** Long enough to be useful, short enough that a document does not eat a conversation. */
 const MAX_TEXT = 40_000;
 
-const INSTRUCTIONS = `These tools act on one person's M2H account — the one that authorised this connector — and see nothing else.
+const INSTRUCTIONS = `These tools act on one person's transformpipe account — the one that authorised this connector — and see nothing else.
 
-Three things worth holding on to. m2h_save_document with a share mode publishes a page on the public web, so share a document only when the person asked for it. m2h_delete_document is permanent and has no undo. m2h_convert_markdown returns the whole document through this conversation, so for anything long, save it and share the link instead.
+Three things worth holding on to. tp_save_document with a share mode publishes a page on the public web, so share a document only when the person asked for it. tp_delete_document is permanent and has no undo. tp_convert_markdown returns the whole document through this conversation, so for anything long, save it and share the link instead.
 
-m2h_help answers questions about how M2H works; use it rather than answering from memory.`;
+tp_help answers questions about how transformpipe works; use it rather than answering from memory.`;
 
 interface Rpc {
   jsonrpc?: string;
@@ -72,7 +72,7 @@ function clip(text: string, limit = MAX_TEXT): string {
 
   const dropped = text.length - limit;
 
-  return `${text.slice(0, limit)}\n\n[…${dropped.toLocaleString('en-GB')} further characters not shown. Save it with m2h_save_document and share the link instead — that returns a URL rather than the whole document.]`;
+  return `${text.slice(0, limit)}\n\n[…${dropped.toLocaleString('en-GB')} further characters not shown. Save it with tp_save_document and share the link instead — that returns a URL rather than the whole document.]`;
 }
 
 /*
@@ -123,7 +123,7 @@ function unauthorised(c: Context, why: string) {
       error: 'invalid_token',
       error_description: why,
       resource: `${origin}/api/mcp`,
-      hint: `Add ${origin}/api/mcp to your assistant and sign in with your M2H account.`,
+      hint: `Add ${origin}/api/mcp to your assistant and sign in with your transformpipe account.`,
     },
     401
   );
@@ -142,7 +142,7 @@ const notPost = (c: Context) =>
       name: SERVER.name,
       version: SERVER.version,
       protocol: 'MCP over HTTP POST, JSON-RPC 2.0',
-      auth: 'Add this URL to your assistant as a connector and sign in with your M2H account.',
+      auth: 'Add this URL to your assistant as a connector and sign in with your transformpipe account.',
       documentation: `${selfOrigin(c)}/docs`,
     },
     405,
@@ -241,9 +241,9 @@ const describe = (document: {
  * page describing a tool cannot outlive the tool.
  */
 const TOOLS: Record<McpToolName, Tool> = {
-  m2h_help: {
+  tp_help: {
     description:
-      'The M2H documentation itself: what Markdown it understands, what happens to a file, what is stored and what is not, how sharing works, the limits, and the HTTP API. Use this to answer any question about how M2H works INSTEAD of answering from memory. Ask a question to get the sections that answer it, or call it with nothing for all of them.',
+      'The transformpipe documentation itself: what Markdown it understands, what happens to a file, what is stored and what is not, how sharing works, the limits, and the HTTP API. Use this to answer any question about how transformpipe works INSTEAD of answering from memory. Ask a question to get the sections that answer it, or call it with nothing for all of them.',
     inputSchema: {
       type: 'object',
       additionalProperties: false,
@@ -284,7 +284,7 @@ const TOOLS: Record<McpToolName, Tool> = {
       return say(
         clip(
           [
-            `M2H — ${selfOrigin(c)} · full documentation at ${selfOrigin(c)}/docs`,
+            `transformpipe — ${selfOrigin(c)} · full documentation at ${selfOrigin(c)}/docs`,
             '',
             ...shown.map((entry) => `## ${entry.title}\n${entry.text}`),
           ].join('\n')
@@ -293,9 +293,9 @@ const TOOLS: Record<McpToolName, Tool> = {
     },
   },
 
-  m2h_convert_markdown: {
+  tp_convert_markdown: {
     description:
-      'Convert Markdown to sanitised HTML and return it. GitHub Flavored Markdown; raw HTML in the source goes through a sanitiser, so a script tag in a file someone sent cannot survive. `standalone: true` returns a complete self-contained document with its styles inlined — the same file the app downloads. Nothing is saved to the account. For anything long, prefer m2h_save_document and share the link: what this returns has to travel back through the conversation.',
+      'Convert Markdown to sanitised HTML and return it. GitHub Flavored Markdown; raw HTML in the source goes through a sanitiser, so a script tag in a file someone sent cannot survive. `standalone: true` returns a complete self-contained document with its styles inlined — the same file the app downloads. Nothing is saved to the account. For anything long, prefer tp_save_document and share the link: what this returns has to travel back through the conversation.',
     inputSchema: {
       type: 'object',
       additionalProperties: false,
@@ -351,9 +351,9 @@ const TOOLS: Record<McpToolName, Tool> = {
     },
   },
 
-  m2h_save_document: {
+  tp_save_document: {
     description:
-      'Save Markdown to this M2H account as a document, and optionally publish it in the same call. Returns the id, the size and — when shared — the URL. `share: "link"` is anyone holding the URL, `"people"` narrows it to the addresses in `emails`, `"private"` is nobody but the owner. Publishing makes a page on the public web: share a document the person actually asked to share.',
+      'Save Markdown to this transformpipe account as a document, and optionally publish it in the same call. Returns the id, the size and — when shared — the URL. `share: "link"` is anyone holding the URL, `"people"` narrows it to the addresses in `emails`, `"private"` is nobody but the owner. Publishing makes a page on the public web: share a document the person actually asked to share.',
     writes: true,
     inputSchema: {
       type: 'object',
@@ -445,15 +445,15 @@ const TOOLS: Record<McpToolName, Tool> = {
             ? `Anyone with this link can read it: ${document.share.url}`
             : document.share.mode === 'people' && document.share.url
               ? `Only the addresses on it can read it: ${document.share.url}`
-              : 'It is private. Share it with m2h_share_document when asked.',
+              : 'It is private. Share it with tp_share_document when asked.',
         ].join('\n')
       );
     },
   },
 
-  m2h_list_documents: {
+  tp_list_documents: {
     description:
-      'What is on this M2H account: documents with their names, sizes, dates and whether each is shared. Start here when the question is "what have I got". Prints the id of each, which is what the other tools take.',
+      'What is on this transformpipe account: documents with their names, sizes, dates and whether each is shared. Start here when the question is "what have I got". Prints the id of each, which is what the other tools take.',
     inputSchema: {
       type: 'object',
       additionalProperties: false,
@@ -506,9 +506,9 @@ const TOOLS: Record<McpToolName, Tool> = {
     },
   },
 
-  m2h_get_document: {
+  tp_get_document: {
     description:
-      'One document from this account, by the id m2h_list_documents printed: its Markdown source, or the rendered HTML.',
+      'One document from this account, by the id tp_list_documents printed: its Markdown source, or the rendered HTML.',
     inputSchema: {
       type: 'object',
       additionalProperties: false,
@@ -526,7 +526,7 @@ const TOOLS: Record<McpToolName, Tool> = {
       const id = String(args.id ?? '');
 
       if (!id) {
-        return say('Which document? m2h_list_documents prints the ids.', true);
+        return say('Which document? tp_list_documents prints the ids.', true);
       }
 
       if (args.as === 'html') {
@@ -565,7 +565,7 @@ const TOOLS: Record<McpToolName, Tool> = {
     },
   },
 
-  m2h_share_document: {
+  tp_share_document: {
     description:
       'Change who may open a document. "link" is anyone holding the URL, "people" is only the addresses given, "private" revokes the link entirely — a URL already sent stops working. `emails` REPLACES the list rather than adding to it. Returns the mode, the URL and the addresses as they now stand.',
     writes: true,
@@ -628,7 +628,7 @@ const TOOLS: Record<McpToolName, Tool> = {
     },
   },
 
-  m2h_usage: {
+  tp_usage: {
     description:
       'What this account is using against its limits: bytes stored, documents held, and the ceiling on each. Ask this when a save was refused.',
     inputSchema: { type: 'object', additionalProperties: false, properties: {} },
@@ -652,7 +652,7 @@ const TOOLS: Record<McpToolName, Tool> = {
     },
   },
 
-  m2h_delete_document: {
+  tp_delete_document: {
     description:
       'Permanently delete one document from this account, and its Markdown source with it. There is no undo and no trash. Pass confirm: true only when the person has named this document and asked for it to be deleted; ask them otherwise. Deletes exactly one — there is no tool that deletes several.',
     writes: true,
@@ -672,7 +672,7 @@ const TOOLS: Record<McpToolName, Tool> = {
       const id = String(args.id ?? '');
 
       if (!id) {
-        return say('Which document? m2h_list_documents prints the ids.', true);
+        return say('Which document? tp_list_documents prints the ids.', true);
       }
 
       if (args.confirm !== true) {
@@ -710,7 +710,7 @@ mcp.post('/', async (c) => {
   const caller = await resolveCaller(c);
 
   if (!caller) {
-    return unauthorised(c, 'Sign in to M2H');
+    return unauthorised(c, 'Sign in to transformpipe');
   }
 
   for (const [key, value] of Object.entries(CORS)) {

@@ -35,7 +35,7 @@ GFM is the CommonMark spec plus a fixed list of extensions — four additions an
 
 The subtraction: GFM escapes a short list of raw HTML tags rather than passing them through — `<script>`, `<iframe>` and `<style>` among them — so they reach the page as visible text. A rendering-safety rule rather than a syntax rule, and one that belongs to GFM, not to Markdown.
 
-GFM is the dialect most people mean by Markdown. It is what a README renders as, what many issue trackers and chat tools copied, and what M2H converts: marked with GFM on and `breaks` off, so a single newline joins the paragraph instead of becoming a `<br>`. GitHub's comment boxes do the opposite, and that one setting is behind most reports of [line breaks going missing](/blog/markdown-line-breaks-and-lists).
+GFM is the dialect most people mean by Markdown. It is what a README renders as, what many issue trackers and chat tools copied, and what transformpipe converts: marked with GFM on and `breaks` off, so a single newline joins the paragraph instead of becoming a `<br>`. GitHub's comment boxes do the opposite, and that one setting is behind most reports of [line breaks going missing](/blog/markdown-line-breaks-and-lists).
 
 ## The extension zoo
 
@@ -81,4 +81,4 @@ Keep each extension near the tool that owns it: front matter belongs in a reposi
 
 If you need footnotes, definition lists and output in several formats, a GFM converter is the wrong tool. That is [what Pandoc is for](/blog/pandoc-alternatives-for-markdown-to-html), and the better answer whenever typesetting matters.
 
-Paste the probe file into whichever tool will render your document before you commit to a syntax it cannot draw. If GFM is where you land, drop the file into [M2H](https://transformpipe.com): it converts in the browser, and the "HTML source" tab shows what each construct became, so you can check rather than guess. [/docs](/docs) covers the rest.
+Paste the probe file into whichever tool will render your document before you commit to a syntax it cannot draw. If GFM is where you land, drop the file into [transformpipe](https://transformpipe.com): it converts in the browser, and the "HTML source" tab shows what each construct became, so you can check rather than guess. [/docs](/docs) covers the rest.
