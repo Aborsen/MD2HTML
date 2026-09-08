@@ -293,6 +293,17 @@ export const MD_PREVIEW_STYLE = `
   background: var(--md-card);
 }
 
+/*
+ * Room above a heading for the app's sticky header.
+ *
+ * Only in the preview: jumping to a heading from a contents list otherwise lands with the heading
+ * itself underneath the header, so the reader arrives at the paragraph after the one they asked
+ * for. The exported document has no header, and this rule is not in its stylesheet.
+ */
+.md-doc :is(h1, h2, h3, h4, h5, h6) {
+  scroll-margin-top: 5.5rem;
+}
+
 .md-preview-frame:fullscreen {
   display: flex;
   justify-content: center;

@@ -9,17 +9,19 @@ import {
   Share2,
   Terminal,
 } from 'lucide-react';
-import { useEffect, useState, type ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import { ScrollToTop } from '@/components/ScrollToTop';
 import { CONVERSIONS } from '@shared/conversions';
 import { DOCS_SECTIONS } from '@/lib/docs-sections';
 import { MCP_PATH, MCP_TOOL_NAMES, MCP_TOOLS } from '@/lib/mcp-facts';
 import { FAQ_ENTRIES } from '@/lib/faq';
 import { useTheme } from '@/lib/theme';
+import { useActiveHeading } from '@/lib/use-active-heading';
 import { CodeBlock, InlineCode } from '@/ui/components/Code';
 import { DefinitionTable } from '@/ui/components/DefinitionTable';
 import { Faq } from '@/ui/components/Faq';
 import { Typography } from '@/ui/components/Typography';
+import { TableOfContents } from '@/ui/components/TableOfContents';
 import { ZoomableImage } from '@/ui/components/ZoomableImage';
 import { cn } from '@/ui/lib/utils';
 
@@ -51,55 +53,6 @@ const SECTIONS = DOCS_SECTIONS.map((section) => ({
   ...section,
   icon: ICONS[section.id] ?? BookOpen,
 }));
-
-/**
- * Which heading the reader is on, so the contents list can say so.
- *
- * The last heading that has passed under the sticky header, rather than whichever one an observer
- * happens to find intersecting: a long section has no heading on screen at all in the middle of it,
- * and an observer answers that by keeping the previous section lit — which is the section the reader
- * has already left. Positions are read on a frame, so the scroll handler itself does no layout.
- */
-function useActiveSection(): string {
-  const [active, setActive] = useState(SECTIONS[0].id);
-
-  useEffect(() => {
-    let frame = 0;
-
-    const measure = () => {
-      frame = 0;
-
-      let current = SECTIONS[0].id;
-
-      for (const section of SECTIONS) {
-        const element = document.getElementById(section.id);
-
-        // 88px: the header plus the breathing room `scroll-mt-20` leaves under it.
-        if (element && element.getBoundingClientRect().top <= 88) {
-          current = section.id;
-        }
-      }
-
-      setActive(current);
-    };
-
-    const onScroll = () => {
-      frame ||= requestAnimationFrame(measure);
-    };
-
-    measure();
-    window.addEventListener('scroll', onScroll, { passive: true });
-    window.addEventListener('resize', onScroll);
-
-    return () => {
-      cancelAnimationFrame(frame);
-      window.removeEventListener('scroll', onScroll);
-      window.removeEventListener('resize', onScroll);
-    };
-  }, []);
-
-  return active;
-}
 
 function Section({
   id,
@@ -154,41 +107,14 @@ function Shot({
 }
 
 export function DocsPage() {
-  const active = useActiveSection();
+  const active = useActiveHeading(SECTIONS.map((one) => one.id));
 
   return (
     <div className="mx-auto flex w-full max-w-5xl gap-10">
-      <nav
-        aria-label="On this page"
-        className="sticky top-20 hidden h-fit w-44 shrink-0 lg:block"
-      >
-        <Typography
-          variant="span"
-          textColor="light"
-          className="mb-2 block text-xxs uppercase tracking-wide"
-        >
-          On this page
-        </Typography>
-        <ul className="space-y-0.5">
-          {SECTIONS.map(({ id, title, icon: Icon }) => (
-            <li key={id}>
-              <a
-                href={`#${id}`}
-                aria-current={active === id ? 'true' : undefined}
-                className={cn(
-                  'flex items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors',
-                  active === id
-                    ? 'bg-surface-accent text-ink-highlight'
-                    : 'text-ink-secondary hover:bg-state-hover hover:text-ink-body'
-                )}
-              >
-                <Icon className="size-3.5 shrink-0" />
-                {title}
-              </a>
-            </li>
-          ))}
-        </ul>
-      </nav>
+      <TableOfContents
+        items={SECTIONS.map(({ id, title, icon }) => ({ id, title, icon }))}
+        activeId={active}
+      />
 
       <div className="min-w-0 max-w-3xl flex-1 space-y-12 pb-8">
         <header className="space-y-3">

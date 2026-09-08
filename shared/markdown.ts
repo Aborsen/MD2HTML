@@ -82,7 +82,22 @@ export function renderMarkdown(markdown: string, sanitize: Sanitize): string {
     renderer: {
       heading({ tokens, depth }) {
         const text = this.parser.parseInline(tokens);
-        const id = slugify(text.replace(/<[^>]*>/g, ''), used);
+        /*
+         * Tags out, then entities back to characters, then slugify.
+         *
+         * In that order, because the text arriving here is already HTML: a heading reading
+         * Why "it converts Markdown" tells you nothing has its quotes as `&quot;` by now, and
+         * slugifying that leaves `quotit-converts-markdownquot` in the middle of the anchor —
+         * which is the URL somebody copies to point at the section.
+         */
+        const plain = text
+          .replace(/<[^>]*>/g, '')
+          .replace(/&quot;/g, '"')
+          .replace(/&#39;/g, "'")
+          .replace(/&lt;/g, '<')
+          .replace(/&gt;/g, '>')
+          .replace(/&amp;/g, '&');
+        const id = slugify(plain, used);
 
         return `<h${depth} id="${id}">${text}</h${depth}>\n`;
       },

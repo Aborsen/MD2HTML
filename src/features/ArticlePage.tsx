@@ -1,6 +1,9 @@
 import { ArrowLeft } from 'lucide-react';
 import { useEffect, useMemo, useRef } from 'react';
 import { DocumentPreview } from '@/components/DocumentPreview';
+import { headingsFromHtml } from '@/lib/toc';
+import { useActiveHeading } from '@/lib/use-active-heading';
+import { TableOfContents } from '@/ui/components/TableOfContents';
 import { ScrollToTop } from '@/components/ScrollToTop';
 import {
   ARTICLES,
@@ -56,6 +59,10 @@ export function ArticlePage({
     () => (article ? markdownToHtml(article.markdown) : ''),
     [article]
   );
+
+  /* The contents come out of the rendered HTML, so the ids are the renderer's own. */
+  const headings = useMemo(() => headingsFromHtml(html), [html]);
+  const activeHeading = useActiveHeading(headings.map((one) => one.id));
 
   /*
    * An article is a page, not a state change: give it the title, and put the app's own back on the
@@ -154,7 +161,15 @@ export function ArticlePage({
   const more = ARTICLES.filter((other) => other.slug !== article.slug).slice(0, 2);
 
   return (
-    <div className="mx-auto flex w-full max-w-3xl flex-col gap-6">
+    /*
+     * Two columns from `lg`: the contents down the left, the article beside it. The same shape the
+     * documentation uses, for the same reason — these pieces are four thousand words now, and a
+     * reader who wants the section on one particular tool should not have to scroll to find it.
+     */
+    <div className="mx-auto flex w-full max-w-5xl gap-10">
+      <TableOfContents items={headings} activeId={activeHeading} label="In this article" />
+
+      <div className="flex min-w-0 max-w-3xl flex-1 flex-col gap-6">
       <button
         type="button"
         onClick={onBack}
@@ -217,6 +232,7 @@ export function ArticlePage({
       )}
 
       <ScrollToTop />
+      </div>
     </div>
   );
 }
