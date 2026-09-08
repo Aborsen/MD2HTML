@@ -194,6 +194,44 @@ const SHARED_CHROME_STYLE = `
 .md-bar .keep:hover { border-color: var(--md-brand-3); color: var(--md-brand-3); }
 
 @media print { .md-bar { display: none; } }
+
+/*
+ * Back to the top of a long document — a link, not a button.
+ *
+ * This page carries somebody else's content and is served with script-src 'none', which is the
+ * one thing standing between an injection that survived the sanitiser and a page that runs it. So
+ * the control is an anchor to the top of the document and nothing else. It is rendered only when
+ * the document is long enough to need it, which the server knows because it has the document.
+ */
+.md-top {
+  position: fixed;
+  right: 1.5rem;
+  bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border: 1px solid var(--md-stroke);
+  border-radius: 999px;
+  background: var(--md-card-2);
+  color: var(--md-ink);
+  font-family: "DM Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-size: 1.125rem;
+  line-height: 1;
+  text-decoration: none;
+  box-shadow: 0 2px 8px rgb(0 0 0 / 0.25);
+}
+
+.md-top:hover { border-color: var(--md-brand-3); color: var(--md-brand-3); }
+
+.md-top:focus-visible { outline: 2px solid var(--md-brand-3); outline-offset: 2px; }
+
+@media (prefers-reduced-motion: no-preference) {
+  html { scroll-behavior: smooth; }
+}
+
+@media print { .md-top { display: none; } }
 `;
 
 interface SharedPageOptions {
@@ -213,6 +251,21 @@ interface SharedPageOptions {
  * for an app to boot, and a page built on the server can be handed to the CDN, which is what keeps
  * a popular document off the database entirely.
  */
+/*
+ * Is this document long enough that a scroll-to-top link earns its place?
+ *
+ * Characters of rendered HTML, because that is what this function has, and the number comes from
+ * measuring rather than taste: rendered at 1280x900 this page passes a viewport plus a scroll of
+ * 320px at about 1,240 characters, and at 390x844 at about 940. 1,200 is where a reader is far
+ * enough down for the link to be the shortest way back, and below it the page barely moves.
+ *
+ * Pictures break the proxy — a few of them make a very tall page out of very little markup — so
+ * they count separately.
+ */
+function worthAScrollLink(body: string): boolean {
+  return body.length > 1200 || (body.match(/<img\b/g)?.length ?? 0) >= 3;
+}
+
 export function buildSharedPage({
   title,
   body,
@@ -242,9 +295,9 @@ ${MD_DOC_STYLE}
 ${SHARED_CHROME_STYLE}
 </style>
 </head>
-<body>
+<body id="md-top-of-page">
 <div class="md-bar">
-  <a class="brand" href="/">M<span>2</span>H</a>
+  <a class="brand" href="/">transform<span>&gt;</span>pipe</a>
   <span class="name">${escapeHtml(title)}</span>
   ${downloadHref ? `<a class="keep" href="${escapeHtml(downloadHref)}">Download .html</a>` : ''}
 </div>
@@ -256,6 +309,11 @@ ${body}
       ? ` · <a href="${escapeHtml(reportHref)}">Report this document</a>`
       : ''
   }</p>
+${
+    worthAScrollLink(body)
+      ? '<a class="md-top" href="#md-top-of-page" aria-label="Back to the top" title="Back to the top">↑</a>'
+      : ''
+  }
 </body>
 </html>
 `;
