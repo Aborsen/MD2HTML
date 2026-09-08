@@ -241,7 +241,7 @@ A converter that runs in the browser does the parse, the render, the sanitise an
 - Heading ids carry a `doc-` prefix, so they survive both browser-side and server-side sanitising
 - The export is self-contained: doctype, head, charset, viewport, inline `<style>`, no external requests
 - An "HTML source" view, so you can read the wrapper and see what became of any raw HTML before you send it
-- Downloads as `.html`, `.md` or plain text, or prints to PDF through the browser's own dialog
+- Downloads as `.html`, `.md` or plain text, or prints to PDF through the browser's own dialog — and the text download makes its own choices about headings, links and tables, which is [what flattening Markdown to plain text costs](/blog/markdown-to-plain-text)
 
 **Who should use it?** Anybody whose next step is "send this to a person", and anybody converting a document they would rather not upload — a contract, a patient note, an unreleased plan.
 

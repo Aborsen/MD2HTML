@@ -1,7 +1,7 @@
 ---
 title: "Best Markdown to HTML Converters in 2026: Compared and Tested"
 description: Compare Markdown to HTML converters by flavour support, sanitising, and whether the file they hand back opens on its own or arrives as a fragment
-date: 2026-09-09
+date: 2026-09-08
 tag: Converting
 keywords: best markdown to html converter, markdown to html converter online, convert md to html, markdown to html library, markdown to html command line, self-contained html from markdown, markdown to html without install
 ---

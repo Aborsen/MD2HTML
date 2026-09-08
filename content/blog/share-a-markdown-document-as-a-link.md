@@ -154,7 +154,7 @@ You already keep files in Drive, Dropbox or OneDrive, and each of them will hand
 
 ### A self-contained HTML file as an attachment
 
-Convert the Markdown to a single HTML file with its styles inline, and attach that. The reader double-clicks and gets a finished document in the browser they already have.
+Convert the Markdown to a single HTML file with its styles inline, and attach that. The reader double-clicks and gets a finished document in the browser they already have, and [what one file has to contain to behave that way, what inlining costs in bytes, and how to prove it fetches nothing](/blog/self-contained-html-explained) is worth knowing before you rely on the format.
 
 | Pros | Cons |
 | --- | --- |

@@ -125,7 +125,9 @@ keeps them — the prefix ends both problems. The case for allow-lists is in
 
 Write the allow-list before the renderer, and call the sanitiser in the same function as the parse,
 so nobody can reach one without the other. Serve user-supplied output under a content security
-policy as well: `script-src 'none'` costs nothing on a page that is only ever a document. If you
+policy as well: `script-src 'none'` costs nothing on a page that is only ever a document. If the
+input is a Word file rather than Markdown, that is a different library and a different set of
+failures — [mammoth and the other docx parsers](/blog/mammoth-js-and-docx-parsers) cover it. If you
 needed the HTML once rather than a library in your bundle,
 [transformpipe](https://transformpipe.com) runs this pipeline in the browser and hands back a
 self-contained file.

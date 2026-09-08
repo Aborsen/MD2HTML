@@ -68,7 +68,7 @@ A link to a whole file needs that file's title anchor, which no regular expressi
 
 A visible break tells the reader one part ended and another began. `---` alone on a line becomes an `<hr>`, but directly under a line of text it is setext syntax, turning that line into an `<h2>`. Separate the parts with `***`: the same `<hr>`, never a heading underline.
 
-The same dashes cause the last problem. Parts written for a static site open with a frontmatter block, and after the first file nothing looks for one: the opening `---` becomes a rule, the keys become a paragraph, and the closing `---` underlines it — setext again, so `title: Running jobs` arrives as an `<h2>` mid-document. Strip the blocks as each part is read:
+The same dashes cause the last problem. Parts written for a static site open with a frontmatter block, and after the first file nothing looks for one: the opening `---` becomes a rule, the keys become a paragraph, and the closing `---` underlines it — setext again, so `title: Running jobs` arrives as an `<h2>` mid-document — the rendering outcome, which is only one of [the four things a converter can do with a front matter block](/blog/front-matter-and-what-converters-do-with-it) and the one you always get once nothing is looking for it. Strip the blocks as each part is read:
 
 ```bash
 awk 'NR == 1 && /^---$/ { fm = 1; next }

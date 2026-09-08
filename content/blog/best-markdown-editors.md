@@ -111,7 +111,7 @@ Typora is a desktop editor with one pane. There is no source on the left and pre
 - An option to copy pasted images into a relative folder next to the document, which is the difference between a portable file and one with links to your desktop
 - Runs on macOS, Windows and Linux
 
-**Who should use it?** People who write Markdown every day, want an application rather than a browser tab, and are happy to pay once. It is the shortest path from a finished document to a styled HTML file that somebody else can open.
+**Who should use it?** People who write Markdown every day, want an application rather than a browser tab, and are happy to pay once. It is the shortest path from a finished document to a styled HTML file that somebody else can open — and if the device cap, the absence of anything mobile or a disappointing export is what rules it out for you, [the alternatives sort themselves by which of those reasons is yours](/blog/typora-alternatives).
 
 ### iA Writer — best for long prose across a desktop and a phone
 

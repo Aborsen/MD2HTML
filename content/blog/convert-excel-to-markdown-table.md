@@ -73,9 +73,9 @@ Use `File > Save As`, pick `CSV UTF-8 (Comma delimited) (*.csv)`, accept the two
 
 **Technical details**
 
-- Excel's save-as list holds several text formats: `CSV`, `UTF8 CSV`, `Macintosh CSV`, `Windows CSV`, `MSDOS CSV` and `Unicode Text`, exposed to macros as `xlCSV`, `xlCSVUTF8`, `xlCSVMac`, `xlCSVWindows`, `xlCSVMSDOS` and `xlUnicodeText` (checked on learn.microsoft.com, 9 September 2026).
-- Saving to CSV shows a dialogue "reminding you that only the current worksheet will be saved to the new file", and a second warning that the sheet may contain features the text format does not support (checked on support.microsoft.com, 9 September 2026).
-- The field delimiter follows the system list separator, which is changeable in Windows Region settings and in Excel's own separator options (checked on support.microsoft.com, 9 September 2026).
+- Excel's save-as list holds several text formats: `CSV`, `UTF8 CSV`, `Macintosh CSV`, `Windows CSV`, `MSDOS CSV` and `Unicode Text`, exposed to macros as `xlCSV`, `xlCSVUTF8`, `xlCSVMac`, `xlCSVWindows`, `xlCSVMSDOS` and `xlUnicodeText` (checked on learn.microsoft.com, 8 September 2026).
+- Saving to CSV shows a dialogue "reminding you that only the current worksheet will be saved to the new file", and a second warning that the sheet may contain features the text format does not support (checked on support.microsoft.com, 8 September 2026).
+- The field delimiter follows the system list separator, which is changeable in Windows Region settings and in Excel's own separator options (checked on support.microsoft.com, 8 September 2026).
 - What lands in the file for a formatted cell is generally the string the cell displays, not the underlying value. That means a cell holding `2.3456` shown to two decimals writes `2.35`, and a date writes in whatever order the cell's format uses. Open the CSV in a text editor once and you will know exactly what your copy of Excel does.
 
 Then convert the CSV. A browser converter's [CSV to Markdown table conversion](/csv-to-markdown) parses the file properly rather than splitting on commas, which matters the moment a cell contains one, and does it locally so the rows are not uploaded — a kept document is capped at 4 MB and conversion itself at 10 MB, which is far more than a table anybody will read. The wider field of command line and library options is covered in [the CSV converter comparison](/blog/best-csv-to-markdown-converters); Pandoc, Miller and `pandas.to_markdown` all read CSV correctly and are the right answer inside a build.
@@ -130,7 +130,7 @@ You can make Excel write the Markdown itself. Put this in a helper column beside
 ="| " & TEXTJOIN(" | ", FALSE, A2:E2) & " |"
 ```
 
-`TEXTJOIN` takes a delimiter, an `ignore_empty` flag and up to 252 text arguments or ranges (checked on support.microsoft.com, 9 September 2026). Pass `FALSE` for `ignore_empty` and mean it: with `TRUE`, a blank cell is skipped rather than emitted, the row comes out one pipe short, and the values after the gap slide one column to the left. That is the single most common way this trick goes wrong.
+`TEXTJOIN` takes a delimiter, an `ignore_empty` flag and up to 252 text arguments or ranges (checked on support.microsoft.com, 8 September 2026). Pass `FALSE` for `ignore_empty` and mean it: with `TRUE`, a blank cell is skipped rather than emitted, the row comes out one pipe short, and the values after the gap slide one column to the left. That is the single most common way this trick goes wrong.
 
 Two more details. Concatenation ignores the cell's number format, so a date arrives as its serial number and a currency value loses its symbol; wrap those cells in `TEXT(A2, "yyyy-mm-dd")` to control the string yourself. And a value containing a pipe will end a cell early, so run it through `SUBSTITUTE(A2, "|", "\|")` in a preparation column if your data holds file paths or option lists.
 
@@ -193,7 +193,7 @@ This is the section to read twice, because most of it is not reversible and none
 | The value | What comes out | Why |
 | --- | --- | --- |
 | `00417` typed into a General cell | `417` | Coerced to a number when it was typed. The zeros were never in the file |
-| A 16-digit card or account number | Digits past the 15th become zeros | Excel has "a maximum precision of 15 significant digits" and "any numbers past the 15th digit are rounded down to zero" (checked on support.microsoft.com, 9 September 2026) |
+| A 16-digit card or account number | Digits past the 15th become zeros | Excel has "a maximum precision of 15 significant digits" and "any numbers past the 15th digit are rounded down to zero" (checked on support.microsoft.com, 8 September 2026) |
 | A very large number | `1.23E+15` | Scientific notation in the display becomes scientific notation in the text |
 | `2.3456` shown to two decimals | `2.35` | The displayed string, not the stored value |
 | A date | The cell's display format, in the locale's order | Which is why `03/09/2026` is ambiguous outside the sheet |
@@ -203,7 +203,7 @@ This is the section to read twice, because most of it is not reversible and none
 | A cell with Alt+Enter in it | A quoted field containing a real newline | Which a line-based reader will mishandle unless it parses CSV properly |
 | Text starting with `=`, `+`, `-` or `@` | The same text | Harmless as Markdown; a spreadsheet reopening the CSV may treat it as a formula |
 
-The first two rows are the ones that cost real money. Leading zeros and long identifiers are destroyed at entry, before any export, and the fix is prevention: format the column as Text before pasting the data in, or prefix each value with an apostrophe. Microsoft's own guidance is explicit that these steps "only affect numbers entered after formatting is applied" and will not restore what has already been truncated (checked on support.microsoft.com, 9 September 2026). If a part number column already reads `417`, the sheet no longer knows it was `00417`, and neither will the Markdown.
+The first two rows are the ones that cost real money. Leading zeros and long identifiers are destroyed at entry, before any export, and the fix is prevention: format the column as Text before pasting the data in, or prefix each value with an apostrophe. Microsoft's own guidance is explicit that these steps "only affect numbers entered after formatting is applied" and will not restore what has already been truncated (checked on support.microsoft.com, 8 September 2026). If a part number column already reads `417`, the sheet no longer knows it was `00417`, and neither will the Markdown.
 
 The date row is the one that causes arguments rather than losses. A CSV carries the string the cell showed, so a British sheet exports `03/09/2026` and an American reader parses it as March. If the table is going anywhere near another country, force ISO dates before you export — a helper column of `TEXT(A2, "yyyy-mm-dd")`, or Calc's "Save cell content as shown" turned off.
 

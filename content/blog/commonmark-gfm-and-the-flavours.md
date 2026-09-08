@@ -389,7 +389,7 @@ Add a `$x^2$` and a `> [!NOTE]` line if you care about maths or admonitions. The
 
 GFM is the right default, and it is worth being honest about the four places it runs out.
 
-**It has no footnotes, and neither do you.** GitHub renders footnotes, so people write them, and they are not in the specification. A GFM parser that ignores `[^1]` is compliant. If your document genuinely needs footnotes, you have left GFM whether you meant to or not, and the cost is that your file now depends on a specific tool's extension list rather than on a specification.
+**It has no footnotes, and neither do you.** GitHub renders footnotes, so people write them, and they are not in the specification. A GFM parser that ignores `[^1]` is compliant. If your document genuinely needs footnotes, you have left GFM whether you meant to or not, and the cost is that your file now depends on a specific tool's extension list rather than on a specification — [which tools render footnote syntax and which print the brackets](/blog/markdown-footnotes-support) is the list to check before you write a hundred notes.
 
 **It has no attributes, so styling means raw HTML.** There is no way in GFM to put a class on a paragraph. You either drop to a `<div>` — which puts you at the mercy of whatever the renderer does with raw HTML, and of the tag filter if it is a GFM renderer — or you accept the default styling. Pandoc and kramdown solved this years ago, and their solutions do not travel.
 

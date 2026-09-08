@@ -413,7 +413,7 @@ A viewer solves your problem. It does not solve the problem of the next person.
 
 If you have to email the document, print it, attach it to a ticket, put it in front of a client, or still be able to open it in five years, convert it once to HTML. An `.html` file opens by double-click on anything with a browser, formatting intact, with nothing to install and nothing to explain. That is the property `.md` does not have on any platform, which is the whole reason this article exists. [What actually happens when Markdown becomes HTML](/blog/markdown-to-html-converter) is worth understanding before you pick a tool, and if the reader should not have to deal with an attachment at all, you can [publish it as a read-only link](/blog/share-a-markdown-document-as-a-link) instead.
 
-The trade-off runs the other way while you are still writing. An editor with a live preview earns its download then, because you are looking at the document dozens of times a day. A converter is for when you have finished and someone else needs to read it. Choosing between them is really a question about who the next reader is.
+The trade-off runs the other way while you are still writing. An editor with a live preview earns its download then, because you are looking at the document dozens of times a day. A converter is for when you have finished and someone else needs to read it. Choosing between them is really a question about who the next reader is — and if that question keeps arriving before the file is written rather than after, the decision underneath it is [whether the document should have been Markdown or HTML in the first place](/blog/markdown-vs-html).
 
 ## Where the obvious choice fails
 

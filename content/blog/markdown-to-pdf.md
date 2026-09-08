@@ -34,7 +34,7 @@ There are four routes, and only four. Convert to HTML and print it from a browse
 | VS Code extension | The file is already open in your editor | An extension, often a Chromium | Whatever the extension exposes | Free, extension-dependent |
 | Markdown to `.docx`, then Word or LibreOffice | Somebody has to edit it after you | Pandoc plus an office suite | The office suite's page setup | Free with LibreOffice |
 
-Prices checked on typora.io and obsidian.md, 9 September 2026. The wkhtmltopdf repository notice was checked on github.com, 9 September 2026.
+Prices checked on typora.io and obsidian.md, 8 September 2026. The wkhtmltopdf repository notice was checked on github.com, 8 September 2026.
 
 ## Convert to HTML, then print from the browser
 
@@ -128,7 +128,7 @@ These sit between the two routes above. You still convert to HTML, but a program
 
 ### wkhtmltopdf
 
-wkhtmltopdf is a command-line tool that renders HTML with the Qt WebKit rendering engine and is released under LGPLv3 (checked on wkhtmltopdf.org, 9 September 2026). Its GitHub repository carries the notice "This repository was archived by the owner on Jan 2, 2023. It is now read-only" (checked on github.com, 9 September 2026).
+wkhtmltopdf is a command-line tool that renders HTML with the Qt WebKit rendering engine and is released under LGPLv3 (checked on wkhtmltopdf.org, 8 September 2026). Its GitHub repository carries the notice "This repository was archived by the owner on Jan 2, 2023. It is now read-only" (checked on github.com, 8 September 2026).
 
 Its command-line surface is genuinely good, and better than a browser's for this job: `--margin-top` and its siblings set margins in real units, `--header-html` and `--footer-html` take HTML files, `--footer-center "[page]/[topage]"` gives you "3/12" at the bottom of every page, `--print-media-type` makes it honour your `@media print` rules, and `--enable-local-file-access` is required before it will read images and stylesheets from disk. If you have a script that already produces acceptable PDFs with those flags, there is no urgency to replace it.
 
@@ -144,11 +144,11 @@ Puppeteer removes the guesswork. Its `page.pdf()` call takes `format`, `margin`,
 
 ### WeasyPrint
 
-WeasyPrint is a Python library and command-line tool, BSD licensed, and it is not a browser. Its documentation says it is "based on various libraries but not on a full rendering engine like WebKit or Gecko", with a CSS layout engine written in Python and designed for pagination (checked on doc.courtbouillon.org, 9 September 2026).
+WeasyPrint is a Python library and command-line tool, BSD licensed, and it is not a browser. Its documentation says it is "based on various libraries but not on a full rendering engine like WebKit or Gecko", with a CSS layout engine written in Python and designed for pagination (checked on doc.courtbouillon.org, 8 September 2026).
 
-That design choice is the point. It supports the `@page` rule with the `:left`, `:right`, `:first` and `:blank` selectors, page margin boxes, page-based counters, and the `bookmark-level`, `bookmark-label` and `bookmark-state` properties that build the PDF's outline - headings become bookmarks by default. Internal anchors and external URLs both come out as clickable links (all checked on doc.courtbouillon.org, 9 September 2026). Browsers implement none of the margin-box machinery, so this is the only route on this page that gives you a proper running header in CSS rather than in LaTeX.
+That design choice is the point. It supports the `@page` rule with the `:left`, `:right`, `:first` and `:blank` selectors, page margin boxes, page-based counters, and the `bookmark-level`, `bookmark-label` and `bookmark-state` properties that build the PDF's outline - headings become bookmarks by default. Internal anchors and external URLs both come out as clickable links (all checked on doc.courtbouillon.org, 8 September 2026). Browsers implement none of the margin-box machinery, so this is the only route on this page that gives you a proper running header in CSS rather than in LaTeX.
 
-The cost is the other half of the same choice. Its own documentation describes flexbox as working "for simple use cases but not deeply tested" and grid as working "for simple cases, but has some limitations" (checked on doc.courtbouillon.org, 9 September 2026). Hand it a document, not an application layout, and it is excellent.
+The cost is the other half of the same choice. Its own documentation describes flexbox as working "for simple use cases but not deeply tested" and grid as working "for simple cases, but has some limitations" (checked on doc.courtbouillon.org, 8 September 2026). Hand it a document, not an application layout, and it is excellent.
 
 **Who should use these?** Anybody whose PDF has to be produced by a machine on a schedule: a nightly report, a generated invoice, a PDF attached to every release. Choose Chrome or Puppeteer if the document is already a web page you like; choose WeasyPrint if you need running headers, page counters and bookmarks and would rather write CSS than LaTeX.
 
@@ -158,12 +158,12 @@ The shortest route of all, when the file is already open in front of you. Every 
 
 | Editor | How it exports | Price and licence |
 | --- | --- | --- |
-| Typora | "Export to PDF with bookmarks", plus docx, LaTeX, EPUB and others | $14.99 without tax, one licence covering up to 3 devices, 15-day free trial (checked on typora.io, 9 September 2026) |
-| Obsidian | Built-in Export to PDF from the note | Free for every purpose including commercial use; a commercial licence is optional at $50 per user per year (checked on obsidian.md/pricing, 9 September 2026) |
+| Typora | "Export to PDF with bookmarks", plus docx, LaTeX, EPUB and others | $14.99 without tax, one licence covering up to 3 devices, 15-day free trial (checked on typora.io, 8 September 2026) |
+| Obsidian | Built-in Export to PDF from the note | Free for every purpose including commercial use; a commercial licence is optional at $50 per user per year (checked on obsidian.md/pricing, 8 September 2026) |
 | VS Code | An extension; most bundle or download a Chromium and print with it | Free, but the extension's quality is the extension's |
 | Word or LibreOffice | Convert Markdown to `.docx` with Pandoc, then export from the suite | Free with LibreOffice |
 
-Prices and terms checked on typora.io and obsidian.md, 9 September 2026.
+Prices and terms checked on typora.io and obsidian.md, 8 September 2026.
 
 | Pros | Cons |
 | --- | --- |
@@ -172,7 +172,7 @@ Prices and terms checked on typora.io and obsidian.md, 9 September 2026.
 | Bookmarks and a clickable outline in the better ones | Locked to that application, on that machine |
 | The `.docx` detour leaves a file somebody can edit | Every hop through another format loses something |
 
-The `.docx` detour deserves its own note, because it solves a problem no other route does. If the person receiving the document will want to change it, a PDF is a dead end and a Word file is not. `pandoc report.md -o report.docx --reference-doc=house-style.docx` applies your own styles, and LibreOffice will convert the result on a server with `soffice --headless --convert-to pdf report.docx`. Two conversions is one more than ideal, and it is the price of handing somebody something they can edit. [Which editors handle Markdown well](/blog/best-markdown-editors) is a longer conversation than the export menu.
+The `.docx` detour deserves its own note, because it solves a problem no other route does. If the person receiving the document will want to change it, a PDF is a dead end and a Word file is not. `pandoc report.md -o report.docx --reference-doc=house-style.docx` applies your own styles, and LibreOffice will convert the result on a server with `soffice --headless --convert-to pdf report.docx`. Two conversions is one more than ideal, and it is the price of handing somebody something they can edit — and if the `.docx` is the deliverable rather than a waypoint, [getting Markdown into a Word file somebody can edit](/blog/markdown-to-word) is where the reference document, the styles Pandoc looks for and the cost of the trip back are worked through properly. [Which editors handle Markdown well](/blog/best-markdown-editors) is a longer conversation than the export menu.
 
 **Who should use it?** Writers, for drafts and for anything where "looks reasonable" is the bar. Not builds, and not documents with a house style to honour.
 

@@ -64,7 +64,7 @@ The `paths` filter keeps the job off pull requests that only change code.
           name: Handbook preview
 ```
 
-`files` is a space-separated list of paths, passed through as written: a pattern such as `docs/*.md` arrives literally and matches nothing, so build the list in an earlier step if you need one. An explicit list needs no history, but it loses the part that makes this worth having — treat it as the fallback, not the default.
+`files` is a space-separated list of paths, passed through as written: a pattern such as `docs/*.md` arrives literally and matches nothing, so build the list in an earlier step if you need one — which is the same problem as [converting a whole folder of Markdown files](/blog/batch-convert-markdown-files), where enumerating with `find` and sorting before you pass the list on is what keeps the set knowable. An explicit list needs no history, but it loses the part that makes this worth having — treat it as the fallback, not the default.
 
 ## Why `pull-requests: write`
 

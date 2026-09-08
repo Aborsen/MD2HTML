@@ -9,7 +9,7 @@
  *
  * Exits non-zero when something is wrong, so it can sit in front of a deploy.
  */
-import { readdirSync, readFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 
 const DIR = 'content/blog';
 const KEYS = ['title', 'description', 'date', 'tag', 'keywords'];
@@ -148,6 +148,24 @@ for (const file of files) {
 for (const slug of slugs) {
   if (!linkedTo.has(slug)) {
     problems.push(`${slug}: orphan — no other article links to it`);
+  }
+}
+
+/*
+ * Both covers exist.
+ *
+ * `npm run og` draws them and is not part of the build, so an article written without running it
+ * gets a card with a broken image and a share with no picture — and neither shows up until somebody
+ * looks at the index or posts a link. Cheap to check, invisible otherwise.
+ */
+for (const slug of slugs) {
+  for (const [kind, path] of [
+    ['share image', `public/og/blog/${slug}.png`],
+    ['card image', `public/og/card/${slug}.png`],
+  ]) {
+    if (!existsSync(path)) {
+      problems.push(`${slug}: no ${kind} — run \`npm run og\``);
+    }
   }
 }
 

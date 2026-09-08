@@ -161,7 +161,7 @@ The obvious approach is to run the conversion, look at the output, and repair wh
 
 **Some of it costs more to fix than to redo.** A document with merged cells, nested tables and cells containing lists cannot be repaired into Markdown, because Markdown's table syntax has no spanning and no block content in cells; you can only reshape the data or keep it as an HTML table. [Tables are the most common thing to break in either direction](/blog/markdown-tables-that-survive-conversion) and the least amenable to patching after the fact. A document built entirely from text boxes and shapes — a brochure, a poster, a designed one-pager — is not a document with formatting to lose. It is a layout, and the words are incidental to it. Converting it produces a fragment of prose that nobody wants, and the honest answer is that the file should stay a PDF.
 
-What this costs, added up: the time is not in the conversion, which takes seconds, and not in the obvious repairs, which take minutes. It is in the checking, which takes ten to twenty minutes for a document of any substance, and in keeping the original, which takes disc space and a naming convention. Teams that skip the checking do not find out immediately. They find out when somebody asks what the deleted paragraph said.
+What this costs, added up: the time is not in the conversion, which takes seconds, and not in the obvious repairs, which take minutes. It is in the checking, which takes ten to twenty minutes for a document of any substance, and in keeping the original, which takes disk space and a naming convention. Teams that skip the checking do not find out immediately. They find out when somebody asks what the deleted paragraph said.
 
 ## What to decide before you convert
 
