@@ -20,6 +20,7 @@ import { CodeBlock, InlineCode } from '@/ui/components/Code';
 import { DefinitionTable } from '@/ui/components/DefinitionTable';
 import { Faq } from '@/ui/components/Faq';
 import { Typography } from '@/ui/components/Typography';
+import { ZoomableImage } from '@/ui/components/ZoomableImage';
 import { cn } from '@/ui/lib/utils';
 
 /*
@@ -140,13 +141,14 @@ function Shot({
 
   return (
     <figure className="space-y-2">
-      <img
+      <ZoomableImage
         src={`/docs/${name}-${theme}.png`}
         alt={alt}
-        loading="lazy"
-        className="w-full rounded-lg border border-stroke bg-surface-card"
+        caption={caption}
       />
-      <figcaption className="text-ink-secondary text-xs">{caption}</figcaption>
+      <figcaption className="text-ink-secondary text-xs">
+        {caption} <span className="text-ink-inactive">— click to enlarge</span>
+      </figcaption>
     </figure>
   );
 }
