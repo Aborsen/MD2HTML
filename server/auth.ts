@@ -40,11 +40,48 @@ const OUR_HOP = /^(x-forwarded-|x-vercel-|x-real-ip$|forwarded$|cdn-loop$)/i;
 const SESSION_COOKIE = /session_token/i;
 
 /** The origin this deployment is reached on; Better Auth checks it against its trusted list. */
+/** A bare host, optionally with a port. Anything else is not a host we will build a URL from. */
+const HOST_SHAPE = /^[a-z0-9.-]+(:\d{1,5})?$/i;
+
+/** Hostnames this deployment answers on, from the platform. Empty in a plain checkout. */
+const OWN_HOSTS = new Set(
+  [
+    process.env.M2H_HOST,
+    process.env.VERCEL_PROJECT_PRODUCTION_URL,
+    process.env.VERCEL_URL,
+    process.env.VERCEL_BRANCH_URL,
+  ]
+    .filter(Boolean)
+    .map((value) => String(value).replace(/^https?:\/\//, '').replace(/\/$/, ''))
+);
+
+/**
+ * The origin this request arrived on, and the one every URL we hand out is built from.
+ *
+ * `x-forwarded-host` is a header anybody can send, and this function feeds things that must not
+ * follow it: the issuer in the OAuth metadata, the action of the consent form, the resource these
+ * tokens are for, the `origin` presented upstream to the auth service, and every share link. One
+ * curl with a forged header used to produce a discovery document naming somebody else's site.
+ *
+ * So it is honoured only when it agrees with the Host the platform routed on, or names a hostname
+ * this deployment is known to answer for. Pinning to a single value instead would break every
+ * preview deployment, each of which has a hostname of its own.
+ */
 export function selfOrigin(c: Context): string {
   const url = new URL(c.req.url);
-  const host = c.req.header('x-forwarded-host') ?? c.req.header('host') ?? url.host;
+  const routed = c.req.header('host') ?? url.host;
+  const forwarded = c.req.header('x-forwarded-host');
+  const claimed =
+    forwarded && (forwarded === routed || OWN_HOSTS.has(forwarded))
+      ? forwarded
+      : routed;
+  const host = HOST_SHAPE.test(claimed) ? claimed : url.host;
+
+  const forwardedProto = c.req.header('x-forwarded-proto');
   const proto =
-    c.req.header('x-forwarded-proto') ?? url.protocol.replace(':', '');
+    forwardedProto === 'https' || forwardedProto === 'http'
+      ? forwardedProto
+      : url.protocol.replace(':', '');
 
   return `${proto}://${host}`;
 }

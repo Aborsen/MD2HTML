@@ -3,7 +3,7 @@ import { Hono, type Context } from 'hono';
 import { createMiddleware } from 'hono/factory';
 import { buildStandaloneHtml, getDocStats } from '../shared/markdown.js';
 import { selfOrigin } from './auth.js';
-import { type Caller, resolveCaller } from './caller.js';
+import { type Caller, mayWrite, resolveCaller } from './caller.js';
 import { sql } from './db.js';
 import { checkQuota, countCall, QUOTA, RATE, usageOf } from './limits.js';
 import { markdownToHtml } from './render.js';
@@ -50,6 +50,38 @@ const requireCaller = createMiddleware<Env>(async (c, next) => {
 });
 
 v1.use('*', requireCaller);
+
+/*
+ * A read-only connection cannot change anything, and this is where that holds.
+ *
+ * It used to be enforced only in the MCP tool dispatcher, which meant the promise on the consent
+ * page — "it cannot save, share or delete anything" — was true of the tools and false of the API
+ * the tools call, and the token the connector already holds was one curl away from publishing a
+ * document. The check belongs on the credential, not on one of the doors it opens.
+ *
+ * An allowlist of safe methods rather than a list of unsafe ones: a route added here later is
+ * covered by default, which is exactly the property the first version lacked.
+ */
+const READ_ONLY_METHODS = new Set(['GET', 'HEAD', 'OPTIONS']);
+
+v1.use('*', async (c, next) => {
+  if (READ_ONLY_METHODS.has(c.req.method) || mayWrite(c.get('caller'))) {
+    return next();
+  }
+
+  c.header(
+    'www-authenticate',
+    'Bearer error="insufficient_scope", scope="documents:write"'
+  );
+
+  return c.json(
+    {
+      error:
+        'This connection was granted read-only access, so it cannot save, share or delete.',
+    },
+    403
+  );
+});
 
 /*
  * One counter per caller per minute. Keys are counted by key, a browser session by user, so one
@@ -206,7 +238,15 @@ v1.post('/documents', async (c) => {
   return c.json({ document: asDocument(c, created[0], { words: stats.words }) }, 201);
 });
 
+/** Postgres rejects a malformed uuid with an error, which reaches the caller as a 500. */
+const looksLikeId = (id: string) =>
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+
 async function findDocument(userId: string, id: string) {
+  if (!looksLikeId(id)) {
+    return null;
+  }
+
   const rows = (await sql()`
     select id, user_id, name, size, stats, created_at, share_mode, share_token,
            markdown, blob_path
@@ -232,7 +272,23 @@ v1.get('/documents/:id', async (c) => {
     return c.json({ error: 'Not found' }, 404);
   }
 
-  const markdown = await readSource(row);
+  /*
+   * The store answering at all is a separate question from the row existing. A missing file is a
+   * 410 — the document is gone and saying so is the answer — but a store that cannot be reached is
+   * ours to own: it used to arrive as a bare 500, which tells a caller nothing they can act on.
+   */
+  let markdown: string | null;
+
+  try {
+    markdown = await readSource(row);
+  } catch (cause) {
+    const why = cause instanceof Error ? cause.message : 'unknown';
+
+    return c.json(
+      { error: `Could not read the document's source: ${why}` },
+      502
+    );
+  }
 
   if (markdown === null) {
     return c.json({ error: 'The source of this document is missing' }, 410);
@@ -254,6 +310,10 @@ v1.get('/documents/:id', async (c) => {
 });
 
 v1.delete('/documents/:id', async (c) => {
+  if (!looksLikeId(c.req.param('id'))) {
+    return c.json({ error: 'Not found' }, 404);
+  }
+
   const removed = (await sql()`
     delete from m2h_document
     where user_id = ${c.get('caller').id} and id = ${c.req.param('id')}
@@ -292,6 +352,10 @@ v1.get('/documents/:id/share', async (c) => {
 v1.put('/documents/:id/share', async (c) => {
   const userId = c.get('caller').id;
   const id = c.req.param('id');
+
+  if (!looksLikeId(id)) {
+    return c.json({ error: 'Not found' }, 404);
+  }
   type ShareBody = {
     mode?: 'private' | 'link' | 'people';
     emails?: string[];

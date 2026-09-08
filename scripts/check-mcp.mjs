@@ -19,6 +19,7 @@ const hash = (t) => createHash('sha256').update(t).digest('hex');
 
 let passed = 0;
 let failed = 0;
+let skipped = 0;
 
 function check(name, ok, detail = '') {
   if (ok) {
@@ -28,6 +29,18 @@ function check(name, ok, detail = '') {
     failed += 1;
     console.log(`  FAIL ${name}${detail ? ` — ${detail}` : ''}`);
   }
+}
+
+/*
+ * Said out loud, and counted separately from a pass.
+ *
+ * A local checkout's Vercel OIDC token expires every few hours, and without it nothing can be
+ * saved — which used to report as eight broken tools. A gate that cannot tell "this code is wrong"
+ * from "this machine has no credentials" is a gate people learn to ignore.
+ */
+function skip(name, why) {
+  skipped += 1;
+  console.log(`  skip ${name} — ${why}`);
 }
 
 const post = (path, body, headers = {}) =>
@@ -362,9 +375,30 @@ const saved = await tool(tokens.access_token, 'm2h_save_document', {
   name: 'mcp-e2e.md',
   share: 'link',
 });
+/*
+ * A local checkout keeps a Vercel OIDC token that expires every few hours; without it the Blob
+ * store refuses the write and nothing can be saved. That is this machine's credential, not this
+ * code's behaviour, so what depends on it is skipped rather than failed — and named, so nobody
+ * reads a green run as coverage it did not have.
+ */
+const blobless = /No blob credentials|BLOB_READ_WRITE_TOKEN/.test(saved.text);
+const why = 'no Blob credentials here — run `vercel env pull .env.local`';
+
 const savedId = (saved.text.match(/id ([0-9a-f-]{36})/) ?? [])[1];
 const savedUrl = (saved.text.match(/https?:\/\/\S+\/s\/\S+/) ?? [])[0];
 
+if (blobless) {
+  for (const name of [
+    'save returns an id',
+    'and a share link',
+    'which serves the document',
+    'the list finds it and states what it showed',
+    'get returns the source',
+    'and the HTML',
+  ]) {
+    skip(name, why);
+  }
+} else {
 check('save returns an id', Boolean(savedId), saved.text);
 check('and a share link', Boolean(savedUrl), saved.text);
 
@@ -383,26 +417,45 @@ check('get returns the source', /Hello\./.test(got.text));
 
 const asHtml = await tool(tokens.access_token, 'm2h_get_document', { id: savedId, as: 'html' });
 check('and the HTML', /<h1/.test(asHtml.text));
+}
 
 const missing = await tool(tokens.access_token, 'm2h_get_document', {
   id: '00000000-0000-0000-0000-000000000000',
 });
 check('a document that is not yours is simply not found', missing.isError, missing.text.slice(0, 80));
 
-const shared = await tool(tokens.access_token, 'm2h_share_document', {
-  id: savedId,
-  mode: 'private',
-});
-check('sharing can be revoked', /private/.test(shared.text) && /no longer opens/.test(shared.text), shared.text);
+if (blobless) {
+  skip('sharing can be revoked', why);
+} else {
+  const shared = await tool(tokens.access_token, 'm2h_share_document', {
+    id: savedId,
+    mode: 'private',
+  });
+  check('sharing can be revoked', /private/.test(shared.text) && /no longer opens/.test(shared.text), shared.text);
+}
 
 const usage = await tool(tokens.access_token, 'm2h_usage', {});
 check('usage names both ceilings', /of 100.0 MB/.test(usage.text) && /of 500 documents/.test(usage.text), usage.text);
 
-const unconfirmed = await tool(tokens.access_token, 'm2h_delete_document', { id: savedId, confirm: false });
+const unconfirmed = await tool(tokens.access_token, 'm2h_delete_document', {
+  id: savedId ?? '00000000-0000-0000-0000-000000000000',
+  confirm: false,
+});
 check('a delete without confirmation refuses and says why', unconfirmed.isError && /confirm/.test(unconfirmed.text));
 
-const deleted = await tool(tokens.access_token, 'm2h_delete_document', { id: savedId, confirm: true });
-check('and with it, the document goes', /Deleted/.test(deleted.text), deleted.text);
+if (blobless) {
+  skip('and with it, the document goes', why);
+} else {
+  const deleted = await tool(tokens.access_token, 'm2h_delete_document', { id: savedId, confirm: true });
+  check('and with it, the document goes', /Deleted/.test(deleted.text), deleted.text);
+}
+
+const nonsenseId = await tool(tokens.access_token, 'm2h_get_document', { id: '../usage' });
+check(
+  'an id that is not an id is not found, rather than a crash',
+  nonsenseId.isError,
+  nonsenseId.text.slice(0, 80)
+);
 
 console.log('\n— scope');
 
@@ -457,11 +510,173 @@ check('a token that never existed is answered the same way', neverExisted.status
 
 console.log('\n— clearing up');
 
+/*
+ * Its own token: the section above deliberately revokes the one the rest of the run used, and a
+ * test that reads a revoked credential proves nothing about the boundary it is checking.
+ */
+const stillGood = randomBytes(32).toString('base64url');
+
+await sql`
+  insert into m2h_oauth_token (token_hash, kind, client_id, user_id, scope, resource, expires_at)
+  values (${hash(stillGood)}, 'access', ${client.client_id}, ${someone.user_id},
+          'documents:read documents:write', ${`${HOST}/api/mcp`}, now() + interval '1 hour')
+`;
+
+const asApi = (path, init = {}, token = readOnly) =>
+  fetch(`${HOST}${path}`, {
+    ...init,
+    headers: {
+      'content-type': 'application/json',
+      authorization: `Bearer ${token}`,
+      ...(init.headers ?? {}),
+    },
+    redirect: 'manual',
+  });
+
+/*
+ * Invariant 8, at the door the tools go through rather than at the tools. The read-only refusal
+ * used to live only in the MCP dispatcher, which left the same token free to write straight at the
+ * public API, so every one of these is checked where the write actually happens.
+ */
+const [mine] = await sql`
+  select id from m2h_document where user_id = ${someone.user_id} limit 1
+`;
+
+if (mine) {
+  const roShare = await asApi(`/api/v1/documents/${mine.id}/share`, {
+    method: 'PUT',
+    body: JSON.stringify({ mode: 'link' }),
+  });
+  check('a read-only token cannot share through the API', roShare.status === 403, `got ${roShare.status}`);
+
+  const roDelete = await asApi(`/api/v1/documents/${mine.id}`, { method: 'DELETE' });
+  check('nor delete', roDelete.status === 403, `got ${roDelete.status}`);
+
+  const roRead = await asApi(`/api/v1/documents/${mine.id}`);
+
+  if (blobless && roRead.status === 502) {
+    skip('but reading is what it was granted', why);
+  } else {
+    check('but reading is what it was granted', roRead.status === 200, `got ${roRead.status}`);
+  }
+} else {
+  skip('a read-only token cannot share through the API', 'no document on this account');
+}
+
+const roPost = await asApi('/api/v1/documents?name=no.md', {
+  method: 'POST',
+  headers: { 'content-type': 'text/markdown' },
+  body: '# no',
+});
+check('nor save', roPost.status === 403, `got ${roPost.status}`);
+
+/* Invariant 9: the account and its credentials are not reachable with a token of any kind. */
+const keysWithToken = await asApi('/api/keys', {}, stillGood);
+check('an OAuth token cannot list the API keys', keysWithToken.status === 401, `got ${keysWithToken.status}`);
+
+const keysMint = await asApi('/api/keys', {
+  method: 'POST',
+  body: JSON.stringify({ name: 'minted by a token' }),
+}, stillGood);
+check('nor mint one', keysMint.status === 401, `got ${keysMint.status}`);
+
+const grantsWithToken = await asApi('/api/oauth/grants', {}, stillGood);
+check('nor read what else is connected', grantsWithToken.status === 401, `got ${grantsWithToken.status}`);
+
+/* Invariant 1: consent belongs to a session, and a token is not one. */
+const consentByToken = await fetch(`${HOST}/api/oauth/approve`, {
+  method: 'POST',
+  headers: {
+    'content-type': 'application/x-www-form-urlencoded',
+    origin: HOST,
+    authorization: `Bearer ${stillGood}`,
+  },
+  body: new URLSearchParams({ pending: pendingId, decision: 'allow' }),
+  redirect: 'manual',
+});
+check('a token cannot approve a connection', consentByToken.status === 401, `got ${consentByToken.status}`);
+
+/* Invariant 2: somebody else's document, with a correct-looking id, is not found. */
+const [stranger] = await sql`
+  select id from m2h_document where user_id <> ${someone.user_id} limit 1
+`;
+
+if (stranger) {
+  const theirs = await tool(stillGood, 'm2h_get_document', { id: stranger.id });
+  check("another account's document is not found, id or no id", theirs.isError, theirs.text.slice(0, 80));
+} else {
+  skip("another account's document is not found", 'only one account in this database');
+}
+
+/* The one place redirect_uri matching is relaxed, and it is relaxed only for loopback. */
+const loopbackPort = await fetch(
+  `${HOST}/api/oauth/authorize?${new URLSearchParams({
+    client_id: client.client_id,
+    redirect_uri: 'http://localhost:57231/callback',
+    response_type: 'code',
+    code_challenge: 'x'.repeat(43),
+    code_challenge_method: 'S256',
+  })}`,
+  { redirect: 'manual' }
+);
+check(
+  'a loopback redirect_uri is accepted on any port',
+  loopbackPort.status === 302 && (loopbackPort.headers.get('location') ?? '').includes('/?connect='),
+  `${loopbackPort.status} ${loopbackPort.headers.get('location') ?? ''}`
+);
+
+const notLoopback = await fetch(
+  `${HOST}/api/oauth/authorize?${new URLSearchParams({
+    client_id: client.client_id,
+    redirect_uri: 'https://claude.ai:8443/api/mcp/auth_callback',
+    response_type: 'code',
+    code_challenge: 'x'.repeat(43),
+    code_challenge_method: 'S256',
+  })}`,
+  { redirect: 'manual' }
+);
+check('but a public one is matched exactly, port and all', notLoopback.status === 400, `got ${notLoopback.status}`);
+
+/* A forged forwarding header must not choose what the discovery documents say. */
+const forged = await fetch(`${HOST}/.well-known/oauth-authorization-server`, {
+  headers: { 'x-forwarded-host': 'evil.test', 'x-forwarded-proto': 'https' },
+});
+const forgedBody = await forged.json();
+check(
+  'a forged x-forwarded-host does not become the issuer',
+  !JSON.stringify(forgedBody).includes('evil.test'),
+  forgedBody.issuer
+);
+
+/* A message with no id is a notification: no answer, and nothing run. */
+const notification = await fetch(`${HOST}/api/mcp`, {
+  method: 'POST',
+  headers: {
+    'content-type': 'application/json',
+    authorization: `Bearer ${stillGood}`,
+  },
+  body: JSON.stringify({
+    jsonrpc: '2.0',
+    method: 'tools/call',
+    params: { name: 'm2h_usage', arguments: {} },
+  }),
+});
+const notificationBody = await notification.text();
+check(
+  'a call with no id is answered 202 and nothing else',
+  notification.status === 202 && notificationBody === '',
+  `${notification.status} ${notificationBody.slice(0, 60)}`
+);
+
 await sql`delete from m2h_oauth_token where client_id = ${client.client_id}`;
 await sql`delete from m2h_oauth_code where client_id = ${client.client_id}`;
 await sql`delete from m2h_oauth_pending where id = ${pendingId}`;
 await sql`delete from m2h_oauth_client where id = ${client.client_id}`;
-await sql`delete from m2h_document where name = 'mcp-e2e.md'`;
+await sql`delete from m2h_document where name in ('mcp-e2e.md', 'no.md')`;
 
-console.log(`\n${passed} passed, ${failed} failed\n`);
+console.log(
+  `
+${passed} passed, ${failed} failed${skipped ? `, ${skipped} skipped` : ''}
+`
+);
 process.exit(failed > 0 ? 1 : 0);

@@ -6,7 +6,7 @@ import { FAQ_ENTRIES } from '../src/lib/faq.js';
 import { MCP_TOOL_NAMES, type McpToolName } from '../src/lib/mcp-facts.js';
 import { selfOrigin } from './auth.js';
 import { type Caller, mayWrite, resolveCaller } from './caller.js';
-import { QUOTA } from './limits.js';
+import { countCall, QUOTA, RATE } from './limits.js';
 import { markdownToHtml } from './render.js';
 import v1 from './v1.js';
 
@@ -165,6 +165,9 @@ interface Tool {
     caller: Caller
   ) => Promise<{ content: Array<{ type: string; text: string }>; isError: boolean }>;
 }
+
+/** An id is one path segment and nothing else: a `?` or a `..` in it must not choose the route. */
+const segment = (value: unknown) => encodeURIComponent(String(value ?? ''));
 
 /**
  * Calls this app's own API in process.
@@ -407,7 +410,7 @@ const TOOLS: Record<McpToolName, Tool> = {
       if (share === 'people' && Array.isArray(args.emails)) {
         const shared = await callApi(
           c,
-          `/api/v1/documents/${document.id}/share`,
+          `/api/v1/documents/${segment(document.id)}/share`,
           {
             method: 'PUT',
             headers: { 'content-type': 'application/json' },
@@ -434,9 +437,15 @@ const TOOLS: Record<McpToolName, Tool> = {
       return say(
         [
           `Saved ${document.name} — id ${document.id}, ${bytes(document.size)}, ${document.words} words.`,
-          document.share.url
+          /*
+           * What the document is, not what was asked for. A share that did not take leaves the URL
+           * null, and a sentence promising a link nobody can open is worse than no sentence.
+           */
+          document.share.mode === 'link' && document.share.url
             ? `Anyone with this link can read it: ${document.share.url}`
-            : 'It is private. Share it with m2h_share_document when asked.',
+            : document.share.mode === 'people' && document.share.url
+              ? `Only the addresses on it can read it: ${document.share.url}`
+              : 'It is private. Share it with m2h_share_document when asked.',
         ].join('\n')
       );
     },
@@ -522,7 +531,7 @@ const TOOLS: Record<McpToolName, Tool> = {
 
       if (args.as === 'html') {
         const response = await v1.fetch(
-          new Request(`${selfOrigin(c)}/api/v1/documents/${id}.html`, {
+          new Request(`${selfOrigin(c)}/api/v1/documents/${segment(id)}.html`, {
             headers: {
               authorization: c.req.header('authorization') ?? '',
               cookie: c.req.header('cookie') ?? '',
@@ -537,7 +546,7 @@ const TOOLS: Record<McpToolName, Tool> = {
           : say(`That document is not on this account (${response.status}).`, true);
       }
 
-      const got = await callApi(c, `/api/v1/documents/${id}`);
+      const got = await callApi(c, `/api/v1/documents/${segment(id)}`);
 
       if (got.status !== 200) {
         return say(
@@ -589,7 +598,7 @@ const TOOLS: Record<McpToolName, Tool> = {
         );
       }
 
-      const changed = await callApi(c, `/api/v1/documents/${id}/share`, {
+      const changed = await callApi(c, `/api/v1/documents/${segment(id)}/share`, {
         method: 'PUT',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({
@@ -673,7 +682,7 @@ const TOOLS: Record<McpToolName, Tool> = {
         );
       }
 
-      const gone = await callApi(c, `/api/v1/documents/${id}`, {
+      const gone = await callApi(c, `/api/v1/documents/${segment(id)}`, {
         method: 'DELETE',
       });
 
@@ -718,10 +727,12 @@ mcp.post('/', async (c) => {
   const params = body.params ?? {};
 
   /*
-   * A notification has no id and gets no body: 202 is the documented answer, and replying to one
-   * would put a response nothing asked for into the client's stream.
+   * A notification is a message with no id — that is the whole of the definition — and it gets no
+   * response at all. Keying this on the method name instead meant a `tools/call` sent without an
+   * id ran the tool and answered anyway, which is the one thing that must not happen: the work
+   * was done and nothing asked for it.
    */
-  if (method.startsWith('notifications/')) {
+  if (!('id' in body) || body.id === undefined) {
     return c.body(null, 202);
   }
 
@@ -759,6 +770,28 @@ mcp.post('/', async (c) => {
   }
 
   if (method === 'tools/call') {
+    /*
+     * Counted here rather than only inside /api/v1: two of these tools — the documentation and the
+     * conversion — answer without touching the account at all, and an unmetered tool is a way to
+     * spend this deployment's time for free. `initialize` and `tools/list` stay uncounted: a client
+     * re-runs both every time it reconnects, and neither reads or writes anything.
+     */
+    const spend = await countCall(`${caller.via}:${caller.id}`);
+
+    if (!spend.ok) {
+      c.header('retry-after', String(spend.retryAfter));
+
+      return c.json(
+        rpc(
+          id ?? null,
+          say(
+            `Too many calls — the limit is ${RATE.perMinute} a minute. Try again in ${spend.retryAfter}s.`,
+            true
+          )
+        )
+      );
+    }
+
     const name = String((params as { name?: unknown }).name ?? '');
     const tool = (TOOLS as Record<string, Tool | undefined>)[name];
 

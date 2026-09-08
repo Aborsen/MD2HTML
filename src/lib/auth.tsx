@@ -24,6 +24,20 @@ interface AuthState {
 const AuthContext = createContext<AuthState | null>(null);
 
 /**
+ * What the server can tell this page about a sign-in, and how it is said.
+ *
+ * A closed set, because the message is rendered as the app's own words in a toast, and both the
+ * outcome and its reason arrive in a link — which is something anybody can write. Anything not on
+ * this list is one sentence rather than an echo of the query string.
+ */
+const OUTCOMES: Record<string, string> = {
+  'missing-verifier': 'The sign-in link was incomplete. Try again.',
+  unreachable: 'The sign-in service could not be reached.',
+  rejected: 'The sign-in service refused the request.',
+  'no-session-cookie': 'The sign-in service returned no session.',
+};
+
+/**
  * Reads the outcome /api/auth/finish left in the query string and clears it, so a reload does not
  * show a stale message.
  */
@@ -35,13 +49,15 @@ function takeSignInOutcome(): string | null {
     return null;
   }
 
-  const why = url.searchParams.get('why');
-
   url.searchParams.delete('auth');
   url.searchParams.delete('why');
   window.history.replaceState(null, '', url.pathname + url.search + url.hash);
 
-  return outcome === 'ok' ? null : why ? `${outcome} — ${why}` : outcome;
+  if (outcome === 'ok') {
+    return null;
+  }
+
+  return OUTCOMES[outcome] ?? 'Sign-in did not finish. Try again.';
 }
 
 /** The one-time value Neon Auth hands back when an OAuth round trip completes. */

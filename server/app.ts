@@ -154,6 +154,14 @@ api.delete('/keys/:id', async (c) => {
   return revoked ? c.json({ ok: true }) : c.json({ error: 'Not found' }, 404);
 });
 
+/*
+ * What the account is using, for the line under the history. It lives here rather than being read
+ * from /api/v1 so the app's own screens do not spend the public API's rate budget — the panel
+ * re-asks whenever the list changes.
+ */
+api.use('/usage', requireUser);
+api.get('/usage', async (c) => c.json(await usageOf(c.get('user').id)));
+
 api.use('/documents', requireUser);
 api.use('/documents/*', requireUser);
 api.use('/shared-with-me', requireUser);

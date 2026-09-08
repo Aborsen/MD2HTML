@@ -175,3 +175,31 @@ create table if not exists m2h_oauth_token (
 -- "Everything this person has connected", for the screen that lets them take it back.
 create index if not exists m2h_oauth_token_user
   on m2h_oauth_token (user_id, created_at desc);
+
+-- Who the consent page was rendered for, and whether they said yes.
+--
+-- `shown_to` is what ties an approval to the browser that was shown the page: without it, anybody
+-- who can start an authorization request holds an id that somebody else's session could be made to
+-- approve. `approved_at` keeps the row after the code is issued, so a second press of the button —
+-- or a client that starts the flow again — is told the connection was already approved rather than
+-- that its request expired, which is the difference between a next step and a dead end.
+
+alter table m2h_oauth_pending
+  add column if not exists shown_to uuid;
+
+alter table m2h_oauth_pending
+  add column if not exists approved_at timestamptz;
+
+-- One grant, one chain.
+--
+-- An access token and the refresh token issued with it belong to the same authorisation, and every
+-- rotation of that refresh token continues the same chain. Recording which chain a row belongs to
+-- is what lets revocation mean what RFC 7009 says it means — handing back a refresh token ends the
+-- access token issued beside it — and what lets a replayed, already-rotated refresh token end the
+-- whole chain instead of merely being refused, which is the only useful response to the one signal
+-- that a token has been copied.
+
+alter table m2h_oauth_token
+  add column if not exists grant_id uuid;
+
+create index if not exists m2h_oauth_token_grant on m2h_oauth_token (grant_id);
