@@ -174,8 +174,9 @@ export function ConverterPage({
               description="Syntax that breaks, documents that have to reach other people, and getting the whole thing to run without you."
             />
 
-            <div className="grid w-full gap-4 md:grid-cols-3">
-              {ARTICLES.slice(0, 3).map((article) => (
+            {/* Six: two full rows of three, so the last row is never one card on its own. */}
+            <div className="grid w-full gap-4 sm:grid-cols-2 md:grid-cols-3">
+              {ARTICLES.slice(0, 6).map((article) => (
                 <ArticleCard
                   key={article.slug}
                   title={article.title}
