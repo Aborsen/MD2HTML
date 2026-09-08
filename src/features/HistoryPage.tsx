@@ -63,6 +63,110 @@ import { cn } from '@/ui/lib/utils';
 /** The order they are offered in: the document, the page it makes, then the words alone. */
 const FORMATS: DocFormat[] = ['md', 'html', 'txt'];
 
+interface RowPartProps {
+  entry: HistoryEntry;
+  isShared: boolean;
+}
+
+/** What made this document. The name cannot say whether it came from a page, a Word file or a CSV. */
+function KindBadge({ entry, isShared, className }: RowPartProps & { className?: string }) {
+  if (isShared) {
+    return (
+      <span className="truncate text-ink-secondary">
+        {entry.sharedBy || 'someone'}
+      </span>
+    );
+  }
+
+  return (
+    <Badge
+      variant={entry.kind === 'markdown-to-html' ? 'primary' : 'secondary'}
+      size="sm"
+      rounded="full"
+      className={cn('justify-center', className)}
+    >
+      {conversion(entry.kind).short}
+    </Badge>
+  );
+}
+
+/**
+ * Share, download in any format, remove.
+ *
+ * One component because the same three appear in a table row on a wide screen and in a card on a
+ * phone, and three buttons that behave differently depending on which layout you happen to be
+ * looking at is a bug waiting for somebody to change one of the two.
+ */
+function RowActions({
+  entry,
+  isShared,
+  isReopenable,
+  onShare,
+  onDownload,
+  onRemove,
+}: RowPartProps & {
+  isReopenable: boolean;
+  onShare: (entry: HistoryEntry) => void;
+  onDownload: (entry: HistoryEntry, format: DocFormat) => void;
+  onRemove: (id: string) => void;
+}) {
+  return (
+    <span className="flex items-center justify-end gap-1">
+      {entry.remote && !isShared && (
+        <Hint content="Share">
+          <IconButton
+            variant="tertiary"
+            size="sm"
+            aria-label={`Share ${entry.name}`}
+            onClick={() => onShare(entry)}
+          >
+            <Share2 />
+          </IconButton>
+        </Hint>
+      )}
+
+      {/*
+        * A menu rather than one button: the chips used to decide what a download handed over, and
+        * now that they say what a document came from, the row has to offer the choice itself.
+        */}
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild disabled={!isReopenable}>
+          <IconButton
+            variant="tertiary"
+            size="sm"
+            aria-label={`Download ${entry.name}`}
+            disabled={!isReopenable}
+          >
+            <Download />
+          </IconButton>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          {FORMATS.map((one) => (
+            <DropdownMenuItem key={one} onSelect={() => onDownload(entry, one)}>
+              {toFileName(entry.name, one)}
+            </DropdownMenuItem>
+          ))}
+        </DropdownMenuContent>
+      </DropdownMenu>
+
+      {!isShared && (
+        <Hint content="Remove from history">
+          <span>
+            <IconButton
+              variant="destructiveTertiary"
+              size="sm"
+              aria-label="Remove from history"
+              onClick={() => onRemove(entry.id)}
+            >
+              <Trash2 />
+            </IconButton>
+          </span>
+        </Hint>
+      )}
+    </span>
+  );
+}
+
 interface HistoryPageProps {
   entries: HistoryEntry[];
   /** True when the list comes from the signed-in account rather than this browser. */
@@ -525,7 +629,95 @@ export function HistoryPage({
       />
       )}
 
-      <Table className="table-fixed" wrapperClassName="shadow-rest">
+      {/*
+        * On a phone, cards.
+        *
+        * The table used to stay a table and lose columns, and the column it gave up first was the
+        * name — a list of documents showing only "just now", which is the one thing nobody came
+        * here to read. A card has room for the name on its own line and everything else under it.
+        */}
+      <ul className="flex flex-col gap-2 sm:hidden">
+        {rows.map((entry) => {
+          const isReopenable =
+            entry.markdown !== undefined || entry.remote === true;
+          const isSelected = selected.includes(entry.id);
+
+          return (
+            <li
+              key={entry.id}
+              className={cn(
+                'flex flex-col gap-3 rounded-xl border border-stroke bg-surface-card p-3',
+                isSelected && 'border-brand-tertiary'
+              )}
+            >
+              <div className="flex items-start gap-3">
+                {!isShared && (
+                  <span
+                    className="pt-0.5"
+                    onClick={stopRowClick}
+                    onKeyDown={stopRowClick}
+                  >
+                    <Checkbox
+                      aria-label={`Select ${entry.name}`}
+                      checked={isSelected}
+                      disabled={!isReopenable}
+                      onCheckedChange={() => toggle(entry.id)}
+                    />
+                  </span>
+                )}
+
+                <button
+                  type="button"
+                  disabled={!isReopenable}
+                  onClick={() => isReopenable && onOpen(entry)}
+                  className={cn(
+                    'flex min-w-0 flex-1 flex-col items-start gap-1 text-left',
+                    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring-brand focus-visible:ring-offset-2',
+                    isReopenable ? 'cursor-pointer' : 'cursor-default'
+                  )}
+                >
+                  <span className="flex w-full min-w-0 items-center gap-2">
+                    <FileText className="size-4 shrink-0 text-brand-tertiary" />
+                    <span className="truncate font-medium text-ink-primary text-sm">
+                      {entry.name}
+                    </span>
+                  </span>
+
+                  <span className="flex flex-wrap items-center gap-2 text-ink-secondary text-xs">
+                    <KindBadge entry={entry} isShared={isShared} />
+                    <span>{formatBytes(entry.size)}</span>
+                    <span aria-hidden>·</span>
+                    <span>{formatRelative(entry.createdAt)}</span>
+                  </span>
+                </button>
+              </div>
+
+              <div className="flex items-center justify-between gap-2 border-stroke border-t pt-2">
+                <Typography variant="span" textColor="light" className="text-xs">
+                  {entry.stats.words} words ·{' '}
+                  {entry.stats.headings === 1
+                    ? '1 heading'
+                    : `${entry.stats.headings} headings`}
+                </Typography>
+
+                <RowActions
+                  entry={entry}
+                  isShared={isShared}
+                  isReopenable={isReopenable}
+                  onShare={setSharing}
+                  onDownload={onDownload}
+                  onRemove={onRemove}
+                />
+              </div>
+            </li>
+          );
+        })}
+      </ul>
+
+      <Table
+        className="table-fixed"
+        wrapperClassName="hidden shadow-rest sm:block"
+      >
         <TableHeader>
           <TableRow>
             {!isShared && (
@@ -640,24 +832,7 @@ export function HistoryPage({
                 </TableCell>
 
                 <TableCell className="hidden sm:table-cell">
-                  {isShared ? (
-                    <span className="truncate text-ink-secondary">
-                      {entry.sharedBy || 'someone'}
-                    </span>
-                  ) : (
-                    /* What made it. The name alone cannot say whether this came from a
-                       spreadsheet, a web page or a Word file. */
-                    <Badge
-                      variant={
-                        entry.kind === 'markdown-to-html' ? 'primary' : 'secondary'
-                      }
-                      size="sm"
-                      rounded="full"
-                      className="w-24 justify-center"
-                    >
-                      {conversion(entry.kind).short}
-                    </Badge>
-                  )}
+                  <KindBadge entry={entry} isShared={isShared} className="w-24" />
                 </TableCell>
 
                 <TableCell className="hidden sm:table-cell">
@@ -682,63 +857,14 @@ export function HistoryPage({
                   onClick={stopRowClick}
                   onKeyDown={stopRowClick}
                 >
-                  <span className="flex items-center justify-end gap-1">
-                    {entry.remote && !isShared && (
-                      <Hint content="Share">
-                        <IconButton
-                          variant="tertiary"
-                          size="sm"
-                          aria-label={`Share ${entry.name}`}
-                          onClick={() => setSharing(entry)}
-                        >
-                          <Share2 />
-                        </IconButton>
-                      </Hint>
-                    )}
-
-                    {/*
-                      * A menu rather than one button: the chips used to decide what a download
-                      * handed over, and now that they say what a document came from, the row has
-                      * to offer the choice itself.
-                      */}
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild disabled={!isReopenable}>
-                        <IconButton
-                          variant="tertiary"
-                          size="sm"
-                          aria-label={`Download ${entry.name}`}
-                          disabled={!isReopenable}
-                        >
-                          <Download />
-                        </IconButton>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        {FORMATS.map((one) => (
-                          <DropdownMenuItem
-                            key={one}
-                            onSelect={() => onDownload(entry, one)}
-                          >
-                            {toFileName(entry.name, one)}
-                          </DropdownMenuItem>
-                        ))}
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-
-                    {!isShared && (
-                      <Hint content="Remove from history">
-                        <span>
-                          <IconButton
-                            variant="destructiveTertiary"
-                            size="sm"
-                            aria-label="Remove from history"
-                            onClick={() => onRemove(entry.id)}
-                          >
-                            <Trash2 />
-                          </IconButton>
-                        </span>
-                      </Hint>
-                    )}
-                  </span>
+                  <RowActions
+                    entry={entry}
+                    isShared={isShared}
+                    isReopenable={isReopenable}
+                    onShare={setSharing}
+                    onDownload={onDownload}
+                    onRemove={onRemove}
+                  />
                 </TableCell>
               </TableRow>
             );

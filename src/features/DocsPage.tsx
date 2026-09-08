@@ -201,17 +201,18 @@ export function DocsPage() {
             Everything transformpipe does
           </Typography>
           <Typography variant="p" textColor="secondary" className="text-sm">
-            Markdown in, a self-contained HTML document out — from this page, from a
-            terminal, or from a pull request. This is the whole of it; nothing here
-            sits behind a plan.
+            Markdown, HTML, Word or CSV in — a document out as HTML, Markdown, plain
+            text or print. From this page, from a terminal, from a pull request or
+            from an assistant. This is the whole of it; nothing here sits behind a
+            plan.
           </Typography>
         </header>
 
         <Section id="start" title="Start here">
           <p>
-            Drop a <InlineCode>.md</InlineCode> file on the converter and you have the rendered document
-            and a download. Nothing is stored and nothing is sent anywhere — the
-            conversion runs in this browser.
+            Drop a file on the converter and you have the converted document and a
+            download. Signed out, nothing is stored and nothing is sent anywhere —
+            the conversion runs in this browser, on your own machine.
           </p>
           <p>
             Sign in with Google and the same documents follow you between devices, can

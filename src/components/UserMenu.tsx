@@ -71,15 +71,26 @@ export function UserMenu() {
           </IconButton>
         </Hint>
 
+        {/*
+          * The label goes below `sm`, and the Google mark carries it.
+          *
+          * The header holds a wordmark, a menu, three destinations, a theme switch and this. At
+          * 390px they add up to 459px, so the page scrolled sideways on every route on a phone —
+          * and a page that scrolls sideways reads as broken before anybody reaches the content.
+          * The mark is the most recognisable 20px in the row, so it is the one that can lose its
+          * caption; the accessible name stays.
+          */}
         <Button
           variant="secondary"
           size="sm"
           rounded="full"
+          aria-label="Sign in"
           isLoading={isSigningIn}
           leftSlot={<GoogleGlyph />}
+          className="!px-2 sm:!px-3"
           onClick={() => void signIn()}
         >
-          Sign in
+          <span className="hidden sm:inline">Sign in</span>
         </Button>
       </div>
     );

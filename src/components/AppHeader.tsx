@@ -12,7 +12,9 @@ import {
   type ConversionId,
 } from '@shared/conversions';
 import { Logo } from './Logo';
+import { MobileNav } from './MobileNav';
 import { UserMenu } from './UserMenu';
+import type { StaticPageId } from '@/lib/pages';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -34,6 +36,8 @@ interface AppHeaderProps {
   historyCount: number;
   onViewChange: (view: AppView) => void;
   onConversionChange: (id: ConversionId) => void;
+  /** Only the phone's menu offers these; on a wide screen they live in the footer. */
+  onOpenPage: (id: StaticPageId) => void;
   /** The logo doubles as "start over": back to the converter with no file open. */
   onHome: () => void;
 }
@@ -51,6 +55,7 @@ export function AppHeader({
   historyCount,
   onViewChange,
   onConversionChange,
+  onOpenPage,
   onHome,
 }: AppHeaderProps) {
   const isConverter = view === 'converter';
@@ -70,18 +75,22 @@ export function AppHeader({
           <Logo />
         </button>
 
-        <Separator orientation="vertical" className="hidden h-5 sm:block" />
+        <Separator orientation="vertical" className="hidden h-5 lg:block" />
 
         {/*
           * The line beside the wordmark says which conversion you are on, because with four of
           * them a fixed "Markdown to HTML converter" is wrong on three pages out of four. Away
           * from the converter it names the app instead of whatever conversion was last picked.
+          *
+          * It waits for `lg`. At 768 the row is wordmark, this line, four labelled destinations
+          * and an account — 888px of content in a 768px window — and of those, this line is the
+          * one the page's own h1 already says.
           */}
         <Typography
           variant="span"
           weight="medium"
           textColor="secondary"
-          className="hidden sm:block"
+          className="hidden lg:block"
         >
           {view === 'converter'
             ? `${conversion(conversionId).label} converter`
@@ -89,11 +98,11 @@ export function AppHeader({
         </Typography>
 
         {/*
-          * Four destinations, a theme switch and an account, on a phone: the labels are the part
-          * that does not fit, so below `md` the icons carry the meaning and the label stays as the
-          * accessible name. Without this the whole page scrolls sideways, on every route.
+          * The row of destinations belongs to a wide screen. Below `md` it is a sheet — see
+          * `MobileNav` — because four conversions, three destinations, a theme switch and an
+          * account do not fit in 390px, and the version that did fit was a row of unnamed icons.
           */}
-        <nav className="ml-auto flex items-center gap-0.5 md:gap-1">
+        <nav className="ml-auto hidden items-center gap-0.5 md:flex md:gap-1">
           {/*
             * Four conversions behind one item. A row of four in the header would crowd out the rest
             * of the app on a phone and still not say which one you are on; a menu says both.
@@ -177,9 +186,20 @@ export function AppHeader({
           })}
         </nav>
 
-        <Separator orientation="vertical" className="hidden h-5 sm:block" />
+        <Separator orientation="vertical" className="hidden h-5 md:block" />
 
-        <UserMenu />
+        <div className="ml-auto flex items-center gap-1 md:ml-0">
+          <UserMenu />
+
+          <MobileNav
+            view={view}
+            conversionId={conversionId}
+            historyCount={historyCount}
+            onViewChange={onViewChange}
+            onConversionChange={onConversionChange}
+            onOpenPage={onOpenPage}
+          />
+        </div>
       </div>
     </header>
   );

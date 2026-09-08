@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import { AppFooter } from './components/AppFooter';
 import { AppHeader } from './components/AppHeader';
 import { MAX_FILE_SIZE } from './components/Dropzone';
 import { KEEP_BYTES } from '@shared/limits';
@@ -14,6 +15,8 @@ import { BlogPage } from './features/BlogPage';
 import { DocsPage } from './features/DocsPage';
 import { HistoryPage } from './features/HistoryPage';
 import { SharedDocumentPage } from './features/SharedDocumentPage';
+import { StaticPage } from './features/StaticPage';
+import { staticPage, type StaticPageId } from './lib/pages';
 import { AuthProvider, useAuth } from './lib/auth';
 import { ThemeProvider, useTheme } from './lib/theme';
 import { type DocFormat, formatBytes, toFileName } from './lib/format';
@@ -26,13 +29,13 @@ import {
   goTo,
   goToArticle,
   goToConversion,
+  goToPage,
   readRoute,
 } from './lib/route';
 import type { ConvertedDoc } from './lib/types';
 import { useHistory } from './lib/use-history';
 import { toast, Toaster } from './ui/components/Toast';
 import { TooltipProvider } from './ui/components/Tooltip';
-import { Typography } from './ui/components/Typography';
 
 function convert(
   kind: ConversionId,
@@ -67,11 +70,15 @@ function Shell() {
   const [articleSlug, setArticleSlug] = useState<string | null>(
     () => readRoute().articleSlug
   );
+  const [pageId, setPageId] = useState<StaticPageId | null>(
+    () => readRoute().pageId
+  );
 
   /* The view lives in the address, so a reload lands where you were and Back means something. */
   const setView = useCallback((next: AppView) => {
     setViewState(next);
     setArticleSlug(null);
+    setPageId(null);
     goTo(next, readRoute().filter);
   }, []);
 
@@ -84,6 +91,7 @@ function Shell() {
     setConversionId(next);
     setViewState('converter');
     setArticleSlug(null);
+    setPageId(null);
     setDoc(null);
     goToConversion(next);
   }, []);
@@ -91,7 +99,16 @@ function Shell() {
   const openArticle = useCallback((slug: string) => {
     setViewState('blog');
     setArticleSlug(slug);
+    setPageId(null);
     goToArticle(slug);
+    window.scrollTo({ top: 0 });
+  }, []);
+
+  const openPage = useCallback((id: StaticPageId) => {
+    setViewState('page');
+    setPageId(id);
+    setArticleSlug(null);
+    goToPage(id);
     window.scrollTo({ top: 0 });
   }, []);
 
@@ -102,6 +119,7 @@ function Shell() {
       setViewState(route.view);
       setConversionId(route.conversionId);
       setArticleSlug(route.articleSlug);
+      setPageId(route.pageId);
     };
 
     window.addEventListener('popstate', sync);
@@ -412,11 +430,14 @@ function Shell() {
         historyCount={history.entries.length}
         onViewChange={setView}
         onConversionChange={chooseConversion}
+        onOpenPage={openPage}
         onHome={startOver}
       />
 
       <main className="mx-auto w-full max-w-container-content flex-1 px-6 py-8">
-        {view === 'docs' ? (
+        {view === 'page' && pageId ? (
+          <StaticPage page={staticPage(pageId)} />
+        ) : view === 'docs' ? (
           <DocsPage />
         ) : view === 'blog' ? (
           articleSlug ? (
@@ -461,18 +482,11 @@ function Shell() {
         )}
       </main>
 
-      <footer className="border-stroke border-t py-4">
-        <div className="mx-auto flex w-full max-w-container-content items-center justify-between px-6">
-          <Typography variant="span" textColor="light" className="text-xs">
-            {user
-              ? 'Your files are saved to your account'
-              : 'Files never leave your browser'}
-          </Typography>
-          <Typography variant="span" textColor="light" className="text-xs">
-            Markdown, HTML, plain text or print
-          </Typography>
-        </div>
-      </footer>
+      <AppFooter
+        onConversionChange={chooseConversion}
+        onViewChange={setView}
+        onOpenPage={openPage}
+      />
     </div>
   );
 }

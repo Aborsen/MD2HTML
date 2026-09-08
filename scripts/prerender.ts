@@ -21,6 +21,7 @@ import { ARTICLES, articlePath, formatArticleDate } from '../src/lib/blog.js';
 import { CONVERSIONS, conversion } from '../shared/conversions.js';
 import { DOCS_SECTIONS } from '../src/lib/docs-sections.js';
 import { HOME_FAQ_ENTRIES } from '../src/lib/faq.js';
+import { STATIC_PAGES } from '../src/lib/pages.js';
 
 const SITE = process.env.SITE_URL ?? 'https://transformpipe.com';
 const DIST = resolve('dist');
@@ -259,6 +260,36 @@ pages.push({
       `<section><h2>${escapeHtml(entry.question)}</h2><p>${escapeHtml(String(entry.answer))}</p></section>`
   ).join('')}`,
 });
+
+/*
+ * ---------------------------------------------------------------- about, contact and the legal
+ *
+ * These are the pages somebody checks before trusting a tool with a document, and a crawler is
+ * usually the first visitor. Rendered in full rather than as a title and a promise, from the same
+ * list the app renders, so what a search result shows is what the page says.
+ */
+for (const one of STATIC_PAGES) {
+  pages.push({
+    path: one.path,
+    title: one.seo.title,
+    description: one.seo.description,
+    listed: true,
+    body: `<h1>${escapeHtml(one.title)}</h1><p>${escapeHtml(one.lede)}</p>${
+      one.updated ? `<p>Last updated ${escapeHtml(one.updated)}</p>` : ''
+    }${one.sections
+      .map(
+        (section) =>
+          `<section><h2>${escapeHtml(section.heading)}</h2>${section.body
+            .map((paragraph) => `<p>${escapeHtml(paragraph)}</p>`)
+            .join('')}${
+            section.items
+              ? `<ul>${section.items.map((item) => `<li>${escapeHtml(item)}</li>`).join('')}</ul>`
+              : ''
+          }</section>`
+      )
+      .join('')}`,
+  });
+}
 
 // ---------------------------------------------------------------- the documentation
 pages.push({

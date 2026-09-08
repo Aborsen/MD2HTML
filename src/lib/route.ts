@@ -4,6 +4,11 @@ import {
   DEFAULT_CONVERSION,
   conversion,
 } from '@shared/conversions';
+import {
+  staticPage,
+  staticPageForPath,
+  type StaticPageId,
+} from './pages';
 
 /**
  * The app's addresses, kept in the URL rather than in memory.
@@ -15,7 +20,7 @@ import {
  * dropdown that only changes state is not.
  */
 
-export type AppView = 'converter' | 'history' | 'docs' | 'blog';
+export type AppView = 'converter' | 'history' | 'docs' | 'blog' | 'page';
 
 export interface Route {
   view: AppView;
@@ -27,6 +32,8 @@ export interface Route {
   sharedToken: string | null;
   /** Set when the address is one article rather than the blog's index. */
   articleSlug: string | null;
+  /** Which page of words the address is, when it is one of those. */
+  pageId: StaticPageId | null;
 }
 
 export function readRoute(): Route {
@@ -37,23 +44,27 @@ export function readRoute(): Route {
   const path = window.location.pathname;
   const shared = path.match(/^\/(?:open|s)\/([^/]+)\/?$/);
   const article = path.match(/^\/blog\/([^/]+)\/?$/);
+  const page = staticPageForPath(path);
 
   return {
-    view: /^\/history\/?$/.test(path)
-      ? 'history'
-      : /^\/docs\/?$/.test(path)
-        ? 'docs'
-        : /^\/blog(\/|$)/.test(path)
-          ? 'blog'
-          : 'converter',
+    view: page
+      ? 'page'
+      : /^\/history\/?$/.test(path)
+        ? 'history'
+        : /^\/docs\/?$/.test(path)
+          ? 'docs'
+          : /^\/blog(\/|$)/.test(path)
+            ? 'blog'
+            : 'converter',
     conversionId: (conversionForPath(path)?.id ?? DEFAULT_CONVERSION),
     filter: new URLSearchParams(window.location.search).get('filter'),
     sharedToken: shared ? decodeURIComponent(shared[1]) : null,
     articleSlug: article ? decodeURIComponent(article[1]) : null,
+    pageId: page?.id ?? null,
   };
 }
 
-const PATHS: Record<Exclude<AppView, 'converter'>, string> = {
+const PATHS: Record<Exclude<AppView, 'converter' | 'page'>, string> = {
   history: '/history',
   docs: '/docs',
   blog: '/blog',
@@ -61,7 +72,8 @@ const PATHS: Record<Exclude<AppView, 'converter'>, string> = {
 
 /** Moves to a view, adding a history entry so Back returns to the previous one. */
 export function goTo(view: AppView, filter?: string | null) {
-  const path = view === 'converter' ? '/' : PATHS[view];
+  // A page of words has its own address; `goToPage` is how you get to one.
+  const path = view === 'converter' || view === 'page' ? '/' : PATHS[view];
   const search = view === 'history' && filter ? `?filter=${filter}` : '';
 
   if (window.location.pathname + window.location.search !== path + search) {
@@ -72,6 +84,15 @@ export function goTo(view: AppView, filter?: string | null) {
 /** Moves to one conversion's own page. */
 export function goToConversion(id: ConversionId) {
   const path = conversion(id).path;
+
+  if (window.location.pathname !== path) {
+    window.history.pushState(null, '', path);
+  }
+}
+
+/** Moves to one of the pages of words. */
+export function goToPage(id: StaticPageId) {
+  const path = staticPage(id).path;
 
   if (window.location.pathname !== path) {
     window.history.pushState(null, '', path);
