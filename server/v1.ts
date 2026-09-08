@@ -8,6 +8,7 @@ import { sql } from './db.js';
 import { checkQuota, countCall, QUOTA, RATE, usageOf } from './limits.js';
 import {
   CONVERSIONS,
+  conversion,
   type ConversionId,
   DEFAULT_CONVERSION,
 } from '../shared/conversions.js';
@@ -213,7 +214,15 @@ v1.post('/documents', async (c) => {
   let name = c.req.query('name') ?? '';
   let source = '';
 
-  if (type.includes('application/json')) {
+  /*
+   * The `{name, markdown}` envelope belongs to Markdown alone.
+   *
+   * It is recognised by the content type, and the natural way to post a JSON file for conversion
+   * is `content-type: application/json` with the file as the body — which this used to read as an
+   * envelope, find no `markdown` field in, and refuse. So a named conversion means the body is the
+   * source file, whatever its content type says; only the default reads an envelope.
+   */
+  if (kind === DEFAULT_CONVERSION && type.includes('application/json')) {
     const body = await c.req
       .json<{ name?: string; markdown?: string }>()
       .catch(() => ({}) as { name?: string; markdown?: string });
@@ -226,7 +235,12 @@ v1.post('/documents', async (c) => {
 
   if (!source.trim()) {
     return c.json(
-      { error: 'Send Markdown as the request body, or as `markdown` in JSON' },
+      {
+        error:
+          kind === DEFAULT_CONVERSION
+            ? 'Send Markdown as the request body, or as `markdown` in JSON'
+            : `Send the ${conversion(kind).extensions.join(' or ')} file as the request body`,
+      },
       400
     );
   }
