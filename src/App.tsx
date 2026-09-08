@@ -443,7 +443,7 @@ function Shell() {
         onHome={startOver}
       />
 
-      <main className="mx-auto w-full max-w-container-content flex-1 px-6 py-8">
+      <main className="mx-auto w-full max-w-content flex-1 px-6 py-8">
         {view === 'page' && pageId ? (
           <StaticPage page={staticPage(pageId)} onGoToConverter={startOver} />
         ) : view === 'docs' ? (

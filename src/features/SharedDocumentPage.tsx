@@ -75,7 +75,7 @@ export function SharedDocumentPage({ token }: { token: string }) {
   return (
     <div className="flex min-h-full flex-col bg-surface-page">
       <header className="sticky top-0 z-20 border-stroke border-b bg-surface-card/85 backdrop-blur">
-        <div className="mx-auto flex h-14 w-full max-w-container-content items-center gap-4 px-6">
+        <div className="mx-auto flex h-14 w-full max-w-content items-center gap-4 px-6">
           <a href="/" aria-label="transformpipe">
             <Logo />
           </a>
@@ -105,7 +105,7 @@ export function SharedDocumentPage({ token }: { token: string }) {
         </div>
       </header>
 
-      <main className="mx-auto w-full max-w-container-content flex-1 px-6 py-8">
+      <main className="mx-auto w-full max-w-content flex-1 px-6 py-8">
         {isLoading && (
           <div className="flex items-center justify-center gap-2 py-16">
             <Spinner />

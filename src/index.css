@@ -54,6 +54,22 @@
   :root {
     --white: 0 0% 100%;
 
+    /*
+     * How wide the content column is allowed to get.
+     *
+     * `tailwind.ui.config.ts` maps `max-w-content` to this variable, and nothing ever declared it —
+     * while every page asked for `max-w-container-content`, which is not a utility at all. Two
+     * mistakes pointing the same way, so the column was never bounded and the whole application
+     * stretched edge to edge. On a 2560px monitor that made each card in a three-column band 827px
+     * wide, and with a cover above the text some 700px tall.
+     *
+     * Declared here rather than in `src/ui/globals.css`, which looks like the design system's
+     * stylesheet and is imported by nothing: `src/main.tsx` loads this file.
+     */
+    --content-max-narrow: 48rem;
+    --content-max-width: 80rem;
+    --content-max-wide: 96rem;
+
     /* ============================================================
      * DESIGN SYSTEM v2 (redesign) — additive, not yet consumed.
      * Legacy tokens above are FROZEN. Components migrate to these

@@ -59,7 +59,7 @@ export function SiteFooter({
         className
       )}
     >
-      <div className="mx-auto flex w-full max-w-container-content flex-col gap-10 px-6 pt-12 pb-8">
+      <div className="mx-auto flex w-full max-w-content flex-col gap-10 px-6 pt-12 pb-8">
         <div className="flex flex-col gap-10 lg:flex-row lg:justify-between">
           {/* The lead: what this is, and who stands behind it. */}
           <div className="flex max-w-sm flex-col gap-3">

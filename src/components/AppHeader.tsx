@@ -61,7 +61,7 @@ export function AppHeader({
   const isConverter = view === 'converter';
   return (
     <header className="sticky top-0 z-20 border-stroke border-b bg-surface-card/85 backdrop-blur">
-      <div className="mx-auto flex h-14 w-full max-w-container-content items-center gap-2 px-4 sm:gap-4 sm:px-6">
+      <div className="mx-auto flex h-14 w-full max-w-content items-center gap-2 px-4 sm:gap-4 sm:px-6">
         <button
           type="button"
           onClick={onHome}

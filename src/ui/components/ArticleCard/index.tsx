@@ -66,16 +66,23 @@ export function ArticleCard({
          * 1440px screen, which pushed the headline it belongs to below the fold. Beside the text it
          * is a picture; above the text it is an obstacle.
          */
-        featured && image ? 'flex-col sm:flex-row' : 'flex-col',
+        featured && image ? 'flex-col sm:flex-row sm:items-center' : 'flex-col',
         'transition-colors hover:border-stroke-hover hover:bg-state-hover',
         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-surface-page',
         className
       )}
     >
       {/*
-        * The cover, at the ratio it was drawn: 1200 by 630. `aspect-[1200/630]` rather than a
-        * height, so a card in a three-column grid and the full-width lead both keep the picture
-        * whole instead of cropping the title out of it.
+        * The card image is drawn 1200 by 420, so this is its own ratio rather than a crop.
+        *
+        * At the share image's 1200 by 630 the picture was taller than the words under it, and
+        * cropping into a shorter box threw away the top and bottom of a composition that had been
+        * laid out for the full frame. `npm run og` draws this variant at the shape it is shown in.
+        *
+        * The lead keeps the same ratio rather than filling its column. Covering a 2.86:1 picture
+        * into the 1.9:1 box beside the headline cropped the sides off — "CONVERTING" arrived as
+        * "TING" and the right-hand stack lost its grid. Centred in its column it is inset, which
+        * is a decision; cropped, it is a mistake.
         */}
       {image && (
         <img
@@ -83,9 +90,10 @@ export function ArticleCard({
           alt=""
           loading="lazy"
           className={cn(
-            'aspect-[1200/630] w-full object-cover',
+            'w-full object-cover',
+            'aspect-[1200/420]',
             featured
-              ? 'border-stroke border-b sm:w-[46%] sm:shrink-0 sm:border-r sm:border-b-0'
+              ? 'border-stroke border-b sm:w-[44%] sm:shrink-0 sm:self-center sm:border-r-0 sm:border-b-0'
               : 'border-stroke border-b'
           )}
         />

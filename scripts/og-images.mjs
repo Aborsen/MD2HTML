@@ -24,7 +24,16 @@ const CHROME = 'C:/Program Files/Google/Chrome/Application/chrome.exe';
 const ROOT = resolve('.');
 const OUT = join(ROOT, 'public', 'og');
 const WIDTH = 1200;
-const HEIGHT = 630;
+
+/*
+ * Two heights, because the two variants go in differently shaped holes.
+ *
+ * 630 is what a share expects — every scraper is built for 1.91:1. A card in the blog index is a
+ * band above two lines of text, and at 630 it was taller than the words: cropping the tall picture
+ * into it lost the composition's top and bottom, so the card variant is drawn at the shape it is
+ * shown in instead.
+ */
+const HEIGHTS = { og: 630, card: 420 };
 
 /*
  * One accent per tag, all of them chosen against #0f0e14 rather than taken from a ramp. Teal is the
@@ -79,42 +88,56 @@ const fontUrl = pathToFileURL(
 ).href;
 
 /*
- * Three sets of lines, so a grid of card images is not one picture repeated.
+ * The document, drawn as shape rather than printed as code.
  *
- * Which set a slug gets is decided by its own characters, so it is the same on every build and a
- * new article does not reshuffle the ones beside it.
+ * The first version of these cards put three literal lines of Markdown and three of HTML on the
+ * picture in a monospace face. At 1200px it read as a screenshot of a terminal; on a 330px card it
+ * read as grey noise. This is the same idea in geometry: a stack of bars on the left with nothing
+ * to tell them apart, the caret, and the same stack on the right with a heading, an indent and a
+ * grid in it. It says "structure came out of flat text" at any size, and it has no text to misread.
  */
-const MOTIFS = [
-  [['# Heading', '- item', '| a | b |'], ['&lt;h1&gt;Heading&lt;/h1&gt;', '&lt;li&gt;item&lt;/li&gt;', '&lt;table&gt;…&lt;/table&gt;']],
-  [['## Section', '**bold**', '`code`'], ['&lt;h2&gt;Section&lt;/h2&gt;', '&lt;strong&gt;bold&lt;/strong&gt;', '&lt;code&gt;code&lt;/code&gt;']],
-  [['[link](url)', '> quote', '- [x] done'], ['&lt;a href="url"&gt;link&lt;/a&gt;', '&lt;blockquote&gt;…', '&lt;input checked&gt;']],
-];
+const bars = (widths, colour, thickness, gap) =>
+  widths
+    .map(
+      (width, index) =>
+        `<div style="width:${width}%;height:${thickness}px;border-radius:999px;background:${colour};${index ? `margin-top:${gap}px;` : ''}"></div>`
+    )
+    .join('');
 
-const pick = (slug) => {
-  let total = 0;
+function shape(accent, bare) {
+  const thickness = bare ? 13 : 9;
+  const gap = bare ? 14 : 11;
 
-  for (const character of slug) {
-    total += character.codePointAt(0);
-  }
-
-  return MOTIFS[total % MOTIFS.length];
-};
+  return `
+    <div class="shape">
+      <div class="stack">${bars([100, 74, 88, 62], '#2b2b39', thickness, gap)}</div>
+      <div class="arrow">&gt;</div>
+      <div class="stack">
+        <div style="width:64%;height:${thickness + 4}px;border-radius:999px;background:${accent}"></div>
+        <div style="margin-top:${gap}px">${bars([100, 82], '#3d3d50', thickness, gap)}</div>
+        <div class="grid">
+          <span></span><span></span><span></span>
+          <span></span><span></span><span></span>
+        </div>
+      </div>
+    </div>`;
+}
 
 /**
  * The card, as a page.
  *
- * Two variants, because the picture has two jobs. `og` carries the title: it is what a share shows,
- * and a share with no headline is a coloured rectangle. `card` leaves the title out: the card in the
- * blog index prints the headline right beside the image, and a second copy of it rendered at 330px
- * wide is unreadable text pretending to be a picture.
+ * Two variants, because the picture has two jobs. `og` is what a share shows, so it carries the
+ * headline: a share without one says nothing. `card` is the picture on a card that prints the
+ * headline itself, three inches away, so a second copy inside the image would be unreadable text
+ * pretending to be a picture — that variant is the shape and the tag, and no title at all.
  */
 function card({ title, eyebrow, accent, slug = '', variant = 'og' }) {
+  const height = HEIGHTS[variant];
   /*
    * Three sizes rather than a computed one: enough to keep a nine-word title inside the frame and a
    * three-word one from looking lost, and every value is one somebody chose.
    */
-  const size = title.length > 78 ? 46 : title.length > 48 ? 56 : 68;
-  const [source, output] = pick(slug || title);
+  const size = title.length > 78 ? 48 : title.length > 48 ? 58 : 70;
   const bare = variant === 'card';
 
   return `<!doctype html>
@@ -133,75 +156,73 @@ function card({ title, eyebrow, accent, slug = '', variant = 'og' }) {
 
   body {
     width: ${WIDTH}px;
-    height: ${HEIGHT}px;
-    overflow: hidden;
+    height: ${height}px;
     position: relative;
-    background: #0f0e14;
+    overflow: hidden;
+    /* Lifted towards the accent at the top, so the ground is not a flat rectangle. */
+    background:
+      radial-gradient(120% 80% at 88% -10%, ${accent}24 0%, ${accent}00 58%),
+      linear-gradient(160deg, #15151f 0%, #0f0e14 62%);
     font-family: "DM Sans", system-ui, sans-serif;
     color: #f9fafb;
   }
 
-  /* One soft light behind the motif, so the ground is not a flat rectangle. */
-  .glow {
+  /* The pipe, entering: a rail down the left edge in the tag's own colour. */
+  .rail {
     position: absolute;
-    top: -260px;
-    right: -180px;
-    width: 760px;
-    height: 620px;
-    background: radial-gradient(circle at center, ${accent}2e 0%, ${accent}00 68%);
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: 8px;
+    background: linear-gradient(180deg, ${accent} 0%, ${accent}44 100%);
   }
 
   .frame {
     position: absolute;
     inset: 0;
-    padding: ${bare ? '48px 56px' : '56px 64px 52px'};
+    padding: ${bare ? '52px 68px' : '68px 80px 60px'};
     display: flex;
     flex-direction: column;
-    ${bare ? 'justify-content: center; gap: 40px;' : ''}
+    ${bare ? 'justify-content: center; gap: 34px;' : ''}
   }
 
-  /* The product, drawn: Markdown on the left, the caret, the same lines as HTML. */
-  .motif {
+  /*
+   * The share card is two columns: the headline on the left, the shape beside it.
+   *
+   * With the title alone there was a hand's width of empty ground between it and the footer, and
+   * empty ground in the middle of a picture reads as something that failed to load.
+   */
+  .split {
     display: flex;
     align-items: center;
-    gap: ${bare ? 64 : 30}px;
-    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
-    font-size: ${bare ? 46 : 19}px;
-    line-height: 1.7;
-    color: ${bare ? '#8a8a9c' : '#6b6b7b'};
+    gap: 56px;
   }
 
-  .motif .caret {
-    color: ${accent};
-    font-size: ${bare ? 76 : 34}px;
-    font-weight: 600;
-  }
-
-  .motif .out { color: #9a9aad; }
+  .split .words { flex: 1 1 auto; min-width: 0; }
+  .split .art { flex: 0 0 40%; }
 
   .eyebrow {
-    ${bare ? 'order: -1;' : 'margin-top: auto;'}
-    font-size: ${bare ? 30 : 19}px;
+    font-size: ${bare ? 26 : 21}px;
     font-weight: 600;
-    letter-spacing: 0.14em;
+    letter-spacing: 0.18em;
     text-transform: uppercase;
     color: ${accent};
   }
 
   h1 {
-    margin-top: 18px;
-    max-width: 15.5em;
+    margin-top: 22px;
+    max-width: 15em;
     font-size: ${size}px;
     font-weight: 600;
-    line-height: 1.14;
-    letter-spacing: -0.02em;
+    line-height: 1.12;
+    letter-spacing: -0.022em;
     text-wrap: balance;
   }
 
   .foot {
-    margin-top: 40px;
-    padding-top: 26px;
-    border-top: 1px solid #2a2834;
+    margin-top: auto;
+    padding-top: 30px;
+    border-top: 1px solid #262633;
     display: flex;
     align-items: baseline;
     justify-content: space-between;
@@ -212,30 +233,60 @@ function card({ title, eyebrow, accent, slug = '', variant = 'og' }) {
   .brand {
     font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
     font-weight: 600;
-    font-size: 23px;
+    font-size: 24px;
     letter-spacing: -0.02em;
     color: #f9fafb;
   }
 
   .brand span { color: ${accent}; }
+
+  /* The shape: two stacks of bars and the caret between them. */
+  .shape {
+    display: flex;
+    align-items: center;
+    gap: ${bare ? 64 : 30}px;
+  }
+
+  .stack { flex: 1 1 0; min-width: 0; }
+
+  .arrow {
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-size: ${bare ? 76 : 54}px;
+    font-weight: 600;
+    line-height: 1;
+    color: ${accent};
+  }
+
+  .grid {
+    margin-top: ${bare ? 18 : 14}px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: ${bare ? 6 : 4}px;
+  }
+
+  .grid span {
+    height: ${bare ? 22 : 17}px;
+    border: 2px solid #3d3d50;
+    border-radius: 4px;
+  }
 </style>
 </head>
 <body>
-  <div class="glow"></div>
+  <div class="rail"></div>
+
   <div class="frame">
-    <div class="motif">
-      <div>${source.map((line) => `<div>${line}</div>`).join('')}</div>
-      <div class="caret">&gt;</div>
-      <div class="out">${output.map((line) => `<div>${line}</div>`).join('')}</div>
-    </div>
-
-    <div class="eyebrow">${escape(eyebrow)}</div>
-    ${bare ? '' : `<h1>${escape(title)}</h1>`}
-
     ${
       bare
-        ? ''
-        : `<div class="foot">
+        ? `<div class="eyebrow">${escape(eyebrow)}</div>${shape(accent, bare)}`
+        : `<div class="split">
+      <div class="words">
+        <div class="eyebrow">${escape(eyebrow)}</div>
+        <h1>${escape(title)}</h1>
+      </div>
+      <div class="art">${shape(accent, bare)}</div>
+    </div>
+
+    <div class="foot">
       <div class="brand">transform<span>&gt;</span>pipe</div>
       <div>transformpipe.com</div>
     </div>`
@@ -305,14 +356,15 @@ const browser = await puppeteer.launch({
 });
 
 const page = await browser.newPage();
-await page.setViewport({ width: WIDTH, height: HEIGHT, deviceScaleFactor: 1 });
 
 for (const one of cards) {
+  const height = HEIGHTS[one.variant ?? 'og'];
+
   mkdirSync(dirname(one.file), { recursive: true });
+  await page.setViewport({ width: WIDTH, height, deviceScaleFactor: 1 });
   await page.setContent(card(one), { waitUntil: 'load' });
   await page.evaluate(() => document.fonts.ready);
-  const shot = await page.screenshot({ type: 'png' });
-  writeFileSync(one.file, shot);
+  writeFileSync(one.file, await page.screenshot({ type: 'png' }));
 }
 
 await browser.close();
