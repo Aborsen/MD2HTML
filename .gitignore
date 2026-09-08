@@ -10,3 +10,6 @@ dist
 .env*.local
 tsconfig.tsbuildinfo
 .prerender
+
+# Probe scripts a review agent leaves behind; never part of the app.
+_*.mjs
