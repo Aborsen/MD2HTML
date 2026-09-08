@@ -156,9 +156,8 @@ export function ConverterPage({
           <section className="mt-6 flex flex-col items-center gap-6 border-stroke border-t pt-12">
             <SectionHeading
               align="center"
-              badge
               size="lg"
-              eyebrow="From the blog"
+              eyebrow="Blog"
               title="Making Markdown behave"
               description="Syntax that breaks, documents that have to reach other people, and getting the whole thing to run without you."
             />
@@ -186,7 +185,6 @@ export function ConverterPage({
         <section className="mt-10 flex flex-col items-center gap-8 rounded-2xl border border-stroke bg-surface-card2/40 px-4 py-12 sm:px-10">
           <SectionHeading
             align="center"
-            badge
             size="lg"
             eyebrow="FAQ"
             title="Questions people arrive with"

@@ -63,6 +63,12 @@ export const DOCS_SECTIONS: DocsSection[] = [
       'Publishes the Markdown a pull request changed and comments the links on it. Every input, and the two permissions it needs.',
   },
   {
+    id: 'assistant',
+    title: 'In an assistant',
+    summary:
+      'Add M2H to Claude as a connector and it can convert, save, share and delete documents in this account — signed in as you, with no key to paste.',
+  },
+  {
     id: 'limits',
     title: 'Limits',
     summary:

@@ -9,8 +9,11 @@ import {
 } from '../shared/markdown.js';
 import { authProxy, currentUser, type SessionUser } from './auth.js';
 import { sql, type DocumentRow } from './db.js';
-import { createKey, listKeys, revokeKey } from './keys.js';
+import { createKey, forgetKey, listKeys, revokeKey } from './keys.js';
 import { checkQuota, QUOTA, usageOf } from './limits.js';
+import mcp from './mcp.js';
+import oauth from './oauth.js';
+import { authorizationServer, protectedResource } from './wellknown.js';
 import { deleteSources, putSource, readSource } from './source.js';
 import v1 from './v1.js';
 
@@ -130,8 +133,23 @@ api.post('/keys', async (c) => {
   return c.json({ key: created.key, created: created.row }, 201);
 });
 
+/*
+ * `?forget=1` deletes the row rather than revoking the key. It only works on a key that is already
+ * revoked, so the sequence is always stop-it-working, then tidy up — never the other way round.
+ */
 api.delete('/keys/:id', async (c) => {
-  const revoked = await revokeKey(c.get('user').id, c.req.param('id'));
+  const userId = c.get('user').id;
+  const id = c.req.param('id');
+
+  if (c.req.query('forget') === '1') {
+    const forgotten = await forgetKey(userId, id);
+
+    return forgotten
+      ? c.json({ ok: true })
+      : c.json({ error: 'Revoke the key before removing it' }, 409);
+  }
+
+  const revoked = await revokeKey(userId, id);
 
   return revoked ? c.json({ ok: true }) : c.json({ error: 'Not found' }, 404);
 });
@@ -597,6 +615,18 @@ app.post('/report/:token', async (c) => {
   );
 });
 
+/*
+ * Discovery, for a client that wants to sign a person in before calling the MCP endpoint. Both
+ * protected-resource paths are served: one is the URL our 401 hands out, the other is the one a
+ * client builds for itself from the resource's path (RFC 9728). Two lines, and no way to be the
+ * client that constructs the other one.
+ */
+app.get('/.well-known/oauth-protected-resource', protectedResource);
+app.get('/.well-known/oauth-protected-resource/api/mcp', protectedResource);
+app.get('/.well-known/oauth-authorization-server', authorizationServer);
+
+app.route('/', mcp);
+app.route('/', oauth);
 app.route('/', v1);
 app.route('/', api);
 

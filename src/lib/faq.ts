@@ -1,5 +1,3 @@
-import type { FaqEntry } from '@/ui/components/Faq';
-
 /*
  * The questions people arrive with, answered once.
  *
@@ -7,6 +5,15 @@ import type { FaqEntry } from '@/ui/components/Faq';
  * is deciding whether to drop a file at all, and the documentation, where they are looking for the
  * same answer in a different mood. Two copies would drift, and the copy that drifts is always the
  * one being read.
+ */
+export interface FaqEntry {
+  question: string;
+  answer: string;
+}
+
+/*
+ * Plain strings, not nodes: the same list is read by the server — the MCP tool that answers "how
+ * does M2H work" hands these to an assistant — and the server has no React in it.
  */
 export const FAQ_ENTRIES: FaqEntry[] = [
   {

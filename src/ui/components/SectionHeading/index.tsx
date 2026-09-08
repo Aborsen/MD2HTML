@@ -1,10 +1,9 @@
 import type { ReactNode } from 'react';
 import { cn } from '../../lib/utils';
-import { SectionBadge } from '../SectionBadge';
 import { Typography } from '../Typography';
 
 interface SectionHeadingProps {
-  /** Small label above the title. Rendered as a pill when `badge` is set, as plain text otherwise. */
+  /** Small label above the title — a category, not a sentence. */
   eyebrow?: string;
   title: string;
   description?: string;
@@ -12,8 +11,6 @@ interface SectionHeadingProps {
   action?: ReactNode;
   /** `center` is for a band that opens a new part of the page; `left` for a section inside one. */
   align?: 'left' | 'center';
-  /** Put the eyebrow in a pill. Reads as the start of a band rather than a caption. */
-  badge?: boolean;
   size?: 'md' | 'lg';
   className?: string;
 }
@@ -32,7 +29,6 @@ export function SectionHeading({
   description,
   action,
   align = 'left',
-  badge = false,
   size = 'md',
   className,
 }: SectionHeadingProps) {
@@ -48,18 +44,15 @@ export function SectionHeading({
       )}
     >
       <div className={cn(centred ? 'flex flex-col items-center gap-3' : 'space-y-1')}>
-        {eyebrow &&
-          (badge ? (
-            <SectionBadge>{eyebrow}</SectionBadge>
-          ) : (
-            <Typography
-              variant="span"
-              textColor="light"
-              className="block text-xxs uppercase tracking-wide"
-            >
-              {eyebrow}
-            </Typography>
-          ))}
+        {eyebrow && (
+          <Typography
+            variant="span"
+            textColor="light"
+            className="block text-xxs uppercase tracking-wide"
+          >
+            {eyebrow}
+          </Typography>
+        )}
 
         <Typography
           variant="h2"

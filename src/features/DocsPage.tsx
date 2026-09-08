@@ -3,6 +3,7 @@ import {
   Boxes,
   FileCode2,
   Gauge,
+  Plug,
   HelpCircle,
   KeyRound,
   Share2,
@@ -11,12 +12,12 @@ import {
 import { useEffect, useState, type ReactNode } from 'react';
 import { ScrollToTop } from '@/components/ScrollToTop';
 import { DOCS_SECTIONS } from '@/lib/docs-sections';
+import { MCP_PATH, MCP_TOOL_NAMES, MCP_TOOLS } from '@/lib/mcp-facts';
 import { FAQ_ENTRIES } from '@/lib/faq';
 import { useTheme } from '@/lib/theme';
 import { CodeBlock, InlineCode } from '@/ui/components/Code';
 import { DefinitionTable } from '@/ui/components/DefinitionTable';
 import { Faq } from '@/ui/components/Faq';
-import { SectionBadge } from '@/ui/components/SectionBadge';
 import { Typography } from '@/ui/components/Typography';
 import { cn } from '@/ui/lib/utils';
 
@@ -39,6 +40,7 @@ const ICONS: Record<string, typeof BookOpen> = {
   api: Terminal,
   cli: Terminal,
   action: Terminal,
+  assistant: Plug,
   limits: Gauge,
   faq: HelpCircle,
 };
@@ -187,7 +189,13 @@ export function DocsPage() {
 
       <div className="min-w-0 max-w-3xl flex-1 space-y-12 pb-8">
         <header className="space-y-3">
-          <SectionBadge>Documentation</SectionBadge>
+          <Typography
+            variant="span"
+            textColor="light"
+            className="block text-xxs uppercase tracking-wide"
+          >
+            Documentation
+          </Typography>
           <Typography variant="h1" className="text-2xl md:text-2xl">
             Everything M2H does
           </Typography>
@@ -468,6 +476,47 @@ node cli/m2h.mjs usage                     # 65.8 kB of 100.0 MB · 3 of 500 doc
           <p>
             A push publishes new documents rather than overwriting the old ones, so a
             link in an older comment keeps showing what that commit said.
+          </p>
+        </Section>
+
+        <Section id="assistant" title="In an assistant">
+          <p>
+            M2H is an MCP server, so it can be added to Claude as a connector. The
+            address is this deployment plus <InlineCode>{MCP_PATH}</InlineCode>:
+          </p>
+
+          <CodeBlock>{`${window.location.origin}${MCP_PATH}`}</CodeBlock>
+
+          <p>
+            On claude.ai that goes in Settings → Connectors → Add custom connector.
+            From a terminal:
+          </p>
+
+          <CodeBlock>{`claude mcp add --transport http m2h ${window.location.origin}${MCP_PATH}`}</CodeBlock>
+
+          <p>
+            There is no key to paste. The first call comes back unauthorised, your
+            assistant follows that to a page here, and you sign in with the same
+            Google account and approve a named client — which is why the page tells
+            you which address it is about to act as. What it gets is a token of ours,
+            good for your documents and nothing else: not your account, not your
+            sign-in, and not your API keys. Disconnect it from the account menu, under
+            API keys, and it stops working on the next call.
+          </p>
+
+          <DefinitionTable
+            rows={MCP_TOOL_NAMES.map((name) => ({
+              key: name,
+              term: <InlineCode>{name}</InlineCode>,
+              text: MCP_TOOLS[name],
+            }))}
+          />
+
+          <p>
+            The tools are the same code as the API above, called in process, so a
+            conversation and a script get the same answer. Two of them are shaped for
+            the trouble they can cause: sharing publishes a page on the public web, and
+            deleting takes an explicit confirmation and removes exactly one document.
           </p>
         </Section>
 

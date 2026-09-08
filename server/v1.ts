@@ -2,9 +2,9 @@ import { randomBytes } from 'node:crypto';
 import { Hono, type Context } from 'hono';
 import { createMiddleware } from 'hono/factory';
 import { buildStandaloneHtml, getDocStats } from '../shared/markdown.js';
-import { currentUser, selfOrigin } from './auth.js';
+import { selfOrigin } from './auth.js';
+import { type Caller, resolveCaller } from './caller.js';
 import { sql } from './db.js';
-import { ownerOfKey } from './keys.js';
 import { checkQuota, countCall, QUOTA, RATE, usageOf } from './limits.js';
 import { markdownToHtml } from './render.js';
 import { deleteSources, putSource, readSource } from './source.js';
@@ -20,37 +20,31 @@ import { deleteSources, putSource, readSource } from './source.js';
  * change; these do not.
  */
 
-type Caller = { id: string; email: string | null; via: 'key' | 'session' };
 type Env = { Variables: { caller: Caller } };
 
 const v1 = new Hono<Env>().basePath('/api/v1');
 
-/** A bearer key, or the session cookie the app already carries. */
+/*
+ * An API key, an OAuth token from a connected assistant, or the session cookie the app carries.
+ *
+ * All three resolve through `resolveCaller`, which is the only place that answers "whose documents
+ * are these" — a second copy of that question is how two parts of a server come to disagree on it.
+ */
 const requireCaller = createMiddleware<Env>(async (c, next) => {
-  const header = c.req.header('authorization') ?? '';
+  const caller = await resolveCaller(c);
 
-  if (header.startsWith('Bearer ')) {
-    const owner = await ownerOfKey(header.slice(7).trim());
-
-    if (!owner) {
-      return c.json({ error: 'Unknown or revoked API key' }, 401);
-    }
-
-    c.set('caller', { id: owner.id, email: owner.email, via: 'key' });
-
-    return next();
-  }
-
-  const user = await currentUser(c);
-
-  if (!user) {
+  if (!caller) {
     return c.json(
-      { error: 'Send an API key as `Authorization: Bearer m2h_live_…`' },
+      {
+        error: c.req.header('authorization')
+          ? 'Unknown or revoked credential'
+          : 'Send an API key as `Authorization: Bearer m2h_live_…`',
+      },
       401
     );
   }
 
-  c.set('caller', { id: user.id, email: user.email, via: 'session' });
+  c.set('caller', caller);
 
   return next();
 });

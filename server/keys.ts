@@ -57,6 +57,24 @@ export async function createKey(
   return { key: token, row: rows[0] };
 }
 
+/**
+ * Removes the row itself. Only for a key that is already revoked.
+ *
+ * Revoking and forgetting are two steps on purpose: revoking stops the key working, and the row it
+ * leaves behind is the record that it once did — which is what you read when something breaks the
+ * week after. Forgetting is for the row you have finished looking at, and a key still in use cannot
+ * be forgotten by accident, because it has to be revoked first.
+ */
+export async function forgetKey(userId: string, id: string): Promise<boolean> {
+  const rows = (await sql()`
+    delete from m2h_api_key
+    where user_id = ${userId} and id = ${id} and revoked_at is not null
+    returning id
+  `) as Array<{ id: string }>;
+
+  return rows.length > 0;
+}
+
 export async function revokeKey(userId: string, id: string): Promise<boolean> {
   const rows = (await sql()`
     update m2h_api_key

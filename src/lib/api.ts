@@ -57,6 +57,15 @@ export interface Usage {
   limits: { bytes: number; documents: number; documentBytes: number };
 }
 
+/** One thing the person connected — an assistant, not a token. */
+export interface Grant {
+  clientId: string;
+  name: string;
+  since: string;
+  lastUsed: string | null;
+  tokens: number;
+}
+
 export interface ApiKey {
   id: string;
   name: string;
@@ -187,6 +196,20 @@ export const api = {
 
   revokeKey: (id: string) =>
     request<{ ok: true }>(`/api/keys/${id}`, { method: 'DELETE' }),
+
+  /** Removes the row of a key that has already been revoked. */
+  forgetKey: (id: string) =>
+    request<{ ok: true }>(`/api/keys/${id}?forget=1`, { method: 'DELETE' }),
+
+  /** Assistants this account has connected, grouped by client rather than by token. */
+  listGrants: async () =>
+    (await request<{ grants: Grant[] }>('/api/oauth/grants')).grants,
+
+  revokeGrant: (clientId: string) =>
+    request<{ ok: true; revoked: number }>(
+      `/api/oauth/grants/${encodeURIComponent(clientId)}`,
+      { method: 'DELETE' }
+    ),
 
   getShare: (id: string) => request<ShareState>(`/api/documents/${id}/share`),
 

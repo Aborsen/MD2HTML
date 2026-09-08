@@ -174,6 +174,42 @@ reviewer opens the rendered document instead of reading a diff of asterisks.
 A new document per push is deliberate — a link in an old comment keeps showing what that commit
 said. `share: none` publishes privately if the links should not be public.
 
+## In an assistant
+
+M2H is an MCP server at `/api/mcp`, so it can be added to Claude as a connector and convert, save,
+share and delete documents in one account. There is no key to paste:
+
+```bash
+claude mcp add --transport http m2h https://md-2-html.vercel.app/api/mcp
+```
+
+The first call is answered `401` with a `WWW-Authenticate` header naming
+`/.well-known/oauth-protected-resource`, the client follows that to
+`/.well-known/oauth-authorization-server`, registers itself (RFC 7591), and sends the person to
+`/api/oauth/authorize`. They sign in with the same Google account and approve a named client on a
+page they read — a POST, so a link on its own authorises nothing — and the client exchanges its code
+for a token of ours. `server/oauth.ts` is that authorization server and `server/mcp.ts` is the
+endpoint; `src/lib/mcp-facts.ts` holds the tool names, typed, so a tool renamed on the server stops
+the build of the page that documents it.
+
+It has to be our own authorization server: the protocol forbids a resource accepting a token issued
+by anybody else, so a Neon Auth session cannot be handed to a client. What the client gets reaches
+documents and shares, and never the account, the sign-in or the API keys — the rule the keys already
+follow, applied to the credential it is most about. Connections are listed beside the keys in the
+account menu and revoked there, all tokens for a client at once, because revoking the access token
+alone leaves it able to mint another within the minute.
+
+The tools call this app's own `/api/v1` in process with the caller's credential forwarded, so a
+conversation and a script get the same answer from the same code. Two are shaped for the trouble
+they can cause: sharing publishes a page on the public web, and deleting takes an explicit
+confirmation and removes exactly one document. A grant can be read-only, and then the writing tools
+refuse in a sentence.
+
+`npm run mcp:check` runs the whole flow against a local server and the real database — discovery,
+the 401, registration, an unregistered `redirect_uri`, PKCE, a burnt code, refresh rotation,
+revocation and every tool — and cleans up after itself. The half that needs a browser (Google, then
+pressing Connect) is the one part it mints directly, exactly as `/approve` would.
+
 ## Limits
 
 | | |
@@ -293,6 +329,9 @@ server/                 API: routes, Neon Auth proxy, Neon client, dev middlewar
 db/schema.sql           m2h_document and its sharing tables
 scripts/init-db.mjs     applies the schema
 scripts/auth-origin.mjs manages Neon Auth's trusted origins
+server/mcp.ts           the MCP endpoint and its tools
+server/oauth.ts         the authorization server, and the consent page
+server/wellknown.ts     the two discovery documents
 scripts/prerender.ts    a real HTML file per route, after the bundle is built
 scripts/screenshots.mjs the documentation screenshots, captured from the running app
 content/blog/           the articles; content/keywords.md is what they were written against

@@ -103,3 +103,75 @@ create table if not exists m2h_report (
 );
 
 create index if not exists m2h_report_open on m2h_report (created_at desc) where handled_at is null;
+
+-- Connecting an AI assistant.
+--
+-- M2H is its own OAuth authorization server for the MCP endpoint. It has to be: the protocol
+-- forbids handing a client a token issued by somebody else, so a Neon Auth session cannot be passed
+-- through. The person signs in here as they always do, approves a named client on a page they
+-- looked at, and the client gets a token of ours that acts as them and reaches nothing else.
+--
+-- Every secret below is stored as a SHA-256 hash and never in the clear, for the same reason the
+-- API keys are: a leaked table should give an attacker nothing to present.
+
+create table if not exists m2h_oauth_client (
+  -- 'm2hc_' plus random hex. Registered by the client itself, with no secret: a client that runs on
+  -- someone else's machine cannot keep one.
+  id            text primary key,
+  name          text not null default '',
+  redirect_uris jsonb not null default '[]'::jsonb,
+  created_at    timestamptz not null default now()
+);
+
+-- An authorization request that is waiting for the person to sign in.
+--
+-- The parameters are parked here under an opaque id rather than carried through the sign-in round
+-- trip in a query string: a return path that contains someone else's redirect_uri is one encoding
+-- mistake away from mattering, and an id has no such surface.
+
+create table if not exists m2h_oauth_pending (
+  id         text primary key,
+  params     jsonb not null,
+  expires_at timestamptz not null
+);
+
+-- One authorization code, single use.
+--
+-- `used_at` is what makes it single use, and it is set before anything is checked against the row:
+-- a code replayed while the first exchange is still in flight would otherwise mint a second set of
+-- tokens, and on a serverless platform that conditional update is the only lock there is.
+
+create table if not exists m2h_oauth_code (
+  code_hash      text primary key,
+  client_id      text not null,
+  user_id        uuid not null,
+  redirect_uri   text not null,
+  code_challenge text not null,
+  resource       text,
+  scope          text not null default 'documents:read documents:write',
+  expires_at     timestamptz not null,
+  used_at        timestamptz
+);
+
+-- Access and refresh tokens.
+--
+-- One table with a `kind`, because they differ by lifetime and by what they may be exchanged for,
+-- not by shape — and one table means one place that revokes. A revoked row is kept so the person
+-- can still see that the connection existed.
+
+create table if not exists m2h_oauth_token (
+  token_hash   text primary key,
+  kind         text not null default 'access',
+  client_id    text not null,
+  user_id      uuid not null,
+  scope        text not null default 'documents:read documents:write',
+  resource     text,
+  created_at   timestamptz not null default now(),
+  expires_at   timestamptz,
+  revoked_at   timestamptz,
+  last_used_at timestamptz
+);
+
+-- "Everything this person has connected", for the screen that lets them take it back.
+create index if not exists m2h_oauth_token_user
+  on m2h_oauth_token (user_id, created_at desc);

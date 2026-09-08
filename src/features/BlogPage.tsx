@@ -49,7 +49,6 @@ export function BlogPage({ onOpenArticle }: BlogPageProps) {
     <div className="mx-auto flex w-full max-w-5xl flex-col gap-6">
       <SectionHeading
         align="center"
-        badge
         size="lg"
         eyebrow="Blog"
         title="Markdown, and what to do with it"

@@ -33,7 +33,7 @@ export function apiDevServer(): Plugin {
     configureServer(server) {
       server.middlewares.use(async (req, res, next) => {
         // The same paths vercel.json sends to the function in production.
-        const served = ['/api/', '/s/', '/report/'];
+        const served = ['/api/', '/s/', '/report/', '/.well-known/'];
 
         if (!served.some((path) => req.url?.startsWith(path))) {
           return next();

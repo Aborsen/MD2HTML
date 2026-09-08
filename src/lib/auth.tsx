@@ -16,7 +16,8 @@ interface AuthState {
   isSigningIn: boolean;
   /** Why the last sign-in attempt did not finish, in the auth service's own words. */
   error: string | null;
-  signIn: () => Promise<void>;
+  /** `to` is where to come back to; the connector hand-off needs somewhere other than here. */
+  signIn: (to?: string) => Promise<void>;
   signOut: () => Promise<void>;
 }
 
@@ -57,6 +58,16 @@ function stripVerifier() {
   window.history.replaceState(null, '', url.pathname + url.search + url.hash);
 }
 
+/**
+ * Starts the Google round trip and leaves the page.
+ *
+ * Outside the component because the connector hand-off needs it before `signIn` is declared, and a
+ * function that only navigates has no business holding state.
+ */
+async function handOffToGoogle(to: string): Promise<void> {
+  window.location.href = await api.startGoogleSignIn(to);
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -89,19 +100,40 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         stripVerifier();
       }
 
+      /*
+       * An assistant sent the person here to authorise a connection. The authorization request is
+       * parked on the server under this opaque id; all this page does is make sure there is a
+       * session and hand them back to it — which is why the id is the only thing in the address.
+       */
+      const connect = new URL(window.location.href).searchParams.get('connect');
+
+      if (connect) {
+        const back = `/api/oauth/authorize?p=${encodeURIComponent(connect)}`;
+
+        if (account) {
+          window.location.replace(back);
+        } else {
+          setUser(null);
+          setIsLoading(false);
+          void handOffToGoogle(back).catch((cause: Error) => setError(cause.message));
+        }
+
+        return;
+      }
+
       setUser(account);
       setIsLoading(false);
     });
   }, []);
 
-  const signIn = useCallback(async () => {
+  const signIn = useCallback(async (to?: string) => {
     setIsSigningIn(true);
     setError(null);
 
     try {
-      const returnTo = window.location.pathname + window.location.search;
-
-      window.location.href = await api.startGoogleSignIn(returnTo);
+      await handOffToGoogle(
+        to ?? window.location.pathname + window.location.search
+      );
     } catch (cause) {
       setIsSigningIn(false);
       setError(

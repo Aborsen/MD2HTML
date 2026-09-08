@@ -16,7 +16,8 @@
     "blob:reconcile": "node scripts/reconcile-blobs.mjs",
     "reports": "node scripts/reports.mjs",
     "docs:shots": "node scripts/screenshots.mjs",
-    "blog:check": "node scripts/check-blog.mjs"
+    "blog:check": "node scripts/check-blog.mjs",
+    "mcp:check": "node scripts/check-mcp.mjs"
   },
   "dependencies": {
     "@hono/node-server": "^2.1.1",

@@ -135,9 +135,22 @@ async function finishSignIn(c: Context): Promise<Response> {
   const origin = selfOrigin(c);
   const here = new URL(c.req.url);
   const verifier = here.searchParams.get(VERIFIER);
-  // Kept relative so this cannot be turned into an open redirect.
+  /*
+   * `to` arrives in a link, and a link is something anybody can write, so it is not enough for it
+   * to be relative: it has to be one of this app's own destinations. The list is the app's pages
+   * plus the consent step an assistant sends people through.
+   */
   const requested = (here.searchParams.get('to') ?? '/').replace(/^[^/]*\/\//, '/');
-  const back = requested.startsWith('/') ? requested : `/${requested}`;
+  const asked = requested.startsWith('/') ? requested : `/${requested}`;
+  const path = asked.split('?')[0].replace(/\/$/, '') || '/';
+  const allowed =
+    // The app's own pages,
+    ['/', '/history', '/docs', '/blog'].includes(path) ||
+    // one article or one shared document,
+    /^\/(blog|open|s)\/[^/]+$/.test(path) ||
+    // or the consent step an assistant sent them through.
+    asked.startsWith('/api/oauth/authorize?');
+  const back = allowed ? asked : '/';
 
   const landing = (outcome: string, why?: string) => {
     const url = new URL(back, origin);
