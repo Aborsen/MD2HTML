@@ -1,6 +1,6 @@
 import { CONVERSIONS, type ConversionId } from '@shared/conversions';
 import { Logo } from '@/components/Logo';
-import { ISSUES_URL, STATIC_PAGES, type StaticPageId } from '@/lib/pages';
+import { REPO_URL, STATIC_PAGES, type StaticPageId } from '@/lib/pages';
 import type { AppView } from '@/lib/route';
 import {
   SiteFooter,
@@ -54,7 +54,7 @@ export function AppFooter({
           onNavigate: () => onViewChange('docs'),
         },
         { label: 'Blog', href: '/blog', onNavigate: () => onViewChange('blog') },
-        { label: 'Source', href: ISSUES_URL.replace(/\/issues$/, ''), external: true },
+        { label: 'Git', href: REPO_URL, external: true },
       ],
     },
     {

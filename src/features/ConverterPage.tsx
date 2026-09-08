@@ -18,8 +18,9 @@ import { DocumentPreview } from '@/components/DocumentPreview';
 import { Hint } from '@/components/Hint';
 import { ScrollToTop } from '@/components/ScrollToTop';
 import { ShareDialog } from '@/components/ShareDialog';
+import { ConversionPicker } from '@/components/ConversionPicker';
 import { Dropzone } from '@/components/Dropzone';
-import type { Conversion } from '@shared/conversions';
+import type { Conversion, ConversionId } from '@shared/conversions';
 import { ARTICLES, articlePath, formatArticleDate } from '@/lib/blog';
 import { HOME_FAQ_ENTRIES } from '@/lib/faq';
 import { ArticleCard } from '@/ui/components/ArticleCard';
@@ -62,6 +63,7 @@ interface ConverterPageProps {
   conversion: Conversion;
   doc: ConvertedDoc | null;
   isBusy: boolean;
+  onConversionChange: (id: ConversionId) => void;
   onFiles: (files: File[]) => void;
   onReset: () => void;
   onGoToBlog: () => void;
@@ -72,6 +74,7 @@ export function ConverterPage({
   conversion,
   doc,
   isBusy,
+  onConversionChange,
   onFiles,
   onReset,
   onGoToBlog,
@@ -155,37 +158,10 @@ export function ConverterPage({
           onFiles={onFiles}
         />
 
-        <div className="grid gap-4 sm:grid-cols-3">
-          {[
-            {
-              title: 'Converted in this browser',
-              text: 'Signed out, the file is never sent anywhere. Sign in and the Markdown is kept in your account so the document follows you.',
-            },
-            {
-              title: 'Several files, one document',
-              text: 'Drop a few at once, or merge them later from the history.',
-            },
-            {
-              title: 'Self-contained export',
-              text: 'The downloaded .html carries its styles inline and asks the network for nothing.',
-            },
-          ].map((item) => (
-            <Card
-              key={item.title}
-              variant="outline"
-              fullWidth
-              rounded="lg"
-              className="bg-surface-card"
-            >
-              <Typography variant="span" weight="semibold" textColor="primary">
-                {item.title}
-              </Typography>
-              <Typography variant="p" textColor="secondary" className="text-xs">
-                {item.text}
-              </Typography>
-            </Card>
-          ))}
-        </div>
+        <ConversionPicker
+          current={conversion.id}
+          onChange={onConversionChange}
+        />
 
         {/* Below the fold: two bands, each opening with a pill, so the page stops reading as one sheet. */}
         {ARTICLES.length > 0 && (

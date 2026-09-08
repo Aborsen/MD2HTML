@@ -74,12 +74,20 @@ function Shell() {
     () => readRoute().pageId
   );
 
-  /* The view lives in the address, so a reload lands where you were and Back means something. */
+  /*
+   * The view lives in the address, so a reload lands where you were and Back means something.
+   *
+   * And every deliberate move starts at the top of the new page. Without that, reading to the foot
+   * of an article and tapping the call to action landed you on the converter scrolled past the
+   * dropzone — the one thing that page exists for, off screen. `popstate` is deliberately left
+   * alone: going Back should return you to where you were, which the browser already does.
+   */
   const setView = useCallback((next: AppView) => {
     setViewState(next);
     setArticleSlug(null);
     setPageId(null);
     goTo(next, readRoute().filter);
+    window.scrollTo({ top: 0 });
   }, []);
 
   /*
@@ -94,6 +102,7 @@ function Shell() {
     setPageId(null);
     setDoc(null);
     goToConversion(next);
+    window.scrollTo({ top: 0 });
   }, []);
 
   const openArticle = useCallback((slug: string) => {
@@ -456,6 +465,7 @@ function Shell() {
             conversion={conversion(conversionId)}
             doc={doc}
             isBusy={isBusy}
+            onConversionChange={chooseConversion}
             onFiles={handleFiles}
             onReset={startOver}
             onGoToBlog={() => setView('blog')}
