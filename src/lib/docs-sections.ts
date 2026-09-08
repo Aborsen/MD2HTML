@@ -18,19 +18,19 @@ export const DOCS_SECTIONS: DocsSection[] = [
     id: 'start',
     title: 'Start here',
     summary:
-      'Drop a Markdown file and you have the rendered document and a download; sign in and the same documents follow you between devices, can be shared, and can be reached by a script.',
+      'Drop a file and you have the converted document and a download; sign in and the same documents follow you between devices, can be shared, and can be reached by a script.',
   },
   {
     id: 'converting',
     title: 'Converting',
     summary:
-      'Accepted files and sizes, chaining several into one document, GitHub Flavored Markdown, the HTML source tab, and what the download actually contains.',
+      'The four conversions — Markdown to HTML, HTML, Word and CSV to Markdown — what each accepts, chaining several files into one document, the source tab, and the formats a download can hand over: Markdown, HTML, plain text or a printed PDF.',
   },
   {
     id: 'history',
     title: 'History',
     summary:
-      'Search, sortable columns, and the Markdown and HTML chips — which are two faces of one stored document rather than two kinds of file. Rows can be merged, downloaded or deleted in bulk.',
+      'Search, sortable columns, and a chip per conversion so a mixed list can be narrowed to one kind. Rows can be merged, downloaded in any format, or deleted in bulk.',
   },
   {
     id: 'sharing',

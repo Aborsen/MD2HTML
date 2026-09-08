@@ -1,6 +1,12 @@
 import { useCallback, useEffect, useState } from 'react';
 import { AppHeader } from './components/AppHeader';
-import { ACCEPTED_EXTENSIONS, MAX_FILE_SIZE } from './components/Dropzone';
+import { MAX_FILE_SIZE } from './components/Dropzone';
+import {
+  conversion,
+  type ConversionId,
+  DEFAULT_CONVERSION,
+} from '@shared/conversions';
+import { convertFile, conversionForFiles } from './lib/convert';
 import { ConverterPage } from './features/ConverterPage';
 import { ArticlePage } from './features/ArticlePage';
 import { BlogPage } from './features/BlogPage';
@@ -10,27 +16,25 @@ import { SharedDocumentPage } from './features/SharedDocumentPage';
 import { AuthProvider, useAuth } from './lib/auth';
 import { ThemeProvider, useTheme } from './lib/theme';
 import { type DocFormat, toFileName } from './lib/format';
+import { downloadDoc } from './lib/download';
 import type { HistoryEntry } from './lib/history';
-import {
-  buildStandaloneHtml,
-  getDocStats,
-  markdownToHtml,
-} from './lib/markdown';
+import { getDocStats, markdownToHtml } from './lib/markdown';
 import { mergedName, mergeMarkdown } from './lib/merge';
-import { type AppView, goTo, goToArticle, readRoute } from './lib/route';
+import {
+  type AppView,
+  goTo,
+  goToArticle,
+  goToConversion,
+  readRoute,
+} from './lib/route';
 import type { ConvertedDoc } from './lib/types';
 import { useHistory } from './lib/use-history';
 import { toast, Toaster } from './ui/components/Toast';
 import { TooltipProvider } from './ui/components/Tooltip';
 import { Typography } from './ui/components/Typography';
 
-function hasAcceptedExtension(name: string): boolean {
-  return ACCEPTED_EXTENSIONS.some((extension) =>
-    name.toLowerCase().endsWith(extension)
-  );
-}
-
 function convert(
+  kind: ConversionId,
   name: string,
   size: number,
   markdown: string,
@@ -42,6 +46,7 @@ function convert(
   return {
     id: `${createdAt.toString(36)}-${Math.random().toString(36).slice(2, 8)}`,
     name,
+    kind,
     size,
     createdAt,
     markdown,
@@ -51,47 +56,13 @@ function convert(
   };
 }
 
-function save(fileName: string, contents: string, type: string) {
-  const url = URL.createObjectURL(new Blob([contents], { type }));
-  const link = document.createElement('a');
-
-  link.href = url;
-  link.download = fileName;
-  document.body.appendChild(link);
-  link.click();
-  link.remove();
-  URL.revokeObjectURL(url);
-}
-
-/** Hands over the document in the format the list is showing: the source, or the built page. */
-function download(
-  name: string,
-  markdown: string,
-  createdAt: number,
-  theme: 'dark' | 'light',
-  format: DocFormat
-) {
-  if (format === 'md') {
-    save(toFileName(name, 'md'), markdown, 'text/markdown;charset=utf-8');
-    return;
-  }
-
-  save(
-    toFileName(name, 'html'),
-    buildStandaloneHtml({
-      title: name,
-      body: markdownToHtml(markdown),
-      createdAt,
-      theme,
-    }),
-    'text/html;charset=utf-8'
-  );
-}
-
 function Shell() {
   const { user, error: authError } = useAuth();
   const { theme } = useTheme();
   const [view, setViewState] = useState<AppView>(() => readRoute().view);
+  const [conversionId, setConversionId] = useState<ConversionId>(
+    () => readRoute().conversionId
+  );
   const [articleSlug, setArticleSlug] = useState<string | null>(
     () => readRoute().articleSlug
   );
@@ -101,6 +72,19 @@ function Shell() {
     setViewState(next);
     setArticleSlug(null);
     goTo(next, readRoute().filter);
+  }, []);
+
+  /*
+   * Choosing a conversion is a move to its page, and it clears whatever was open: the document on
+   * screen belongs to the conversion that made it, and leaving it there under a different heading
+   * is how somebody comes to think the new conversion produced it.
+   */
+  const chooseConversion = useCallback((next: ConversionId) => {
+    setConversionId(next);
+    setViewState('converter');
+    setArticleSlug(null);
+    setDoc(null);
+    goToConversion(next);
   }, []);
 
   const openArticle = useCallback((slug: string) => {
@@ -115,6 +99,7 @@ function Shell() {
       const route = readRoute();
 
       setViewState(route.view);
+      setConversionId(route.conversionId);
       setArticleSlug(route.articleSlug);
     };
 
@@ -139,15 +124,19 @@ function Shell() {
     }
   }, [authError]);
 
-  /** One file converts; several are chained into a single document, in the order they arrive. */
+  /**
+   * One file converts; several are chained into a single document, in the order they arrive.
+   *
+   * Which conversion runs is decided by what was dropped, not only by the page it was dropped on: a
+   * .docx on the Markdown screen means "convert this", and answering "wrong page" to a file the app
+   * plainly knows how to read is a refusal nobody would thank us for.
+   */
   const handleFiles = useCallback(
     async (files: File[]) => {
-      const rejected = files.find((file) => !hasAcceptedExtension(file.name));
+      const { id, rejected } = conversionForFiles(conversionId, files);
 
       if (rejected) {
-        toast.error('Unsupported file type', {
-          description: `${rejected.name} — pick one of: ${ACCEPTED_EXTENSIONS.join(', ')}`,
-        });
+        toast.error('Not a file this can convert', { description: rejected });
         return;
       }
 
@@ -160,15 +149,17 @@ function Shell() {
 
       try {
         const parts = await Promise.all(
-          files.map(async (file) => ({
-            name: file.name,
-            markdown: await file.text(),
-          }))
+          files.map(async (file) => {
+            const done = await convertFile(id, file);
+
+            return { name: done.name, markdown: done.markdown };
+          })
         );
 
         const markdown = mergeMarkdown(parts);
         const names = parts.map((part) => part.name);
         const converted = convert(
+          id,
           mergedName(names),
           files.reduce((total, file) => total + file.size, 0),
           markdown,
@@ -177,10 +168,13 @@ function Shell() {
         );
 
         setDoc(converted);
-        setView('converter');
+        setConversionId(id);
+        setViewState('converter');
+        goToConversion(id);
 
         const stored = await history.add({
           name: converted.name,
+          kind: converted.kind,
           size: converted.size,
           markdown: converted.markdown,
           stats: converted.stats,
@@ -197,11 +191,19 @@ function Shell() {
         toast.success(
           files.length > 1
             ? `Chained ${files.length} files into one document`
-            : 'Converted to HTML',
+            : `Converted to ${conversion(id).short.split(' → ')[1] ?? 'Markdown'}`,
           { description: converted.name }
         );
-      } catch {
-        toast.error('Could not read the files');
+      } catch (cause) {
+        /*
+         * Say what went wrong. This used to be one sentence for every failure — "Could not read the
+         * files" — which covered a file that was not what it claimed, a converter that failed to
+         * load, and a document with nothing in it, and told the person none of them.
+         */
+        toast.error(`${conversion(id).label} did not work`, {
+          description:
+            cause instanceof Error ? cause.message : 'The file could not be read.',
+        });
       } finally {
         setIsBusy(false);
       }
@@ -218,7 +220,13 @@ function Shell() {
         return;
       }
 
-      const reopened = convert(entry.name, entry.size, markdown, entry.createdAt);
+      const reopened = convert(
+        entry.kind,
+        entry.name,
+        entry.size,
+        markdown,
+        entry.createdAt
+      );
 
       setDoc(entry.remote ? { ...reopened, remoteId: entry.id } : reopened);
       setView('converter');
@@ -235,7 +243,7 @@ function Shell() {
         return;
       }
 
-      download(entry.name, markdown, entry.createdAt, theme, format);
+      downloadDoc(entry.name, markdown, entry.createdAt, theme, format);
       toast.success('File downloaded', {
         description: toFileName(entry.name, format),
       });
@@ -272,7 +280,13 @@ function Shell() {
 
         const markdown = mergeMarkdown(parts);
         const names = parts.map((part) => part.name);
+        /*
+          * A merge of rows that came from different conversions is still one document, and what
+          * made it now is the merge — so it is filed under the conversion the first row came from,
+          * which is the one whose page the reader is looking at.
+          */
         const converted = convert(
+          entries[0]?.kind ?? DEFAULT_CONVERSION,
           mergedName(names),
           new Blob([markdown]).size,
           markdown,
@@ -285,6 +299,7 @@ function Shell() {
 
         const stored = await history.add({
           name: converted.name,
+          kind: converted.kind,
           size: converted.size,
           markdown: converted.markdown,
           stats: converted.stats,
@@ -319,7 +334,7 @@ function Shell() {
           continue;
         }
 
-        download(entry.name, markdown, entry.createdAt, theme, format);
+        downloadDoc(entry.name, markdown, entry.createdAt, theme, format);
         saved += 1;
 
         // A browser handed a burst of downloads starts dropping them.
@@ -364,8 +379,10 @@ function Shell() {
     <div className="flex min-h-full flex-col bg-surface-page">
       <AppHeader
         view={view}
+        conversionId={conversionId}
         historyCount={history.entries.length}
         onViewChange={setView}
+        onConversionChange={chooseConversion}
         onHome={startOver}
       />
 
@@ -386,6 +403,7 @@ function Shell() {
           )
         ) : view === 'converter' ? (
           <ConverterPage
+            conversion={conversion(conversionId)}
             doc={doc}
             isBusy={isBusy}
             onFiles={handleFiles}
@@ -422,7 +440,7 @@ function Shell() {
               : 'Files never leave your browser'}
           </Typography>
           <Typography variant="span" textColor="light" className="text-xs">
-            Self-contained HTML export
+            Markdown, HTML, plain text or print
           </Typography>
         </div>
       </footer>

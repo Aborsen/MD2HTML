@@ -26,6 +26,18 @@
       "destination": "/index.html"
     },
     {
+      "source": "/html-to-markdown",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/word-to-markdown",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/csv-to-markdown",
+      "destination": "/index.html"
+    },
+    {
       "source": "/docs",
       "destination": "/index.html"
     },

@@ -6,6 +6,13 @@ import { selfOrigin } from './auth.js';
 import { type Caller, mayWrite, resolveCaller } from './caller.js';
 import { sql } from './db.js';
 import { checkQuota, countCall, QUOTA, RATE, usageOf } from './limits.js';
+import {
+  CONVERSIONS,
+  type ConversionId,
+  DEFAULT_CONVERSION,
+} from '../shared/conversions.js';
+import { htmlToMarkdown } from '../shared/from-html.js';
+import { delimitedToMarkdown } from '../shared/from-table.js';
 import { markdownToHtml } from './render.js';
 import { deleteSources, putSource, readSource } from './source.js';
 
@@ -110,6 +117,7 @@ v1.get('/usage', async (c) => c.json(await usageOf(c.get('caller').id)));
 interface DocumentRow {
   id: string;
   name: string;
+  kind: string;
   size: number;
   stats: Record<string, number>;
   created_at: string;
@@ -133,6 +141,7 @@ const asDocument = (
 ) => ({
   id: row.id,
   name: row.name,
+  kind: row.kind,
   size: row.size,
   words: row.stats?.words ?? 0,
   created_at: row.created_at,
@@ -145,7 +154,7 @@ const asDocument = (
 
 v1.get('/documents', async (c) => {
   const rows = (await sql()`
-    select id, name, size, stats, created_at, share_mode, share_token
+    select id, name, kind, size, stats, created_at, share_mode, share_token
     from m2h_document
     where user_id = ${c.get('caller').id}
     order by created_at desc
@@ -167,8 +176,41 @@ v1.post('/documents', async (c) => {
   const userId = c.get('caller').id;
   const type = c.req.header('content-type') ?? '';
 
+  /*
+   * What made this document. A caller that says nothing means Markdown, which is what every
+   * document was before there was more than one conversion.
+   *
+   * Two of the conversions run here as well as in the browser, because both are text in and text
+   * out. Word is not: reading a .docx needs a zip reader and an XML mapper, and putting those in
+   * the function to serve an endpoint nobody has asked for yet is weight for its own sake — so it
+   * is refused by name rather than silently stored as if it had been converted.
+   */
+  const asked = c.req.query('kind') ?? '';
+  const named = CONVERSIONS.find((one) => one.id === asked);
+
+  if (asked && !named) {
+    return c.json(
+      {
+        error: `kind must be one of ${CONVERSIONS.map((one) => one.id).join(', ')}`,
+      },
+      400
+    );
+  }
+
+  const kind: ConversionId = named?.id ?? DEFAULT_CONVERSION;
+
+  if (kind === 'word-to-markdown') {
+    return c.json(
+      {
+        error:
+          'word-to-markdown runs in the browser only. Convert the .docx at /word-to-markdown, or post the Markdown it produced.',
+      },
+      400
+    );
+  }
+
   let name = c.req.query('name') ?? '';
-  let markdown = '';
+  let source = '';
 
   if (type.includes('application/json')) {
     const body = await c.req
@@ -176,16 +218,38 @@ v1.post('/documents', async (c) => {
       .catch(() => ({}) as { name?: string; markdown?: string });
 
     name = body.name ?? name;
-    markdown = body.markdown ?? '';
+    source = body.markdown ?? '';
   } else {
-    markdown = await c.req.text();
+    source = await c.req.text();
   }
 
-  if (!markdown.trim()) {
+  if (!source.trim()) {
     return c.json(
       { error: 'Send Markdown as the request body, or as `markdown` in JSON' },
       400
     );
+  }
+
+  let markdown = source;
+
+  if (kind === 'html-to-markdown') {
+    markdown = htmlToMarkdown(source);
+  }
+
+  if (kind === 'csv-to-markdown') {
+    const table = delimitedToMarkdown(source, {
+      delimiter: name.toLowerCase().endsWith('.tsv') ? '\t' : undefined,
+    });
+
+    if (!table) {
+      return c.json({ error: 'That file has no rows in it' }, 400);
+    }
+
+    markdown = table;
+  }
+
+  if (!markdown.trim()) {
+    return c.json({ error: 'Nothing came out of that file' }, 400);
   }
 
   const share = c.req.query('share');
@@ -201,22 +265,28 @@ v1.post('/documents', async (c) => {
     return c.json({ error: room.error, usage: room.usage }, room.status);
   }
 
-  const documentName = (name || 'document.md').slice(0, 200);
+  // A converted file keeps its name but not its extension: what is stored is Markdown.
+  const documentName = (
+    kind === DEFAULT_CONVERSION
+      ? name || 'document.md'
+      : `${(name || 'document').replace(/\.[^.]+$/, '')}.md`
+  ).slice(0, 200);
   const html = markdownToHtml(markdown);
   const stats = getDocStats(markdown, html);
 
   const created = (await sql()`
-    insert into m2h_document (user_id, name, size, markdown, stats, share_mode, share_token)
+    insert into m2h_document (user_id, name, kind, size, markdown, stats, share_mode, share_token)
     values (
       ${userId},
       ${documentName},
+      ${kind},
       ${size},
       null,
       ${JSON.stringify(stats)}::jsonb,
       ${share ?? 'private'},
       ${share ? randomBytes(16).toString('base64url') : null}
     )
-    returning id, name, size, stats, created_at, share_mode, share_token
+    returning id, name, kind, size, stats, created_at, share_mode, share_token
   `) as DocumentRow[];
 
   try {
@@ -248,7 +318,7 @@ async function findDocument(userId: string, id: string) {
   }
 
   const rows = (await sql()`
-    select id, user_id, name, size, stats, created_at, share_mode, share_token,
+    select id, user_id, name, kind, size, stats, created_at, share_mode, share_token,
            markdown, blob_path
     from m2h_document
     where user_id = ${userId} and id = ${id}

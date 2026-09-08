@@ -9,6 +9,14 @@
 export interface FaqEntry {
   question: string;
   answer: string;
+  /**
+   * True when this is a detail rather than a doubt.
+   *
+   * The front page asks somebody to drop a file, and the questions worth answering there are the
+   * ones that stop them doing it. A question they would only ask after deciding belongs in the
+   * documentation, where the whole list is shown.
+   */
+  detail?: boolean;
 }
 
 /*
@@ -17,19 +25,25 @@ export interface FaqEntry {
  */
 export const FAQ_ENTRIES: FaqEntry[] = [
   {
+    question: 'What can it convert?',
+    answer:
+      'Four things, each with its own page under Converter in the header: Markdown to HTML, HTML to Markdown, Word (.docx) to Markdown, and CSV or TSV to a Markdown table. Everything but the first ends as Markdown, which is what a document is stored, previewed and shared as here — so a Word file and a spreadsheet become the same kind of thing once they are in.',
+  },
+  {
     question: 'Does my file get uploaded anywhere?',
     answer:
       'Signed out, no. The file is read by this browser, converted here, and never sent to a server — close the tab and nothing of it remains anywhere but your own machine. Signed in, the Markdown source is stored in your account so the document can follow you to another device, and it stays private until you share it.',
   },
   {
     question: 'Which Markdown does it understand?',
+    detail: true,
     answer:
-      'GitHub Flavored Markdown: tables, task lists, strikethrough, autolinks and fenced code blocks, on top of everything CommonMark defines. Raw HTML inside the document is passed through a sanitiser first, so a script tag in a file someone sent you cannot run.',
+      'GitHub Flavored Markdown, in both directions: tables, task lists, strikethrough, autolinks and fenced code blocks, on top of everything CommonMark defines. Raw HTML inside the document is passed through a sanitiser first, so a script tag in a file someone sent you cannot run.',
   },
   {
     question: 'What exactly do I get when I download?',
     answer:
-      'One .html file with its styles inline. No scripts, no fonts to fetch, no requests of any kind — it opens the same on a machine with no network, and it carries the theme it was made in. Printing always flips it to the light palette, because a dark page on paper is a wall of ink.',
+      'Whatever the conversion produced, first: an .html file when you converted to HTML, an .md file when you converted to Markdown. The arrow beside the button holds the others — Markdown, HTML, plain text, or the print dialog for a PDF. The HTML is one file with its styles inline: no scripts, no fonts to fetch, no requests of any kind, so it opens the same on a machine with no network. On paper it always flips to the light palette, because a dark page in print is a wall of ink.',
   },
   {
     question: 'Can I send a converted document to someone?',
@@ -52,3 +66,6 @@ export const FAQ_ENTRIES: FaqEntry[] = [
       'Nothing. Converting and downloading work without an account at all; an account adds history, sharing and the API, within the limits above.',
   },
 ];
+
+/** The front page's shorter list: the doubts, without the details. */
+export const HOME_FAQ_ENTRIES = FAQ_ENTRIES.filter((one) => !one.detail);

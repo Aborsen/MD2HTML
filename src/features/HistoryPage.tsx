@@ -16,9 +16,21 @@ import { Hint } from '@/components/Hint';
 import { FilterChips } from '@/components/FilterChips';
 import { ListSelectionBar } from '@/components/ListSelectionBar';
 import { ShareDialog } from '@/components/ShareDialog';
-import { ACCEPTED_EXTENSIONS } from '@/components/Dropzone';
+import {
+  ALL_EXTENSIONS,
+  CONVERSIONS,
+  conversion,
+  type ConversionId,
+} from '@shared/conversions';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/ui/components/DropdownMenu';
 import {
   type DocFormat,
+  FORMAT_LABELS,
   formatBytes,
   formatDateTime,
   formatRelative,
@@ -47,6 +59,9 @@ import {
 } from '@/ui/components/Table';
 import { Typography } from '@/ui/components/Typography';
 import { cn } from '@/ui/lib/utils';
+
+/** The order they are offered in: the document, the page it makes, then the words alone. */
+const FORMATS: DocFormat[] = ['md', 'html', 'txt'];
 
 interface HistoryPageProps {
   entries: HistoryEntry[];
@@ -82,20 +97,28 @@ export function HistoryPage({
   const [selected, setSelected] = useState<string[]>([]);
   const [query, setQuery] = useState('');
   /**
-   * One row of chips over two axes: which format of my files, or somebody else's files. It lives
-   * in the address too, so refreshing the page keeps looking at the same list.
+   * One row of chips: everything, one conversion, or somebody else's files.
+   *
+   * Everything is the default, because a list that opens filtered is a list somebody has to notice
+   * is filtered — and the reason to come here is usually "where is that file", not "show me the
+   * ones that came from Word". It lives in the address too, so a refresh keeps the same view.
    */
-  const [chip, setChip] = useState<'html' | 'md' | 'shared'>(() => {
-    const filter = readRoute().filter;
+  const [chip, setChip] = useState<'all' | ConversionId | 'shared'>(() => {
+    const filter = readRoute().filter ?? '';
 
-    return filter === 'md' || filter === 'shared' ? filter : 'html';
+    if (filter === 'shared') {
+      return 'shared';
+    }
+
+    return CONVERSIONS.some((one) => one.id === filter)
+      ? (filter as ConversionId)
+      : 'all';
   });
   const [shared, setShared] = useState<HistoryEntry[]>([]);
   const [usage, setUsage] = useState<Usage | null>(null);
   const [isLoadingShared, setIsLoadingShared] = useState(false);
 
   const isShared = chip === 'shared';
-  const format: DocFormat = chip === 'md' ? 'md' : 'html';
   const filePicker = useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [sharing, setSharing] = useState<HistoryEntry | null>(null);
@@ -147,7 +170,30 @@ export function HistoryPage({
     );
   }, [entries]);
 
-  const source = isShared ? shared : entries;
+  /*
+   * Chips for the conversions that actually produced something, and only when there is more than
+   * one of them: an account with nothing but Markdown does not need to be offered a filter that
+   * selects all of it.
+   */
+  const kinds = useMemo(() => {
+    const counted = new Map<string, number>();
+
+    for (const entry of entries) {
+      counted.set(entry.kind, (counted.get(entry.kind) ?? 0) + 1);
+    }
+
+    return CONVERSIONS.filter((one) => counted.has(one.id)).map((one) => ({
+      value: one.id,
+      label: one.label,
+      count: counted.get(one.id) ?? 0,
+    }));
+  }, [entries]);
+
+  const source = isShared
+    ? shared
+    : chip === 'all'
+      ? entries
+      : entries.filter((entry) => entry.kind === chip);
 
   const found = useMemo(() => {
     const needle = query.trim().toLowerCase();
@@ -316,7 +362,7 @@ export function HistoryPage({
       <input
         ref={filePicker}
         type="file"
-        accept={ACCEPTED_EXTENSIONS.join(',')}
+        accept={ALL_EXTENSIONS.join(',')}
         multiple
         className="hidden"
         onChange={(event) => {
@@ -359,8 +405,8 @@ export function HistoryPage({
       <FilterChips
         value={chip}
         items={[
-          { value: 'html', label: 'HTML' },
-          { value: 'md', label: 'Markdown' },
+          { value: 'all', label: 'All formats', count: entries.length },
+          ...(kinds.length > 1 ? kinds : []),
           // Nobody can share with a browser: the chip belongs to an account.
           ...(isSynced
             ? [
@@ -374,7 +420,7 @@ export function HistoryPage({
         ]}
         onValueChange={(value) => {
           setSelected([]);
-          setChip(value as 'html' | 'md' | 'shared');
+          setChip(value as 'all' | ConversionId | 'shared');
           replaceFilter(value);
         }}
       />
@@ -427,15 +473,28 @@ export function HistoryPage({
                 </span>
               </Hint>
 
-              <Button
-                variant="primaryTertiary"
-                size="xs"
-                className="!px-1.5 !py-1"
-                leftSlot={<Download />}
-                onClick={() => onDownloadMany(selectedEntries, format)}
-              >
-                Download
-              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="primaryTertiary"
+                    size="xs"
+                    className="!px-1.5 !py-1"
+                    leftSlot={<Download />}
+                  >
+                    Download
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  {FORMATS.map((one) => (
+                    <DropdownMenuItem
+                      key={one}
+                      onSelect={() => onDownloadMany(selectedEntries, one)}
+                    >
+                      {FORMAT_LABELS[one]}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
 
               <Button
                 variant="destructiveTertiary"
@@ -570,7 +629,7 @@ export function HistoryPage({
                     <span className="flex min-w-0 items-center gap-2">
                       <FileText className="size-4 shrink-0 text-brand-tertiary" />
                       <span className="truncate font-medium text-ink-primary">
-                        {toFileName(entry.name, format)}
+                        {entry.name}
                       </span>
                     </span>
                   </Hint>
@@ -582,13 +641,17 @@ export function HistoryPage({
                       {entry.sharedBy || 'someone'}
                     </span>
                   ) : (
+                    /* What made it. The name alone cannot say whether this came from a
+                       spreadsheet, a web page or a Word file. */
                     <Badge
-                      variant={format === 'html' ? 'primary' : 'secondary'}
+                      variant={
+                        entry.kind === 'markdown-to-html' ? 'primary' : 'secondary'
+                      }
                       size="sm"
                       rounded="full"
-                      className="w-14 justify-center"
+                      className="w-24 justify-center"
                     >
-                      {format === 'html' ? 'HTML' : 'MD'}
+                      {conversion(entry.kind).short}
                     </Badge>
                   )}
                 </TableCell>
@@ -629,19 +692,33 @@ export function HistoryPage({
                       </Hint>
                     )}
 
-                    <Hint content={format === 'html' ? 'Download .html' : 'Download .md'}>
-                      <span>
+                    {/*
+                      * A menu rather than one button: the chips used to decide what a download
+                      * handed over, and now that they say what a document came from, the row has
+                      * to offer the choice itself.
+                      */}
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild disabled={!isReopenable}>
                         <IconButton
                           variant="tertiary"
                           size="sm"
-                          aria-label={`Download ${toFileName(entry.name, format)}`}
+                          aria-label={`Download ${entry.name}`}
                           disabled={!isReopenable}
-                          onClick={() => onDownload(entry, format)}
                         >
                           <Download />
                         </IconButton>
-                      </span>
-                    </Hint>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        {FORMATS.map((one) => (
+                          <DropdownMenuItem
+                            key={one}
+                            onSelect={() => onDownload(entry, one)}
+                          >
+                            {toFileName(entry.name, one)}
+                          </DropdownMenuItem>
+                        ))}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
 
                     {!isShared && (
                       <Hint content="Remove from history">

@@ -1,6 +1,10 @@
+import type { ConversionId } from '@shared/conversions';
+
 export interface ConvertedDoc {
   id: string;
   name: string;
+  /** Which conversion produced it. */
+  kind: ConversionId;
   /** Present when the document was chained from several files, in merge order. */
   sources?: string[];
   /** Its id in the account, once it is stored there — sharing needs a server-side row. */

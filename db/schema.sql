@@ -203,3 +203,16 @@ alter table m2h_oauth_token
   add column if not exists grant_id uuid;
 
 create index if not exists m2h_oauth_token_grant on m2h_oauth_token (grant_id);
+
+-- Which conversion made a document.
+--
+-- The history filters on it and a row says so on its face, because "notes.md" tells you nothing
+-- about whether it came from Word, from a web page or from a spreadsheet — and once several
+-- conversions land in one list, that is the first thing anybody wants to narrow by. Rows written
+-- before there was more than one conversion are exactly what the default says they are.
+
+alter table m2h_document
+  add column if not exists kind text not null default 'markdown-to-html';
+
+create index if not exists m2h_document_user_kind
+  on m2h_document (user_id, kind, created_at desc);

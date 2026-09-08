@@ -1,5 +1,6 @@
 import {
   Check,
+  ChevronDown,
   Copy,
   Download,
   Eye,
@@ -7,6 +8,7 @@ import {
   FileText,
   Maximize2,
   Minimize2,
+  Printer,
   RotateCcw,
   Share2,
 } from 'lucide-react';
@@ -17,8 +19,9 @@ import { Hint } from '@/components/Hint';
 import { ScrollToTop } from '@/components/ScrollToTop';
 import { ShareDialog } from '@/components/ShareDialog';
 import { Dropzone } from '@/components/Dropzone';
+import type { Conversion } from '@shared/conversions';
 import { ARTICLES, articlePath, formatArticleDate } from '@/lib/blog';
-import { FAQ_ENTRIES } from '@/lib/faq';
+import { HOME_FAQ_ENTRIES } from '@/lib/faq';
 import { ArticleCard } from '@/ui/components/ArticleCard';
 import { CodeBlock } from '@/ui/components/Code';
 import { Faq } from '@/ui/components/Faq';
@@ -26,7 +29,14 @@ import { SectionHeading } from '@/ui/components/SectionHeading';
 import { useTheme } from '@/lib/theme';
 import type { ConvertedDoc } from '@/lib/types';
 import { buildStandaloneHtml } from '@/lib/markdown';
-import { formatBytes, formatDateTime, toHtmlFileName } from '@/lib/format';
+import { downloadDoc, printDoc } from '@/lib/download';
+import {
+  type DocFormat,
+  FORMAT_LABELS,
+  formatBytes,
+  formatDateTime,
+  toFileName,
+} from '@/lib/format';
 import { Badge } from '@/ui/components/Badge';
 import { Button } from '@/ui/components/Button';
 import { Card } from '@/ui/components/Card';
@@ -36,12 +46,20 @@ import {
   TabsList,
   TabsTrigger,
 } from '@/ui/components/Tabs';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/ui/components/DropdownMenu';
 import { IconButton } from '@/ui/components/IconButton';
 import { Typography } from '@/ui/components/Typography';
 import { cn } from '@/ui/lib/utils';
 import { toast } from '@/ui/components/Toast';
 
 interface ConverterPageProps {
+  /** Which conversion this screen is: what it accepts, what it says, and what it names things. */
+  conversion: Conversion;
   doc: ConvertedDoc | null;
   isBusy: boolean;
   onFiles: (files: File[]) => void;
@@ -51,6 +69,7 @@ interface ConverterPageProps {
 }
 
 export function ConverterPage({
+  conversion,
   doc,
   isBusy,
   onFiles,
@@ -85,6 +104,18 @@ export function ConverterPage({
   };
   const { theme } = useTheme();
 
+  /*
+   * What the person came here for decides the whole of this screen's right-hand side.
+   *
+   * Somebody who converted a Word file wants the Markdown: handing them "Download .html" as the
+   * one obvious button makes them go looking for the thing they actually asked for. So the primary
+   * format follows the conversion, and the rest stay one click away.
+   */
+  const primary: DocFormat = conversion.to === 'html' ? 'html' : 'md';
+  const secondary: DocFormat[] = (['md', 'html', 'txt'] as DocFormat[]).filter(
+    (one) => one !== primary
+  );
+
   const standalone = useMemo(
     () =>
       doc
@@ -109,15 +140,20 @@ export function ConverterPage({
             textColor="primary"
             className="text-lg md:text-lg"
           >
-            Markdown to HTML
+            {conversion.title}
           </Typography>
           <Typography variant="p" textColor="secondary">
-            Upload a Markdown file — see the rendered HTML instantly and
-            download it as a ready-to-use document.
+            {conversion.blurb}
           </Typography>
         </div>
 
-        <Dropzone isBusy={isBusy} onFiles={onFiles} />
+        <Dropzone
+          isBusy={isBusy}
+          extensions={conversion.extensions}
+          title={`Drop ${conversion.extensions[0]} files here`}
+          hint={conversion.hint}
+          onFiles={onFiles}
+        />
 
         <div className="grid gap-4 sm:grid-cols-3">
           {[
@@ -191,35 +227,39 @@ export function ConverterPage({
             description="What happens to the file, what the download contains, and what an account adds."
           />
 
-          <Faq items={FAQ_ENTRIES} className="max-w-3xl" />
+          <Faq items={HOME_FAQ_ENTRIES} className="max-w-3xl" />
         </section>
       </div>
     );
   }
 
-  const handleDownload = () => {
-    const blob = new Blob([standalone], { type: 'text/html;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
+  const source = primary === 'html' ? standalone : doc.markdown;
 
-    link.href = url;
-    link.download = toHtmlFileName(doc.name);
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-    URL.revokeObjectURL(url);
+  const handleDownload = (format: DocFormat) => {
+    downloadDoc(doc.name, doc.markdown, doc.createdAt, theme, format);
 
-    toast.success('HTML file downloaded', {
-      description: toHtmlFileName(doc.name),
+    toast.success(`${FORMAT_LABELS[format]} downloaded`, {
+      description: toFileName(doc.name, format),
     });
+  };
+
+  const handlePrint = async () => {
+    try {
+      await printDoc(doc.name, doc.html, doc.createdAt, theme);
+    } catch (cause) {
+      toast.error('Could not open the print dialog', {
+        description:
+          cause instanceof Error ? cause.message : 'Try downloading it instead.',
+      });
+    }
   };
 
   const handleCopy = async () => {
     try {
-      await navigator.clipboard.writeText(standalone);
+      await navigator.clipboard.writeText(source);
       setIsCopied(true);
       setTimeout(() => setIsCopied(false), 2000);
-      toast.success('HTML copied to clipboard');
+      toast.success(`${FORMAT_LABELS[primary]} copied to clipboard`);
     } catch {
       toast.error('Could not access the clipboard');
     }
@@ -302,16 +342,48 @@ export function ConverterPage({
             leftSlot={isCopied ? <Check /> : <Copy />}
             onClick={handleCopy}
           >
-            {isCopied ? 'Copied' : 'Copy HTML'}
+            {isCopied ? 'Copied' : `Copy ${FORMAT_LABELS[primary]}`}
           </Button>
-          <Button
-            variant="primary"
-            size="sm"
-            leftSlot={<Download />}
-            onClick={handleDownload}
-          >
-            Download .html
-          </Button>
+
+          {/* A split button: the conversion's own format under the thumb, the others in the menu. */}
+          <div className="flex items-center">
+            <Button
+              variant="primary"
+              size="sm"
+              leftSlot={<Download />}
+              className="rounded-r-none"
+              onClick={() => handleDownload(primary)}
+            >
+              Download .{primary}
+            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <IconButton
+                  variant="primary"
+                  size="sm"
+                  aria-label="Other formats"
+                  className="ml-px rounded-l-none"
+                >
+                  <ChevronDown />
+                </IconButton>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                {secondary.map((one) => (
+                  <DropdownMenuItem
+                    key={one}
+                    onSelect={() => handleDownload(one)}
+                  >
+                    <Download className="size-4" />
+                    {FORMAT_LABELS[one]}
+                  </DropdownMenuItem>
+                ))}
+                <DropdownMenuItem onSelect={() => void handlePrint()}>
+                  <Printer className="size-4" />
+                  Print or save as PDF
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </div>
       </Card>
 
@@ -328,7 +400,7 @@ export function ConverterPage({
             </TabsTrigger>
             <TabsTrigger value="source">
               <FileCode2 className="size-4" />
-              HTML source
+              {primary === 'html' ? 'HTML source' : 'Markdown'}
             </TabsTrigger>
           </TabsList>
 
@@ -362,10 +434,10 @@ export function ConverterPage({
 
         <TabsContent value="source" className="outline-none">
           <CodeBlock
-            language="html"
+            language={primary === 'html' ? 'html' : 'markdown'}
             className="max-h-[70vh] rounded-xl bg-surface-page"
           >
-            {standalone}
+            {source}
           </CodeBlock>
         </TabsContent>
       </Tabs>

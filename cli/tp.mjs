@@ -105,6 +105,29 @@ async function call(path, options = {}) {
 const bytes = (n) =>
   n < 1024 ? `${n} B` : n < 1024 * 1024 ? `${(n / 1024).toFixed(1)} kB` : `${(n / 1024 / 1024).toFixed(1)} MB`;
 
+/*
+ * Which conversion a file is, by its extension.
+ *
+ * A copy of what `shared/conversions.ts` says, on purpose: this client ships as one file with no
+ * dependencies and no build step, and importing the app's modules would end that. It is a short
+ * list and the endpoint checks it again, so a copy that falls behind gets a 400 naming the kinds
+ * rather than quietly storing HTML as if it were Markdown — which is what happened before.
+ */
+const KIND_BY_EXTENSION = {
+  '.html': 'html-to-markdown',
+  '.htm': 'html-to-markdown',
+  '.xhtml': 'html-to-markdown',
+  '.csv': 'csv-to-markdown',
+  '.tsv': 'csv-to-markdown',
+  '.docx': 'word-to-markdown',
+};
+
+function kindFor(name) {
+  const dot = name.toLowerCase().lastIndexOf('.');
+
+  return KIND_BY_EXTENSION[dot === -1 ? '' : name.toLowerCase().slice(dot)] ?? null;
+}
+
 async function push() {
   const files = rest;
 
@@ -123,8 +146,23 @@ async function push() {
       fail(`No such file: ${file}`);
     }
 
-    return { name: basename(file), markdown: readFileSync(file, 'utf8') };
+    const name = basename(file);
+    const kind = kindFor(name);
+
+    if (kind === 'word-to-markdown') {
+      fail(`${name}: a .docx is read in the browser. Convert it at ${HOST}/word-to-markdown and push the Markdown.`);
+    }
+
+    return { name, kind, markdown: readFileSync(file, 'utf8') };
   });
+
+  const converted = sources.filter((one) => one.kind !== null);
+
+  if (flags.merge && converted.length > 0) {
+    fail(
+      `--merge chains Markdown files. Push ${converted.map((one) => one.name).join(', ')} on ${converted.length > 1 ? 'their' : 'its'} own first.`
+    );
+  }
 
   // Several files become one document when asked; otherwise each stands on its own.
   const documents = flags.merge
@@ -138,7 +176,7 @@ async function push() {
           markdown: sources.map((s) => s.markdown.trim()).join('\n\n---\n\n'),
         },
       ]
-    : sources.map((s) => ({ name: flags.name ?? s.name, markdown: s.markdown }));
+    : sources.map((s) => ({ name: flags.name ?? s.name, kind: s.kind, markdown: s.markdown }));
 
   const results = [];
 
@@ -147,6 +185,11 @@ async function push() {
 
     if (share) {
       query.set('share', share);
+    }
+
+    // The server converts it; what comes back is the Markdown, named after the file.
+    if (document.kind) {
+      query.set('kind', document.kind);
     }
 
     const { document: created } = await call(`/documents?${query}`, {

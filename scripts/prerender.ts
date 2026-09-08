@@ -18,8 +18,9 @@ import { dirname, join, resolve } from 'node:path';
 import { markdownToHtml } from '../server/render.js';
 import { MD_DOC_STYLE, mdDocTheme } from '../shared/md-doc-css.js';
 import { ARTICLES, articlePath, formatArticleDate } from '../src/lib/blog.js';
+import { CONVERSIONS, conversion } from '../shared/conversions.js';
 import { DOCS_SECTIONS } from '../src/lib/docs-sections.js';
-import { FAQ_ENTRIES } from '../src/lib/faq.js';
+import { HOME_FAQ_ENTRIES } from '../src/lib/faq.js';
 
 const SITE = process.env.SITE_URL ?? 'https://transformpipe.com';
 const DIST = resolve('dist');
@@ -201,23 +202,59 @@ pages.push({
   ).join('')}</ul>`,
 });
 
-// ---------------------------------------------------------------- the converter
+/*
+ * ---------------------------------------------------------------- the conversions
+ *
+ * Each one is a page of its own, and that is the point of giving them addresses: "html to markdown"
+ * and "word to markdown" are things people type into a search box, and a dropdown that only changes
+ * state is not something a search engine can send anybody to.
+ */
+for (const one of CONVERSIONS.filter((each) => each.path !== '/')) {
+  pages.push({
+    path: one.path,
+    title: one.seo.title,
+    description: one.seo.description,
+    listed: true,
+    head: jsonLd({
+      '@context': 'https://schema.org',
+      '@type': 'WebApplication',
+      name: one.label,
+      applicationCategory: 'UtilitiesApplication',
+      operatingSystem: 'Any',
+      description: one.seo.description,
+      url: `${SITE}${one.path}`,
+      offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+    }),
+    body: `<h1>${escapeHtml(one.title)}</h1><p>${escapeHtml(one.blurb)}</p><p>${escapeHtml(
+      one.hint
+    )}</p><p>Takes ${escapeHtml(one.extensions.join(', '))}, up to 10 MB, converted in your browser.</p>`,
+  });
+}
+
+/*
+ * The front page.
+ *
+ * Its questions are the ones the running app shows, not the whole list: an FAQPage marked up with
+ * answers a visitor cannot see on the page is the kind of structured data that gets a site's
+ * markup ignored, and it would drift the moment somebody added a question for the manual only.
+ */
+const home = conversion('markdown-to-html');
+
 pages.push({
   path: '/',
-  title: 'transformpipe — Markdown to HTML converter',
-  description:
-    'Drop a Markdown file and get the rendered document and a self-contained .html to download. Converts in your browser; sign in to keep, share and publish documents.',
+  title: home.seo.title,
+  description: home.seo.description,
   listed: true,
   head: jsonLd({
     '@context': 'https://schema.org',
     '@type': 'FAQPage',
-    mainEntity: FAQ_ENTRIES.map((entry) => ({
+    mainEntity: HOME_FAQ_ENTRIES.map((entry) => ({
       '@type': 'Question',
       name: entry.question,
       acceptedAnswer: { '@type': 'Answer', text: String(entry.answer) },
     })),
   }),
-  body: `<h1>Markdown to HTML</h1><p>Upload a Markdown file — see the rendered HTML instantly and download it as a ready-to-use document.</p>${FAQ_ENTRIES.map(
+  body: `<h1>${escapeHtml(home.title)}</h1><p>${escapeHtml(home.blurb)}</p><p>Also converts <a href="/html-to-markdown">HTML to Markdown</a>, <a href="/word-to-markdown">Word to Markdown</a> and <a href="/csv-to-markdown">CSV to a Markdown table</a>.</p>${HOME_FAQ_ENTRIES.map(
     (entry) =>
       `<section><h2>${escapeHtml(entry.question)}</h2><p>${escapeHtml(String(entry.answer))}</p></section>`
   ).join('')}`,
@@ -228,9 +265,9 @@ pages.push({
   path: '/docs',
   title: 'Documentation — transformpipe',
   description:
-    'What transformpipe does, in full: converting, the history, sharing by link or by address, the API, the command line client, the GitHub Action and the limits.',
+    'What transformpipe does, in full: the four conversions, the history, sharing by link or by address, the API, the command line client, the GitHub Action and the limits.',
   listed: true,
-  body: `<h1>Everything transformpipe does</h1><p>Markdown in, a self-contained HTML document out — from the app, from a terminal, or from a pull request.</p>${DOCS_SECTIONS.map(
+  body: `<h1>Everything transformpipe does</h1><p>Markdown, HTML, Word or CSV in — a document out as HTML, Markdown, plain text or print — from the app, from a terminal, or from a pull request.</p>${DOCS_SECTIONS.map(
     (section) =>
       `<section><h2>${escapeHtml(section.title)}</h2><p>${escapeHtml(section.summary)}</p></section>`
   ).join('')}`,

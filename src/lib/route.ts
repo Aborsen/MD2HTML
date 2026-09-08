@@ -1,16 +1,26 @@
+import {
+  type ConversionId,
+  conversionForPath,
+  DEFAULT_CONVERSION,
+  conversion,
+} from '@shared/conversions';
+
 /**
  * The app's addresses, kept in the URL rather than in memory.
  *
- * The converter, the history (with the chip it is showing), the documentation, the blog and one of
- * its articles, and a shared document. Putting them in the path is what makes a reload land where
- * you were and the back button mean something — a router would be a lot of machinery for this, and
- * pages people link into need real addresses anyway.
+ * Each conversion has its own path, the history has one (with the chip it is showing), and so do the
+ * documentation, the blog, an article and a shared document. Putting them in the path is what makes
+ * a reload land where you were and the Back button mean something — and a conversion with an address
+ * of its own is a page somebody can be sent to, bookmark, or find in a search result, which a
+ * dropdown that only changes state is not.
  */
 
 export type AppView = 'converter' | 'history' | 'docs' | 'blog';
 
 export interface Route {
   view: AppView;
+  /** Which conversion the converter is showing. Meaningless for the other views. */
+  conversionId: ConversionId;
   /** The history's active chip, carried so a refresh keeps looking at the same list. */
   filter: string | null;
   /** Set when the address is a shared document. */
@@ -24,9 +34,9 @@ export function readRoute(): Route {
    * /s/<token> is rendered by the server; the app only sees /open/<token>, where the server sent
    * a reader whose access depends on being signed in.
    */
-  const shared = window.location.pathname.match(/^\/(?:open|s)\/([^/]+)\/?$/);
-  const article = window.location.pathname.match(/^\/blog\/([^/]+)\/?$/);
   const path = window.location.pathname;
+  const shared = path.match(/^\/(?:open|s)\/([^/]+)\/?$/);
+  const article = path.match(/^\/blog\/([^/]+)\/?$/);
 
   return {
     view: /^\/history\/?$/.test(path)
@@ -36,14 +46,14 @@ export function readRoute(): Route {
         : /^\/blog(\/|$)/.test(path)
           ? 'blog'
           : 'converter',
+    conversionId: (conversionForPath(path)?.id ?? DEFAULT_CONVERSION),
     filter: new URLSearchParams(window.location.search).get('filter'),
     sharedToken: shared ? decodeURIComponent(shared[1]) : null,
     articleSlug: article ? decodeURIComponent(article[1]) : null,
   };
 }
 
-const PATHS: Record<AppView, string> = {
-  converter: '/',
+const PATHS: Record<Exclude<AppView, 'converter'>, string> = {
   history: '/history',
   docs: '/docs',
   blog: '/blog',
@@ -51,11 +61,20 @@ const PATHS: Record<AppView, string> = {
 
 /** Moves to a view, adding a history entry so Back returns to the previous one. */
 export function goTo(view: AppView, filter?: string | null) {
-  const path = PATHS[view];
+  const path = view === 'converter' ? '/' : PATHS[view];
   const search = view === 'history' && filter ? `?filter=${filter}` : '';
 
   if (window.location.pathname + window.location.search !== path + search) {
     window.history.pushState(null, '', path + search);
+  }
+}
+
+/** Moves to one conversion's own page. */
+export function goToConversion(id: ConversionId) {
+  const path = conversion(id).path;
+
+  if (window.location.pathname !== path) {
+    window.history.pushState(null, '', path);
   }
 }
 

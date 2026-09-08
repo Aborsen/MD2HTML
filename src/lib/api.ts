@@ -11,6 +11,8 @@ export interface AuthUser {
 interface ServerDocument {
   id: string;
   name: string;
+  /** Absent on rows written before there was more than one conversion. */
+  kind?: HistoryEntry['kind'];
   size: number;
   stats: HistoryEntry['stats'];
   created_at: string;
@@ -42,6 +44,7 @@ function toEntry(doc: ServerDocument): HistoryEntry {
   return {
     id: doc.id,
     name: doc.name,
+    kind: doc.kind ?? 'markdown-to-html',
     size: doc.size,
     createdAt: new Date(doc.created_at).getTime(),
     markdown: doc.markdown,
@@ -151,6 +154,7 @@ export const api = {
 
   createDocument: async (input: {
     name: string;
+    kind: HistoryEntry['kind'];
     size: number;
     markdown: string;
     stats: HistoryEntry['stats'];

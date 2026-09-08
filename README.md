@@ -1,4 +1,4 @@
-# transformpipe — Markdown to HTML
+# transformpipe — document converter
 
 Live at **[transformpipe.com](https://transformpipe.com)**. The old `md-2-html.vercel.app` still
 answers, so links already shared keep working; the canonical URLs, the sitemap and every default in
@@ -6,9 +6,25 @@ the CLI and the Action name the new domain. Nothing in `server/` carries a domai
 come from the request through `selfOrigin`, which is what made the move a matter of one trusted
 origin and a rebuild.
 
-Upload a Markdown file, see exactly how it renders as HTML, and download a
-ready-to-use `.html` document. Conversion happens in the browser; sign in with
-Google to keep your documents in the account and reach them from any device.
+Upload a file, see exactly what it became, and download it. Four conversions, each with its own
+page and address:
+
+| Conversion | Takes | Produces |
+| --- | --- | --- |
+| [Markdown → HTML](https://transformpipe.com/) | `.md` `.markdown` `.mdown` `.mkd` `.txt` | a self-contained `.html` |
+| [HTML → Markdown](https://transformpipe.com/html-to-markdown) | `.html` `.htm` `.xhtml` | `.md` |
+| [Word → Markdown](https://transformpipe.com/word-to-markdown) | `.docx` | `.md` |
+| [CSV → Markdown table](https://transformpipe.com/csv-to-markdown) | `.csv` `.tsv` | `.md` |
+
+They all normalise to Markdown, which is what a document is stored, previewed, shared and reached
+by a script as — one shape rather than four. Any document can then be handed over as Markdown,
+HTML, plain text, or printed to PDF. `shared/conversions.ts` is the single list; the header menu,
+the screens, the history chips, the badges and the prerendered pages all read it, so a fifth
+conversion is an entry there plus a converter.
+
+Conversion happens in the browser — the `.docx` reader and the HTML parser load only when their
+page is used, so the front page's bundle does not carry them. Sign in with Google to keep your
+documents in the account and reach them from any device.
 
 ## Run locally
 

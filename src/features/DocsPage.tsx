@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import { useEffect, useState, type ReactNode } from 'react';
 import { ScrollToTop } from '@/components/ScrollToTop';
+import { CONVERSIONS } from '@shared/conversions';
 import { DOCS_SECTIONS } from '@/lib/docs-sections';
 import { MCP_PATH, MCP_TOOL_NAMES, MCP_TOOLS } from '@/lib/mcp-facts';
 import { FAQ_ENTRIES } from '@/lib/faq';
@@ -222,10 +223,36 @@ export function DocsPage() {
 
         <Section id="converting" title="Converting">
           <p>
-            Drag a file onto the dropzone or pick one — <InlineCode>.md</InlineCode>, <InlineCode>.markdown</InlineCode>,{' '}
-            <InlineCode>.mdown</InlineCode>, <InlineCode>.mkd</InlineCode> and <InlineCode>.txt</InlineCode>, up to 10 MB. Drop several at
-            once and they are chained into a single document, in the order they arrive,
-            separated by a rule.
+            <strong>Converter</strong> in the header lists what this app converts.
+            Each one has its own page, its own dropzone and its own address, so a
+            conversion can be linked and bookmarked rather than set up again:
+          </p>
+          <ul>
+            {CONVERSIONS.map((one) => (
+              <li key={one.id}>
+                <a href={one.path}>{one.label}</a> —{' '}
+                {one.extensions.map((extension, index) => (
+                  <span key={extension}>
+                    {index > 0 && ', '}
+                    <InlineCode>{extension}</InlineCode>
+                  </span>
+                ))}
+              </li>
+            ))}
+          </ul>
+          <p>
+            Up to 10 MB a file. Drop several Markdown files at once and they are
+            chained into a single document, in the order they arrive, separated by a
+            rule. Drop a file the page does not take — a{' '}
+            <InlineCode>.docx</InlineCode> on the Markdown page, say — and it goes to
+            the conversion that does take it rather than being refused; a mixture of
+            kinds is refused, because chaining a spreadsheet onto a Word document is
+            not something anybody meant.
+          </p>
+          <p>
+            Everything ends as Markdown, and that is deliberate: it is what a document
+            is stored, previewed, shared and reached by a script as, so the whole of
+            the app stands on one shape rather than four.
           </p>
           <Shot
             name="converter"
@@ -245,9 +272,19 @@ export function DocsPage() {
             caption="Preview, with the counts the document actually has."
           />
           <p>
-            The <strong>HTML source</strong> tab is not a summary of the output. It is
-            the exact file the download hands over: one document, styles inline, no
-            scripts, no network.
+            The source tab is not a summary of the output. It is the exact thing the
+            download hands over — the standalone HTML when you converted{' '}
+            <em>to</em> HTML, the Markdown when you converted to Markdown: one
+            document, styles inline, no scripts, no network.
+          </p>
+          <p>
+            The download button carries the format the conversion produced —{' '}
+            <InlineCode>.html</InlineCode> on the Markdown page,{' '}
+            <InlineCode>.md</InlineCode> on the others — and the arrow beside it holds
+            the rest: Markdown, HTML, plain text, and printing. Print builds the
+            exported file in a frame of its own and opens the browser's dialog, so a
+            PDF is the document and not a screenshot of the app around it; the export
+            flips to a light palette on paper whatever the app is set to.
           </p>
           <Shot
             name="source"
@@ -273,10 +310,16 @@ export function DocsPage() {
             caption="HTML or Markdown, search, sortable columns."
           />
           <p>
-            The chips are not a filter over two kinds of file. Only the Markdown source
-            is ever stored; the HTML is built on the spot. So the chip changes the row's
-            name, its badge, what the size column measures and what a download hands
-            over — the same document, seen from either end.
+            The chips filter by where a document came from: <em>All formats</em> to
+            begin with, then one chip per conversion that actually has rows, and{' '}
+            <em>Shared with me</em> for files somebody sent you. A row's badge says
+            the same thing — <InlineCode>DOCX → MD</InlineCode> on a Word file — so a
+            list of thirty documents still tells you which is which.
+          </p>
+          <p>
+            Downloading is a menu rather than a chip: only the Markdown is ever
+            stored, and the HTML and the plain text are built on the spot, so one row
+            can hand over any of the three without keeping three copies.
           </p>
           <p>
             Tick rows and the selection bar appears: merge them into one document,
@@ -351,7 +394,11 @@ export function DocsPage() {
                   <>
                     Markdown as the body (<InlineCode>?name=</InlineCode>) or JSON{' '}
                     <InlineCode>{'{name, markdown}'}</InlineCode>. <InlineCode>?share=link|people</InlineCode> publishes it
-                    in the same call.
+                    in the same call. <InlineCode>?kind=html-to-markdown</InlineCode> or{' '}
+                    <InlineCode>?kind=csv-to-markdown</InlineCode> converts the body first, so a
+                    page or a spreadsheet can be posted as it is;{' '}
+                    <InlineCode>word-to-markdown</InlineCode> is refused here, because reading a{' '}
+                    <InlineCode>.docx</InlineCode> happens in the browser.
                   </>
                 ),
               },
@@ -411,9 +458,16 @@ export function DocsPage() {
           <CodeBlock>{`node cli/tp.mjs login tp_live_…          # remembers the key for this machine
 node cli/tp.mjs push README.md --share    # prints the link
 node cli/tp.mjs push docs/*.md --merge --share --name handbook.md
+node cli/tp.mjs push page.html            # converted to Markdown on the way in
 node cli/tp.mjs list
 node cli/tp.mjs rm <id>
 node cli/tp.mjs usage                     # 65.8 kB of 100.0 MB · 3 of 500 documents`}</CodeBlock>
+          <p>
+            A pushed <InlineCode>.html</InlineCode>, <InlineCode>.csv</InlineCode> or{' '}
+            <InlineCode>.tsv</InlineCode> is converted by the endpoint rather than stored as if it
+            were already Markdown; a <InlineCode>.docx</InlineCode> is refused, with the page that
+            can read it. <InlineCode>--merge</InlineCode> chains Markdown only.
+          </p>
           <p>
             The key comes from <InlineCode>--key</InlineCode>, then <InlineCode>TP_API_KEY</InlineCode>, then{' '}
             <InlineCode>~/.config/tp/config.json</InlineCode>. <InlineCode>TP_HOST</InlineCode> points it at another

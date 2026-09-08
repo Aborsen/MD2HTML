@@ -12,6 +12,7 @@ const byNewest = (a: HistoryEntry, b: HistoryEntry) => b.createdAt - a.createdAt
 
 interface NewEntry {
   name: string;
+  kind: HistoryEntry['kind'];
   size: number;
   markdown: string;
   stats: HistoryEntry['stats'];
@@ -57,6 +58,7 @@ export function useHistory(isSignedIn: boolean) {
         await api
           .createDocument({
             name: entry.name,
+            kind: entry.kind ?? 'markdown-to-html',
             size: entry.size,
             markdown: entry.markdown as string,
             stats: entry.stats,

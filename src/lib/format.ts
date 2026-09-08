@@ -43,12 +43,27 @@ export function toHtmlFileName(markdownName: string): string {
 }
 
 /** The document's own format: what the row shows, and what a download hands over. */
-export type DocFormat = 'md' | 'html';
+/** What a stored document can be handed over as. Markdown is what it is; the rest are made. */
+export type DocFormat = 'md' | 'html' | 'txt';
+
+export const FORMAT_LABELS: Record<DocFormat, string> = {
+  html: 'HTML',
+  md: 'Markdown',
+  txt: 'Plain text',
+};
 
 export function toMarkdownFileName(name: string): string {
   return /\.(md|markdown|mdown|mkd|txt)$/i.test(name) ? name : `${name}.md`;
 }
 
+export function toTextFileName(name: string): string {
+  return `${name.replace(/\.[^.]+$/, '')}.txt`;
+}
+
 export function toFileName(name: string, format: DocFormat): string {
-  return format === 'html' ? toHtmlFileName(name) : toMarkdownFileName(name);
+  if (format === 'html') {
+    return toHtmlFileName(name);
+  }
+
+  return format === 'txt' ? toTextFileName(name) : toMarkdownFileName(name);
 }

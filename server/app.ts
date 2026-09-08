@@ -10,6 +10,10 @@ import {
 import { authProxy, currentUser, type SessionUser } from './auth.js';
 import { sql, type DocumentRow } from './db.js';
 import { createKey, forgetKey, listKeys, revokeKey } from './keys.js';
+import {
+  CONVERSIONS,
+  DEFAULT_CONVERSION,
+} from '../shared/conversions.js';
 import { checkQuota, QUOTA, usageOf } from './limits.js';
 import mcp from './mcp.js';
 import oauth from './oauth.js';
@@ -24,6 +28,9 @@ type Env = { Variables: { user: SessionUser } };
  * rather than in the browser so it can be cached at the edge — see `GET /s/:token`.
  */
 const app = new Hono<Env>();
+
+/* A kind arrives from a browser, so it is checked against the list rather than trusted. */
+const KINDS = new Set<string>(CONVERSIONS.map((one) => one.id));
 
 const api = new Hono<Env>().basePath('/api');
 
@@ -201,7 +208,7 @@ api.get('/shared-with-me', async (c) => {
 
 api.get('/documents', async (c) => {
   const rows = (await sql()`
-    select id, name, size, stats, created_at
+    select id, name, kind, size, stats, created_at
     from m2h_document
     where user_id = ${c.get('user').id}
     order by created_at desc
@@ -216,6 +223,7 @@ api.post('/documents', async (c) => {
 
   type CreateBody = {
     name?: string;
+    kind?: string;
     size?: number;
     markdown?: string;
     stats?: Record<string, number>;
@@ -240,15 +248,16 @@ api.post('/documents', async (c) => {
    * worse than no document at all.
    */
   const rows = (await sql()`
-    insert into m2h_document (user_id, name, size, markdown, stats)
+    insert into m2h_document (user_id, name, kind, size, markdown, stats)
     values (
       ${userId},
       ${body.name},
+      ${KINDS.has(body.kind ?? '') ? body.kind : DEFAULT_CONVERSION},
       ${body.size ?? body.markdown.length},
       null,
       ${JSON.stringify(body.stats ?? {})}::jsonb
     )
-    returning id, name, size, stats, created_at
+    returning id, name, kind, size, stats, created_at
   `) as DocumentRow[];
 
   try {
@@ -272,7 +281,7 @@ api.post('/documents', async (c) => {
 
 api.get('/documents/:id', async (c) => {
   const rows = (await sql()`
-    select id, name, size, stats, created_at, markdown, blob_path
+    select id, name, kind, size, stats, created_at, markdown, blob_path
     from m2h_document
     where user_id = ${c.get('user').id} and id = ${c.req.param('id')}
   `) as Array<DocumentRow & { blob_path: string | null }>;

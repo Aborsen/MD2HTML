@@ -1,3 +1,8 @@
+import {
+  DEFAULT_CONVERSION,
+  type ConversionId,
+} from '@shared/conversions';
+
 const STORAGE_KEY = 'md2html.history.v1';
 const MAX_ENTRIES = 25;
 /** Keep the source so an entry can be re-opened; skip storing giant files. */
@@ -6,6 +11,8 @@ const MAX_STORED_SOURCE = 400 * 1024;
 export interface HistoryEntry {
   id: string;
   name: string;
+  /** Which conversion produced it. Rows written before there was more than one say so. */
+  kind: ConversionId;
   size: number;
   createdAt: number;
   /** Markdown source; absent when the file was too large to keep locally. */
