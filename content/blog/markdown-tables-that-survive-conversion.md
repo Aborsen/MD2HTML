@@ -95,4 +95,4 @@ Fixes, roughly in the order you should like them:
 
 That last one only helps where you control the CSS. In a standalone file, whether a wide table scrolls or overflows is decided by the stylesheet your converter ships.
 
-Take the widest table you have, drop the file into [M2H](https://md-2-html.vercel.app), and read the HTML source tab beside the preview. A missing column means the dashes are miscounted; a cell split in two means an unescaped pipe. The [documentation](/docs) covers the rest.
+Take the widest table you have, drop the file into [M2H](https://transformpipe.com), and read the HTML source tab beside the preview. A missing column means the dashes are miscounted; a cell split in two means an unescaped pipe. The [documentation](/docs) covers the rest.

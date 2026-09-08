@@ -35,7 +35,7 @@ The route that holds up is dull and takes a minute.
 
 **Save the answer as a file.** Press copy, paste into any text editor, save as `handover.md`. A .md file is plain text: nothing to install, nothing to go wrong. What you cannot do is send it — on a colleague's machine it opens in whatever program claims the extension, or in nothing at all.
 
-**Convert it to HTML.** M2H does this at https://md-2-html.vercel.app: drop the file in and the conversion runs in the browser. Signed out, the file never leaves your machine, which matters when the answer contains something internal. You get a preview, the exact HTML source, and a download — one self-contained .html file with inline styles, no scripts and no network requests. Several answers, several files: drop them all at once and they are chained into one document, in order, separated by a rule.
+**Convert it to HTML.** M2H does this at https://transformpipe.com: drop the file in and the conversion runs in the browser. Signed out, the file never leaves your machine, which matters when the answer contains something internal. You get a preview, the exact HTML source, and a download — one self-contained .html file with inline styles, no scripts and no network requests. Several answers, several files: drop them all at once and they are chained into one document, in order, separated by a rule.
 
 **Send the page, not the file.** The .html opens by double-click on any machine. If an attachment is still the wrong shape, sign in and publish a read-only link instead: readable by anyone with the address, or only by the addresses you name. Revoke it and a link already sent stops working. [The four ways to send a document](/blog/share-a-markdown-document-as-a-link) covers which one suits which reader.
 
@@ -69,4 +69,4 @@ If the answer is three sentences, type them into the message. A conversion step 
 
 If the content belongs in the team wiki, put it there. Notion, Confluence and most trackers accept Markdown on import or paste, each with its own quirks. A shared page is for documents with no home, not for content that already has one.
 
-Next time an answer is worth keeping, save it as `.md` before you do anything else. Read it against the checklist, fix what the model guessed at, then convert it once at https://md-2-html.vercel.app and send the page.
+Next time an answer is worth keeping, save it as `.md` before you do anything else. Read it against the checklist, fix what the model guessed at, then convert it once at https://transformpipe.com and send the page.

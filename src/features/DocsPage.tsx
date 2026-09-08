@@ -336,9 +336,10 @@ export function DocsPage() {
             <InlineCode>Authorization: Bearer m2h_live_…</InlineCode>; a browser session works too, so the
             same endpoints can be tried while signed in.
           </p>
+          {/* The origin comes from the page, so this stays right on whatever domain it is read from. */}
           <CodeBlock>{`curl -H "Authorization: Bearer m2h_live_…" \\
      --data-binary @README.md \\
-     "https://md-2-html.vercel.app/api/v1/documents?name=README.md&share=link"
+     "${window.location.origin}/api/v1/documents?name=README.md&share=link"
 
 # → { "document": { "id": "…", "share": { "url": "https://…/s/…" } } }`}</CodeBlock>
           <DefinitionTable

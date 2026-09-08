@@ -1,5 +1,11 @@
 # M2H — Markdown to HTML
 
+Live at **[transformpipe.com](https://transformpipe.com)**. The old `md-2-html.vercel.app` still
+answers, so links already shared keep working; the canonical URLs, the sitemap and every default in
+the CLI and the Action name the new domain. Nothing in `server/` carries a domain at all — origins
+come from the request through `selfOrigin`, which is what made the move a matter of one trusted
+origin and a rebuild.
+
 Upload a Markdown file, see exactly how it renders as HTML, and download a
 ready-to-use `.html` document. Conversion happens in the browser; sign in with
 Google to keep your documents in the account and reach them from any device.
@@ -36,11 +42,13 @@ separate Google OAuth client and no client secret here. `/api/auth/*` forwards t
 and rewrites `Set-Cookie` so the session cookie is first-party for this site; `/api/auth/finish`
 exchanges the one-time verifier for that cookie. See `server/auth.ts`.
 
-Neon Auth only starts a sign-in for an origin it trusts, so each origin has to be added once:
+Neon Auth only starts a sign-in for an origin it trusts, so each origin has to be added once — and
+this is the whole of what breaks when the site moves to a new domain: everything else derives its
+URLs from the request, and sign-in is the one thing that has to be told:
 
 ```bash
 npm run auth:origin                                # list what is trusted
-npm run auth:origin -- https://md-2-html.vercel.app
+npm run auth:origin -- https://transformpipe.com   # the live site
 npm run auth:origin -- http://127.0.0.1:5180       # for local work
 ```
 
@@ -120,7 +128,7 @@ the account or the keys themselves, so a leaked key cannot mint its replacement 
 
 ```bash
 # publish a file in one request
-curl -H "Authorization: Bearer m2h_live_…"      --data-binary @README.md      "https://md-2-html.vercel.app/api/v1/documents?name=README.md&share=link"
+curl -H "Authorization: Bearer m2h_live_…"      --data-binary @README.md      "https://transformpipe.com/api/v1/documents?name=README.md&share=link"
 # → { "document": { "id": "…", "share": { "mode": "link", "url": "https://…/s/…" } } }
 ```
 
@@ -180,7 +188,7 @@ M2H is an MCP server at `/api/mcp`, so it can be added to Claude as a connector 
 share and delete documents in one account. There is no key to paste:
 
 ```bash
-claude mcp add --transport http m2h https://md-2-html.vercel.app/api/mcp
+claude mcp add --transport http m2h https://transformpipe.com/api/mcp
 ```
 
 The first call is answered `401` with a `WWW-Authenticate` header naming

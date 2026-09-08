@@ -21,7 +21,7 @@ import { ARTICLES, articlePath, formatArticleDate } from '../src/lib/blog.js';
 import { DOCS_SECTIONS } from '../src/lib/docs-sections.js';
 import { FAQ_ENTRIES } from '../src/lib/faq.js';
 
-const SITE = process.env.SITE_URL ?? 'https://md-2-html.vercel.app';
+const SITE = process.env.SITE_URL ?? 'https://transformpipe.com';
 const DIST = resolve('dist');
 
 /*

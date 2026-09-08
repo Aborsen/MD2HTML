@@ -44,7 +44,7 @@ A standard converter prints the wikilink and the embed as literal text, brackets
 
 The properties block at the top is YAML frontmatter: a converter that does not recognise it renders the opening `---` as a horizontal rule and turns the closing one into a heading made from your last metadata line.
 
-Once a note is ordinary Markdown the conversion is dull work: drop it on [M2H](https://md-2-html.vercel.app) for a preview, an HTML source tab and one self-contained `.html` with inline styles. Several dropped together chain into one document.
+Once a note is ordinary Markdown the conversion is dull work: drop it on [M2H](https://transformpipe.com) for a preview, an HTML source tab and one self-contained `.html` with inline styles. Several dropped together chain into one document.
 
 ## Confluence and Google Docs: storage formats with a converter bolted on
 
@@ -71,4 +71,4 @@ For anything with no converter of its own â€” an ageing wiki, a CMS, an email â€
 - [ ] **Callouts and panels.** Pick one replacement, a blockquote with a bold lead-in, and use it everywhere.
 - [ ] **Code blocks.** Check the language hints came through, and that autocorrect has not put smart quotes in code.
 
-Take the document people ask for most through the whole path, to finished HTML, before moving the rest: it tells you whether the fix is a setting, a find-and-replace or a converter. When the Markdown is clean, [M2H](https://md-2-html.vercel.app) turns it into a page you can share, and its CLI takes a batch of files in one command, `--merge` chaining them into one.
+Take the document people ask for most through the whole path, to finished HTML, before moving the rest: it tells you whether the fix is a setting, a find-and-replace or a converter. When the Markdown is clean, [M2H](https://transformpipe.com) turns it into a page you can share, and its CLI takes a batch of files in one command, `--merge` chaining them into one.

@@ -68,7 +68,7 @@ Three shapes, in order of how much they ask of you.
 
 A script suits a project that already has Node or Python. marked and markdown-it in JavaScript, Python-Markdown and markdown-it-py in Python, are each one dependency, and the HTML around the output is HTML you wrote rather than a template language you inherited. [Converting Markdown from a terminal](/blog/markdown-to-html-from-the-command-line) has the script in full.
 
-A browser converter suits a document that is not part of a build at all. [M2H](https://md-2-html.vercel.app) is free and converts in the browser — signed out, the file never leaves the machine — and the download is one self-contained .html with inline styles, no scripts and no network requests. It reads GFM, so tables, task lists and fenced code survive, and the HTML is sanitised against one shared allow-list in the browser and on the server. [Sanitising Markdown safely](/blog/sanitising-markdown-safely) explains why the two have to agree.
+A browser converter suits a document that is not part of a build at all. [M2H](https://transformpipe.com) is free and converts in the browser — signed out, the file never leaves the machine — and the download is one self-contained .html with inline styles, no scripts and no network requests. It reads GFM, so tables, task lists and fenced code survive, and the HTML is sanitised against one shared allow-list in the browser and on the server. [Sanitising Markdown safely](/blog/sanitising-markdown-safely) explains why the two have to agree.
 
 ## Pandoc without installing it
 

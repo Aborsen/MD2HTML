@@ -81,4 +81,4 @@ Keep each extension near the tool that owns it: front matter belongs in a reposi
 
 If you need footnotes, definition lists and output in several formats, a GFM converter is the wrong tool. That is [what Pandoc is for](/blog/pandoc-alternatives-for-markdown-to-html), and the better answer whenever typesetting matters.
 
-Paste the probe file into whichever tool will render your document before you commit to a syntax it cannot draw. If GFM is where you land, drop the file into [M2H](https://md-2-html.vercel.app): it converts in the browser, and the "HTML source" tab shows what each construct became, so you can check rather than guess. [/docs](/docs) covers the rest.
+Paste the probe file into whichever tool will render your document before you commit to a syntax it cannot draw. If GFM is where you land, drop the file into [M2H](https://transformpipe.com): it converts in the browser, and the "HTML source" tab shows what each construct became, so you can check rather than guess. [/docs](/docs) covers the rest.

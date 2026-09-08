@@ -75,4 +75,4 @@ If you have to email the document, print it, attach it to a ticket, or still be 
 
 The trade-off runs the other way while you are still writing: an editor with a live preview earns its download then. A converter is for when you have finished and someone else needs to read it.
 
-Open the file in Notepad or TextEdit first. It tells you exactly what you are holding. If the raw text answers your question, stop there. If it does not, or the document has to reach someone who should never see a hash sign, drop it into M2H at https://md-2-html.vercel.app and take the HTML: one self-contained file, no scripts, opens anywhere.
+Open the file in Notepad or TextEdit first. It tells you exactly what you are holding. If the raw text answers your question, stop there. If it does not, or the document has to reach someone who should never see a hash sign, drop it into M2H at https://transformpipe.com and take the HTML: one self-contained file, no scripts, opens anywhere.

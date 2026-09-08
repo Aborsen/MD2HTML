@@ -79,4 +79,4 @@ The date is the classic case: a line starting with a number, a full stop and a s
 
 Two things that save you backslashes. Underscores inside a word are left alone, so `snake_case_name` survives untouched; asterisks are not, so `a*b*c` still emphasises. And a backslash does nothing inside a code span, which is the better answer anyway for a filename, a flag or a glob pattern.
 
-When a file still renders wrong, put it through [M2H](https://md-2-html.vercel.app) and read the HTML source tab beside the preview. A `<p>` where you expected a `<br>` means the break never happened, a `<pre>` means you indented too far, and a list that grew paragraphs means a blank line crept in. The [documentation](/docs) covers the rest of the pipeline.
+When a file still renders wrong, put it through [M2H](https://transformpipe.com) and read the HTML source tab beside the preview. A `<p>` where you expected a `<br>` means the break never happened, a `<pre>` means you indented too far, and a list that grew paragraphs means a blank line crept in. The [documentation](/docs) covers the rest of the pipeline.

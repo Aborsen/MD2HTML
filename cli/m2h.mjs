@@ -15,7 +15,7 @@ import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { basename, join } from 'node:path';
 
-const HOST = process.env.M2H_HOST ?? 'https://md-2-html.vercel.app';
+const HOST = process.env.M2H_HOST ?? 'https://transformpipe.com';
 const CONFIG_DIR = join(homedir(), '.config', 'm2h');
 const CONFIG = join(CONFIG_DIR, 'config.json');
 

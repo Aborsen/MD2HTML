@@ -86,7 +86,7 @@ M2H exposes an API at `/api/v1` with revocable keys. Post the Markdown as the bo
 ```bash
 curl -H "Authorization: Bearer $M2H_API_KEY" \
      --data-binary @README.md \
-     "https://md-2-html.vercel.app/api/v1/documents?name=README.md&share=link"
+     "https://transformpipe.com/api/v1/documents?name=README.md&share=link"
 ```
 
 The response is JSON with the document id and, because of `?share=link`, a read-only URL that is already live. `GET /api/v1/documents/:id.html` gives you the HTML file if you want that too. A dependency-free CLI wraps the same endpoints: `login`, `push`, `list`, `rm`, `usage`, plus `--json` for scripts.

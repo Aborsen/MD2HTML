@@ -1,7 +1,7 @@
 /* Captures the screenshots the /docs page shows, from the app itself.
  *
  *   npm run docs:shots                    against http://127.0.0.1:5180
- *   npm run docs:shots -- --host https://md-2-html.vercel.app
+ *   npm run docs:shots -- --host https://transformpipe.com
  *
  * Every shot is taken twice, light and dark, because a dark screenshot on a light page reads as
  * somebody else's product. The files land in public/docs/<name>-<theme>.png and the page picks the

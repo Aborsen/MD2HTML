@@ -54,7 +54,7 @@ lets a stylesheet colour them. That step runs either in the reader's browser aft
 or ahead of time while the HTML is built. Markdown syntax highlighting, in other words, is not a
 Markdown feature: it is a class name plus something else you arrange.
 
-That distinction decides which tool you want. [M2H](https://md-2-html.vercel.app) converts fenced
+That distinction decides which tool you want. [M2H](https://transformpipe.com) converts fenced
 code as part of GitHub Flavored Markdown, and the `.html` it hands back is self-contained: inline
 styles, no scripts, no network requests. Code arrives as styled monospaced text in a `<pre>` rather
 than coloured tokens, because nothing is left in the file to do the colouring. If colour is the

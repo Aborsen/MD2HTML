@@ -71,4 +71,4 @@ The choice is about when, not quality.
 - **Repeatedly, inside a program.** Use a library: marked or markdown-it in JavaScript, Python-Markdown or markdown-it-py in Python. They do the parse and the render; the sanitise and the wrap are still yours.
 - **Into something that is not HTML.** Pandoc converts between many formats and handles citations, cross-references and bibliographies. For a Markdown paper heading to PDF or DOCX it is the better answer, and [worth comparing honestly](/blog/pandoc-alternatives-for-markdown-to-html).
 
-Read the output before it goes anywhere. M2H is free at https://md-2-html.vercel.app: drop the file in, open the "HTML source" tab and look at the wrapper, the charset and what became of any raw HTML. For the same conversion from a script or a pull request, the API, CLI and GitHub Action are documented at /docs.
+Read the output before it goes anywhere. M2H is free at https://transformpipe.com: drop the file in, open the "HTML source" tab and look at the wrapper, the charset and what became of any raw HTML. For the same conversion from a script or a pull request, the API, CLI and GitHub Action are documented at /docs.

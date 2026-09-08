@@ -33,7 +33,7 @@ inputs:
   host:
     description: Where M2H is deployed.
     required: false
-    default: https://md-2-html.vercel.app
+    default: https://transformpipe.com
 
 outputs:
   urls:

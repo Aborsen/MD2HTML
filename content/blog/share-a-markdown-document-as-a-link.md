@@ -36,7 +36,7 @@ It comes in two shapes. The first is a file: convert the Markdown to a single se
 
 The second is a link. The Markdown is rendered once and hosted, and you pass on the URL. Nothing to download, nothing to install, and you can change or withdraw it later.
 
-M2H does both. Drop the .md file at [md-2-html.vercel.app](https://md-2-html.vercel.app) and take the download for a self-contained file; sign in and publish it for a read-only page at `/s/<token>`. Revoking drops the token, so a link you already sent stops working. From a terminal it is one command:
+M2H does both. Drop the .md file at [transformpipe.com](https://transformpipe.com) and take the download for a self-contained file; sign in and publish it for a read-only page at `/s/<token>`. Revoking drops the token, so a link you already sent stops working. From a terminal it is one command:
 
 ```bash
 node cli/m2h.mjs login m2h_live_…        # once, with an API key
