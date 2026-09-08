@@ -8,12 +8,16 @@ import type { TocItem } from '@/ui/components/TableOfContents';
  * as it goes — and a second implementation here would drift the moment somebody wrote two sections
  * with the same name.
  *
- * Only h2 and h3. An h4 in a four-thousand-word article is a detail inside a detail, and a contents
- * list that includes them stops being scannable, which is the only thing it is for.
+ * Only h2.
+ *
+ * It took h3 as well at first, and on a comparison article that is fifteen tool names and six FAQ
+ * questions — thirty entries, most of them truncated, scrolling inside their own box. A contents
+ * list is for seeing the shape of a piece at a glance, and a list you have to scroll is not a
+ * glance. The eight sections an article actually has fit without one.
  */
 export function headingsFromHtml(html: string): TocItem[] {
   const items: TocItem[] = [];
-  const pattern = /<h([23])\s+id="([^"]+)"[^>]*>([\s\S]*?)<\/h\1>/g;
+  const pattern = /<h(2)\s+id="([^"]+)"[^>]*>([\s\S]*?)<\/h\1>/g;
 
   for (const match of html.matchAll(pattern)) {
     const title = match[3]

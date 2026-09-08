@@ -1,4 +1,9 @@
-import { mdDocTheme, MD_DOC_STYLE, MD_PREVIEW_STYLE } from '@shared/md-doc-css';
+import {
+  mdArticleSurface,
+  mdDocTheme,
+  MD_DOC_STYLE,
+  MD_PREVIEW_STYLE,
+} from '@shared/md-doc-css';
 import { useTheme } from '@/lib/theme';
 import { cn } from '@/ui/lib/utils';
 
@@ -18,7 +23,7 @@ export function DocumentPreview({ html, className }: DocumentPreviewProps) {
   return (
     <>
       {/* The frame around the sheet paints the page background, so it needs the palette too. */}
-      <style>{`${mdDocTheme(theme, '.md-doc, .md-sheet, .md-preview-frame')}\n${MD_DOC_STYLE}\n${MD_PREVIEW_STYLE}`}</style>
+      <style>{`${mdDocTheme(theme, '.md-doc, .md-sheet, .md-preview-frame')}\n${MD_DOC_STYLE}\n${MD_PREVIEW_STYLE}\n${mdArticleSurface(theme)}`}</style>
 
       <div className={cn('md-sheet', className)}>
         <div

@@ -76,6 +76,27 @@ ${declare(DARK)}
 }`;
 }
 
+/**
+ * An article is the page it is on, not a document pasted onto it.
+ *
+ * The document palette exists to make an uploaded file look like paper on the converter's screen —
+ * a sheet, lighter than the page behind it. On the blog that reading is wrong: the article *is* the
+ * page, and a sheet there is a light rectangle sitting inside a darker one with a visible edge.
+ *
+ * So the card goes transparent, and `--md-page` — which is what code blocks and alternating table
+ * rows are painted with — moves up to the card colour, or those would be painted the same as the
+ * page behind them and disappear.
+ */
+export function mdArticleSurface(theme: 'dark' | 'light'): string {
+  const vars = theme === 'dark' ? DARK : LIGHT;
+
+  return `.md-article,
+.md-article .md-doc {
+  --md-card: transparent;
+  --md-page: ${vars['--md-card-2']};
+}`;
+}
+
 /** On paper a dark document is a wall of ink, so printing always uses the light values. */
 export function mdDocPrintOverride(selector = '.md-doc'): string {
   return `@media print {

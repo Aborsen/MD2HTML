@@ -79,7 +79,12 @@ export function TableOfContents({
                 )}
               >
                 {Icon && <Icon className="size-3.5 shrink-0" />}
-                <span className="min-w-0 truncate">{title}</span>
+                {/*
+                  * Two lines, not an ellipsis. With a handful of entries there is room, and a
+                  * heading cut to "Why "it converts Markdown" tells…" is a heading you cannot
+                  * tell from its neighbour. Past two lines it wraps to an ellipsis after all.
+                  */}
+                <span className="line-clamp-2 min-w-0">{title}</span>
               </a>
             </li>
           );
