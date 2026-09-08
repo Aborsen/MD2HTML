@@ -18,9 +18,15 @@ import { DocumentPreview } from '@/components/DocumentPreview';
 import { Hint } from '@/components/Hint';
 import { ScrollToTop } from '@/components/ScrollToTop';
 import { ShareDialog } from '@/components/ShareDialog';
+import { AppBreadcrumbs } from '@/components/AppBreadcrumbs';
 import { ConversionPicker } from '@/components/ConversionPicker';
+import { crumbsForConversion } from '@/lib/breadcrumbs';
 import { Dropzone } from '@/components/Dropzone';
-import type { Conversion, ConversionId } from '@shared/conversions';
+import {
+  type Conversion,
+  type ConversionId,
+  DEFAULT_CONVERSION,
+} from '@shared/conversions';
 import { ARTICLES, articlePath, formatArticleDate } from '@/lib/blog';
 import { HOME_FAQ_ENTRIES } from '@/lib/faq';
 import { ArticleCard } from '@/ui/components/ArticleCard';
@@ -135,6 +141,12 @@ export function ConverterPage({
   if (!doc) {
     return (
       <div className="flex flex-col gap-6">
+        {/* Nothing on the front page: a trail whose only entry is where you are says nothing. */}
+        <AppBreadcrumbs
+          items={crumbsForConversion(conversion)}
+          onNavigate={() => onConversionChange(DEFAULT_CONVERSION)}
+        />
+
         <div className="flex flex-col gap-1">
           {/* The page's own h1: the header carries a wordmark, not a heading. */}
           <Typography

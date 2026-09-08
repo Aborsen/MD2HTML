@@ -1,9 +1,12 @@
+import { AppBreadcrumbs } from '@/components/AppBreadcrumbs';
 import { ScrollToTop } from '@/components/ScrollToTop';
+import { crumbsForStaticPage } from '@/lib/breadcrumbs';
 import { ISSUES_URL, type StaticPage as Page } from '@/lib/pages';
 import { Typography } from '@/ui/components/Typography';
 
 interface StaticPageProps {
   page: Page;
+  onGoToConverter: () => void;
 }
 
 /**
@@ -14,9 +17,14 @@ interface StaticPageProps {
  * like a different site than the privacy page, which is precisely where a reader starts to wonder
  * who they are dealing with.
  */
-export function StaticPage({ page }: StaticPageProps) {
+export function StaticPage({ page, onGoToConverter }: StaticPageProps) {
   return (
     <article className="mx-auto flex w-full max-w-3xl flex-col gap-8">
+      <AppBreadcrumbs
+        items={crumbsForStaticPage(page)}
+        onNavigate={onGoToConverter}
+      />
+
       <header className="flex flex-col gap-2">
         <Typography
           variant="h1"

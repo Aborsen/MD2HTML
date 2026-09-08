@@ -1,6 +1,6 @@
 ---
 title: "Best Markdown to HTML Converters in 2026: Compared and Tested"
-description: Compare the best Markdown to HTML converters in 2026 — online tools, libraries and command line options — by flavour support, sanitising, and whether the output opens on its own
+description: Compare Markdown to HTML converters by flavour support, sanitising, and whether the file they hand back opens on its own or arrives as a fragment
 date: 2026-09-09
 tag: Converting
 keywords: best markdown to html converter, markdown to html converter online, convert md to html, markdown to html library, markdown to html command line, self-contained html from markdown, markdown to html without install
@@ -10,7 +10,7 @@ Every Markdown to HTML converter produces HTML. That is where the similarity end
 
 ### TL;DR
 
-Pick by what you need to happen to the file, not by feature count. For a document you will send to somebody, you need a **complete, self-contained HTML file** with styles inline — not a fragment. For a document containing anything you did not write yourself, you need the converter to **sanitise**, because Markdown allows raw HTML and raw HTML allows scripts. For a build, pick the **library your generator already uses** and stop there. transformpipe covers the first case in the browser, with nothing uploaded and no install; Pandoc covers the widest range of formats if you are willing to install it; marked, markdown-it and remark are the libraries everything else is built on.
+Pick by what you need to happen to the file, not by feature count. For a document you will send to somebody, you need a **complete, self-contained HTML file** with styles inline — not a fragment. For a document containing anything you did not write yourself, you need the converter to **sanitise**, because Markdown allows raw HTML and raw HTML allows scripts. For a build, pick the **library your generator already uses** and stop there. A browser-side converter covers the first case with nothing uploaded and no install; Pandoc covers the widest range of formats if you are willing to install it; marked, markdown-it and remark are the libraries everything else is built on.
 
 ## Why "it converts Markdown" tells you almost nothing
 
@@ -53,7 +53,7 @@ transformpipe converts a Markdown file to a complete HTML document in your brows
 | The export is one file that asks the network for nothing | Not a site generator: one document at a time, or several chained into one |
 | Nothing is uploaded when you are signed out | The browser does the work, so a very large file is limited by the machine |
 | Sanitises against one allow-list, in the browser and on the server alike | No templating language for custom layouts |
-| Also converts HTML, Word, CSV and JSON back to Markdown | |
+| Also converts [HTML](/blog/best-html-to-markdown-converters), [Word](/blog/best-word-to-markdown-converters), CSV and [JSON](/blog/best-json-to-markdown-converters) back to Markdown | |
 
 **Price:** free. An account adds history, sharing and an API, also free.
 
@@ -300,6 +300,8 @@ Vendor pages compete on features. The things that actually decide whether a conv
 
 ## How to choose
 
+The criteria below are the short version; [the requirements worth writing down before you compare anything](/blog/choosing-a-markdown-to-html-converter) go further.
+
 1. **Start from the destination.** Sending it to a person needs a self-contained document. Publishing a set of pages needs a generator. Rendering inside an application needs a library. These are three different tools and the wrong one is obvious in hindsight.
 2. **Match the flavour to the file.** If the document has tables or task lists, the converter must do GFM, not plain CommonMark. Convert one representative file and look at the tables before you commit to anything.
 3. **Decide about sanitising before you convert somebody else's file.** For your own notes it does not matter. For anything that arrived from outside, either the converter sanitises or you do.
@@ -314,7 +316,7 @@ The best Markdown to HTML converter is the one whose output survives the trip. F
 
 ### What is the best free Markdown to HTML converter?
 
-For a finished document, a browser-side converter that produces self-contained HTML is the best free option: no install, no upload, and a file that opens anywhere. transformpipe does this at no cost. For conversion inside your own code, marked and markdown-it are both free and MIT licensed, and Pandoc is free for the command line.
+For a finished document, a browser-side converter that produces self-contained HTML is the best free option: no install, no upload, and a file that opens anywhere. A browser-side converter does this at no cost. For conversion inside your own code, marked and markdown-it are both free and MIT licensed, and Pandoc is free for the command line.
 
 ### How do I convert Markdown to HTML without installing anything?
 

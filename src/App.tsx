@@ -445,9 +445,9 @@ function Shell() {
 
       <main className="mx-auto w-full max-w-container-content flex-1 px-6 py-8">
         {view === 'page' && pageId ? (
-          <StaticPage page={staticPage(pageId)} />
+          <StaticPage page={staticPage(pageId)} onGoToConverter={startOver} />
         ) : view === 'docs' ? (
-          <DocsPage />
+          <DocsPage onGoToConverter={startOver} />
         ) : view === 'blog' ? (
           articleSlug ? (
             <ArticlePage
@@ -458,7 +458,10 @@ function Shell() {
               onGoToConverter={startOver}
             />
           ) : (
-            <BlogPage onOpenArticle={openArticle} />
+            <BlogPage
+              onOpenArticle={openArticle}
+              onGoToConverter={startOver}
+            />
           )
         ) : view === 'converter' ? (
           <ConverterPage

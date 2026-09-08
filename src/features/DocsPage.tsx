@@ -10,7 +10,9 @@ import {
   Terminal,
 } from 'lucide-react';
 import type { ReactNode } from 'react';
+import { AppBreadcrumbs } from '@/components/AppBreadcrumbs';
 import { ScrollToTop } from '@/components/ScrollToTop';
+import { DOCS_CRUMBS } from '@/lib/breadcrumbs';
 import { CONVERSIONS } from '@shared/conversions';
 import { DOCS_SECTIONS } from '@/lib/docs-sections';
 import { MCP_PATH, MCP_TOOL_NAMES, MCP_TOOLS } from '@/lib/mcp-facts';
@@ -106,7 +108,7 @@ function Shot({
   );
 }
 
-export function DocsPage() {
+export function DocsPage({ onGoToConverter }: { onGoToConverter: () => void }) {
   const active = useActiveHeading(SECTIONS.map((one) => one.id));
 
   return (
@@ -117,6 +119,8 @@ export function DocsPage() {
       />
 
       <div className="min-w-0 max-w-3xl flex-1 space-y-12 pb-8">
+        <AppBreadcrumbs items={DOCS_CRUMBS} onNavigate={onGoToConverter} />
+
         <header className="space-y-3">
           <Typography
             variant="span"

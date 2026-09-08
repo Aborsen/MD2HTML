@@ -22,6 +22,14 @@ import { CONVERSIONS, conversion } from '../shared/conversions.js';
 import { DOCS_SECTIONS } from '../src/lib/docs-sections.js';
 import { HOME_FAQ_ENTRIES } from '../src/lib/faq.js';
 import { STATIC_PAGES } from '../src/lib/pages.js';
+import {
+  BLOG_CRUMBS,
+  crumbsForArticle,
+  crumbsForConversion,
+  crumbsForStaticPage,
+  type CrumbSpec,
+  DOCS_CRUMBS,
+} from '../src/lib/breadcrumbs.js';
 
 const SITE = process.env.SITE_URL ?? 'https://transformpipe.com';
 const DIST = resolve('dist');
@@ -53,6 +61,15 @@ if (!SHELL.includes('<div id="root"></div>')) {
   );
 }
 
+/** "8 September 2026" as 2026-09-08 — the only form a sitemap's lastmod may take. */
+function isoDate(human: string): string | undefined {
+  const parsed = new Date(`${human} UTC`);
+
+  return Number.isNaN(parsed.valueOf())
+    ? undefined
+    : parsed.toISOString().slice(0, 10);
+}
+
 const escapeHtml = (value: string) =>
   value
     .replace(/&/g, '&amp;')
@@ -63,6 +80,30 @@ const escapeHtml = (value: string) =>
 /** JSON-LD goes in a script tag, so `</script>` inside a string has to stop meaning that. */
 const jsonLd = (data: unknown) =>
   `<script type="application/ld+json">${JSON.stringify(data).replace(/</g, '\\u003c')}</script>`;
+
+/**
+ * The page's trail, as structured data.
+ *
+ * The same list the app draws, from `src/lib/breadcrumbs.ts`, so the two cannot disagree — a trail
+ * that says one thing to a reader and another to a crawler is worse than none, because that is the
+ * mismatch that gets a site's structured data ignored altogether. A single entry is not a trail, so
+ * it produces nothing.
+ */
+const breadcrumbs = (items: CrumbSpec[]) =>
+  items.length > 1
+    ? jsonLd({
+        '@context': 'https://schema.org',
+        '@type': 'BreadcrumbList',
+        itemListElement: items.map((crumb, index) => ({
+          '@type': 'ListItem',
+          position: index + 1,
+          name: crumb.label,
+          ...(crumb.path
+            ? { item: `${SITE}${crumb.path === '/' ? '/' : crumb.path}` }
+            : {}),
+        })),
+      })
+    : '';
 
 /*
  * The app's reset removes the default heading and paragraph styles, so without this the fallback is
@@ -152,6 +193,7 @@ for (const article of ARTICLES) {
     head: [
       `<meta property="article:published_time" content="${article.date}" />`,
       `<meta property="article:tag" content="${escapeHtml(article.tag)}" />`,
+      breadcrumbs(crumbsForArticle(article)),
       jsonLd({
         '@context': 'https://schema.org',
         '@type': 'BlogPosting',
@@ -182,7 +224,7 @@ pages.push({
     'Converting Markdown, the syntax that breaks on the way to HTML, publishing documents for people who do not use Markdown, and automating the whole thing.',
   listed: true,
   lastmod: ARTICLES[0]?.date,
-  head: jsonLd({
+  head: breadcrumbs(BLOG_CRUMBS) + jsonLd({
     '@context': 'https://schema.org',
     '@type': 'Blog',
     name: 'transformpipe Blog',
@@ -225,7 +267,7 @@ for (const one of CONVERSIONS.filter((each) => each.path !== '/')) {
       description: one.seo.description,
       url: `${SITE}${one.path}`,
       offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
-    }),
+    }) + breadcrumbs(crumbsForConversion(one)),
     body: `<h1>${escapeHtml(one.title)}</h1><p>${escapeHtml(one.blurb)}</p><p>${escapeHtml(
       one.hint
     )}</p><p>Takes ${escapeHtml(one.extensions.join(', '))}, up to 10 MB, converted in your browser.</p>`,
@@ -246,7 +288,34 @@ pages.push({
   title: home.seo.title,
   description: home.seo.description,
   listed: true,
-  head: jsonLd({
+  head:
+    /*
+     * The site and its publisher, declared once on the front page with stable ids. Everything else
+     * — the articles, the conversion pages — can reference those ids instead of restating a name
+     * and a URL that would then have two places to go stale.
+     */
+    jsonLd({
+      '@context': 'https://schema.org',
+      '@graph': [
+        {
+          '@type': 'WebSite',
+          '@id': `${SITE}/#website`,
+          url: SITE,
+          name: 'transformpipe',
+          description: home.seo.description,
+          inLanguage: 'en',
+          publisher: { '@id': `${SITE}/#organization` },
+        },
+        {
+          '@type': 'Organization',
+          '@id': `${SITE}/#organization`,
+          name: 'Raudar Labs',
+          url: SITE,
+          brand: { '@type': 'Brand', name: 'transformpipe' },
+        },
+      ],
+    }) +
+    jsonLd({
     '@context': 'https://schema.org',
     '@type': 'FAQPage',
     mainEntity: HOME_FAQ_ENTRIES.map((entry) => ({
@@ -274,6 +343,13 @@ for (const one of STATIC_PAGES) {
     title: one.seo.title,
     description: one.seo.description,
     listed: true,
+    /*
+     * `lastmod` only where the page itself states a date. A build stamp would change on every
+     * deploy whether the words did or not, and a sitemap whose dates cannot be trusted is a
+     * sitemap whose dates get ignored.
+     */
+    lastmod: one.updated ? isoDate(one.updated) : undefined,
+    head: breadcrumbs(crumbsForStaticPage(one)),
     body: `<h1>${escapeHtml(one.title)}</h1><p>${escapeHtml(one.lede)}</p>${
       one.updated ? `<p>Last updated ${escapeHtml(one.updated)}</p>` : ''
     }${one.sections
@@ -298,6 +374,7 @@ pages.push({
   description:
     'What transformpipe does, in full: the five conversions, the history, sharing by link or by address, the API, the command line client, the GitHub Action and the limits.',
   listed: true,
+  head: breadcrumbs(DOCS_CRUMBS),
   body: `<h1>Everything transformpipe does</h1><p>Markdown, HTML, Word, CSV or JSON in — a document out as HTML, Markdown, plain text or print — from the app, from a terminal, or from a pull request.</p>${DOCS_SECTIONS.map(
     (section) =>
       `<section><h2>${escapeHtml(section.title)}</h2><p>${escapeHtml(section.summary)}</p></section>`
@@ -313,6 +390,8 @@ const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 ${pages
   .filter((page) => page.listed)
+  // Sorted, so a diff of the sitemap between two builds is readable.
+  .sort((a, b) => a.path.localeCompare(b.path))
   .map(
     (page) =>
       `  <url><loc>${SITE}${page.path === '/' ? '/' : page.path}</loc>${
@@ -327,8 +406,24 @@ writeFileSync(join(DIST, 'sitemap.xml'), sitemap, 'utf8');
 
 writeFileSync(
   join(DIST, 'robots.txt'),
-  // Shared documents are other people's; they are linked to deliberately, not crawled.
-  `User-agent: *\nAllow: /\nDisallow: /s/\nDisallow: /open/\nDisallow: /report/\n\nSitemap: ${SITE}/sitemap.xml\n`,
+  /*
+   * What a crawler has no business in: somebody else's shared document, which is linked to
+   * deliberately rather than crawled; the endpoints, which answer JSON and would be indexed as
+   * pages; and the history, which is a signed-in view that renders nothing for a stranger.
+   */
+  [
+    'User-agent: *',
+    'Allow: /',
+    'Disallow: /s/',
+    'Disallow: /open/',
+    'Disallow: /report/',
+    'Disallow: /api/',
+    'Disallow: /history',
+    'Disallow: /.well-known/',
+    '',
+    `Sitemap: ${SITE}/sitemap.xml`,
+    '',
+  ].join('\n'),
   'utf8'
 );
 

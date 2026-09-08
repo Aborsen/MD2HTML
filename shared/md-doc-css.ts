@@ -294,6 +294,18 @@ export const MD_PREVIEW_STYLE = `
 }
 
 /*
+ * An article's own measure.
+ *
+ * The blog column is 880px wide, matching the reference site's, and at the document's 15px that is
+ * about 117 characters a line — well past the 65 to 75 a reader is comfortable with. A point of
+ * type buys back seven characters and costs nothing else, so an article gets 16px while the
+ * converter's preview and the exported file keep the document's own size.
+ */
+.md-article .md-doc {
+  font-size: 1rem;
+}
+
+/*
  * Room above a heading for the app's sticky header.
  *
  * Only in the preview: jumping to a heading from a contents list otherwise lands with the heading

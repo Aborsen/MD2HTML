@@ -1,6 +1,7 @@
-import { ArrowLeft } from 'lucide-react';
 import { useEffect, useMemo, useRef } from 'react';
+import { AppBreadcrumbs } from '@/components/AppBreadcrumbs';
 import { DocumentPreview } from '@/components/DocumentPreview';
+import { crumbsForArticle } from '@/lib/breadcrumbs';
 import { headingsFromHtml } from '@/lib/toc';
 import { useActiveHeading } from '@/lib/use-active-heading';
 import { TableOfContents } from '@/ui/components/TableOfContents';
@@ -166,18 +167,29 @@ export function ArticlePage({
      * documentation uses, for the same reason — these pieces are four thousand words now, and a
      * reader who wants the section on one particular tool should not have to scroll to find it.
      */
-    <div className="mx-auto flex w-full max-w-5xl gap-10">
-      <TableOfContents items={headings} activeId={activeHeading} label="In this article" />
+    /*
+     * 880px of article, 240px of contents, 40px between them: 1160 in total, which is where the
+     * numbers came from rather than a preference. A four-thousand-word piece in a 768px column is
+     * a lot of scrolling for the same words.
+     */
+    <div className="mx-auto flex w-full max-w-[72.5rem] gap-10">
+      <TableOfContents
+        items={headings}
+        activeId={activeHeading}
+        label="In this article"
+        width="w-60"
+      />
 
-      <div className="flex min-w-0 max-w-3xl flex-1 flex-col gap-6">
-      <button
-        type="button"
-        onClick={onBack}
-        className="flex w-fit cursor-pointer items-center gap-1.5 rounded-md text-ink-secondary text-sm transition-colors hover:text-ink-body focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring-brand focus-visible:ring-offset-2"
-      >
-        <ArrowLeft className="size-4" />
-        All articles
-      </button>
+      <div className="flex min-w-0 max-w-[55rem] flex-1 flex-col gap-6">
+        {/*
+          * The trail replaces a back button. It does the same job — the Blog crumb goes back to the
+          * list — and says two more things: where this page sits, and that there is a list at all,
+          * which a reader arriving from a search result has no way to know.
+          */}
+        <AppBreadcrumbs
+          items={crumbsForArticle(article)}
+          onNavigate={(view) => (view === 'blog' ? onBack() : onGoToConverter())}
+        />
 
       <header className="space-y-3">
         <div className="flex items-center gap-2">
@@ -199,7 +211,7 @@ export function ArticlePage({
       </header>
 
       <div ref={body}>
-        <DocumentPreview html={html} />
+        <DocumentPreview html={html} className="md-article" />
       </div>
 
       <div className="flex flex-wrap items-center gap-3 rounded-lg border border-stroke bg-surface-card p-4">

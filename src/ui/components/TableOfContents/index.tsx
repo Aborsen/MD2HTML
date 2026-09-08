@@ -17,6 +17,8 @@ interface TableOfContentsProps {
   /** The id the reader is currently on — see `useActiveHeading`. */
   activeId?: string;
   label?: string;
+  /** The track it occupies. Wider where the entries are article headings rather than short names. */
+  width?: string;
   className?: string;
 }
 
@@ -35,6 +37,7 @@ export function TableOfContents({
   items,
   activeId,
   label = 'On this page',
+  width = 'w-44',
   className,
 }: TableOfContentsProps) {
   if (items.length === 0) {
@@ -45,7 +48,8 @@ export function TableOfContents({
     <nav
       aria-label={label}
       className={cn(
-        'sticky top-20 hidden h-fit max-h-[calc(100dvh-7rem)] w-44 shrink-0 overflow-y-auto lg:block',
+        'sticky top-20 hidden h-fit max-h-[calc(100dvh-7rem)] shrink-0 overflow-y-auto lg:block',
+        width,
         className
       )}
     >

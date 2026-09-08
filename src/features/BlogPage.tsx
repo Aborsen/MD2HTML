@@ -1,5 +1,7 @@
 import { useMemo, useState } from 'react';
+import { AppBreadcrumbs } from '@/components/AppBreadcrumbs';
 import { FilterChips } from '@/components/FilterChips';
+import { BLOG_CRUMBS } from '@/lib/breadcrumbs';
 import { ScrollToTop } from '@/components/ScrollToTop';
 import {
   ARTICLES,
@@ -13,6 +15,7 @@ import { Typography } from '@/ui/components/Typography';
 
 interface BlogPageProps {
   onOpenArticle: (slug: string) => void;
+  onGoToConverter: () => void;
 }
 
 const ALL = 'all';
@@ -23,7 +26,7 @@ const ALL = 'all';
  * The chips are the history's chips and the cards are the cards the converter shows — one filter
  * row and one card in the design system, used wherever a list of things needs narrowing.
  */
-export function BlogPage({ onOpenArticle }: BlogPageProps) {
+export function BlogPage({ onOpenArticle, onGoToConverter }: BlogPageProps) {
   const [tag, setTag] = useState(ALL);
 
   const chips = useMemo(
@@ -57,6 +60,12 @@ export function BlogPage({ onOpenArticle }: BlogPageProps) {
       />
 
       {/* Centred under a centred heading; below `lg` they scroll, so they stay flush left there. */}
+      <AppBreadcrumbs
+        items={BLOG_CRUMBS}
+        onNavigate={onGoToConverter}
+        className="lg:self-center"
+      />
+
       <FilterChips
         items={chips}
         value={tag}
