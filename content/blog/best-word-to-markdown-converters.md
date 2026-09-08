@@ -268,7 +268,7 @@ python-docx creates, reads and updates `.docx` files from Python. It has no Mark
 
 ## What a .docx carries that Markdown cannot express
 
-This is the section a vendor page will not write, because there is no way to write it that sounds good. Markdown has about a dozen constructs. A `.docx` has hundreds. The conversion is lossy by definition, and the only useful question is which losses you are agreeing to.
+This is the section a vendor page will not write, because there is no way to write it that sounds good. Markdown has about a dozen constructs. A `.docx` has hundreds. The conversion is lossy by definition, and the only useful question is which losses you are agreeing to. [The full inventory, with a verdict on each item](/blog/what-not-to-keep-from-a-docx), goes further than the summary below.
 
 **Fonts, sizes and colours.** Markdown has no syntax for typeface, point size or colour. Not "poor support" — none. Every converter here drops them, and the ones that appear not to are emitting raw HTML with a `style` attribute, which is a different document in a Markdown-shaped wrapper. If the document's meaning depends on its typography, converting it to Markdown destroys the meaning and keeps the words.
 

@@ -18,7 +18,6 @@
     "blob:reconcile": "node scripts/reconcile-blobs.mjs",
     "reports": "node scripts/reports.mjs",
     "docs:shots": "node scripts/screenshots.mjs",
-    "blog:check": "node scripts/check-blog.mjs",
     "mcp:check": "node scripts/check-mcp.mjs"
   },
   "dependencies": {

@@ -2,9 +2,10 @@ import react from '@vitejs/plugin-react';
 import path from 'node:path';
 import { defineConfig } from 'vite';
 import { apiDevServer } from './server/vite-plugin-api';
+import { blogIndex } from './vite-plugin-blog';
 
 export default defineConfig({
-  plugins: [react(), apiDevServer()],
+  plugins: [react(), apiDevServer(), blogIndex()],
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),

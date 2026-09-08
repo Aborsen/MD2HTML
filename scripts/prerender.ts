@@ -71,6 +71,20 @@ function isoDate(human: string): string | undefined {
     : parsed.toISOString().slice(0, 10);
 }
 
+/**
+ * One article's prose, read straight off disk.
+ *
+ * The app fetches bodies on demand so they stay out of its bundle, which leaves the list it exports
+ * without any. This runs in Node with the repository in front of it, so it reads the file — and the
+ * prerendered page has to carry the whole article anyway, since that copy is the one a crawler gets.
+ */
+function articleMarkdown(slug: string): string {
+  const raw = readFileSync(resolve('content/blog', `${slug}.md`), 'utf8');
+  const header = raw.match(/^---\r?\n[\s\S]*?\r?\n---\r?\n?/);
+
+  return header ? raw.slice(header[0].length) : raw;
+}
+
 const escapeHtml = (value: string) =>
   value
     .replace(/&/g, '&amp;')
@@ -226,7 +240,9 @@ for (const article of ARTICLES) {
     ].join('\n    '),
     body: `<article class="md-doc"><h1>${escapeHtml(article.title)}</h1><p>${escapeHtml(
       formatArticleDate(article.date)
-    )} · ${article.readingMinutes} min read</p>${markdownToHtml(article.markdown)}</article>`,
+    )} · ${article.readingMinutes} min read</p>${markdownToHtml(
+      articleMarkdown(article.slug)
+    )}</article>`,
   });
 }
 

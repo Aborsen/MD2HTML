@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { AppBreadcrumbs } from '@/components/AppBreadcrumbs';
 import { DocumentPreview } from '@/components/DocumentPreview';
 import { crumbsForArticle } from '@/lib/breadcrumbs';
@@ -9,6 +9,7 @@ import { TableOfContents } from '@/ui/components/TableOfContents';
 import { ScrollToTop } from '@/components/ScrollToTop';
 import {
   ARTICLES,
+  articleBody,
   articlePath,
   findArticle,
   formatArticleDate,
@@ -57,9 +58,38 @@ export function ArticlePage({
 }: ArticlePageProps) {
   const article = findArticle(slug);
   const body = useRef<HTMLDivElement>(null);
+
+  /*
+   * The prose is fetched rather than bundled.
+   *
+   * `articleBody` is a dynamic import, so an article's text is its own chunk and the front page
+   * does not carry fifty of them. That makes the render two-pass: the title, the date and the
+   * contents list are here immediately, the body arrives a moment later.
+   *
+   * The guard is the slug the text was asked for. Opening one article from inside another starts a
+   * second fetch, and without it a slow first response could land after the second and paint the
+   * wrong article's body under the right article's headline.
+   */
+  const [markdown, setMarkdown] = useState<string | null>(null);
+
+  useEffect(() => {
+    let wanted = true;
+
+    setMarkdown(null);
+    void articleBody(slug).then((text) => {
+      if (wanted) {
+        setMarkdown(text ?? '');
+      }
+    });
+
+    return () => {
+      wanted = false;
+    };
+  }, [slug]);
+
   const html = useMemo(
-    () => (article ? markdownToHtml(article.markdown) : ''),
-    [article]
+    () => (markdown ? markdownToHtml(markdown) : ''),
+    [markdown]
   );
 
   /* The contents come out of the rendered HTML, so the ids are the renderer's own. */
@@ -212,7 +242,23 @@ export function ArticlePage({
       </header>
 
       <div ref={body}>
-        <DocumentPreview html={html} className="md-article" />
+        {markdown === null ? (
+          /*
+           * While the text is in flight. Sized to the reading measure rather than a spinner, so the
+           * page does not jump when the prose replaces it.
+           */
+          <div className="flex flex-col gap-3" aria-hidden>
+            {[100, 96, 88, 92, 70, 100, 84].map((width, index) => (
+              <div
+                key={`${width}-${index}`}
+                className="h-4 animate-pulse rounded bg-surface-card2"
+                style={{ width: `${width}%` }}
+              />
+            ))}
+          </div>
+        ) : (
+          <DocumentPreview html={html} className="md-article" />
+        )}
       </div>
 
       <div className="flex flex-wrap items-center gap-3 rounded-lg border border-stroke bg-surface-card p-4">
