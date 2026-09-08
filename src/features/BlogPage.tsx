@@ -69,11 +69,16 @@ export function BlogPage({ onOpenArticle }: BlogPageProps) {
           Nothing under that tag yet.
         </Typography>
       ) : (
-        <div className="grid gap-4 md:grid-cols-2">
+        /*
+         * Three across from `lg`, two at tablet width. With fifty articles a two-column list is a
+         * very long scroll, and the cards carry a title and two lines — they do not need half the
+         * page each. The lead keeps the full width, whatever the count.
+         */
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <ArticleCard
             key={lead.slug}
             featured
-            className="md:col-span-2"
+            className="sm:col-span-2 lg:col-span-3"
             title={lead.title}
             description={lead.description}
             href={articlePath(lead.slug)}
