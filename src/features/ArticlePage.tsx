@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef } from 'react';
 import { AppBreadcrumbs } from '@/components/AppBreadcrumbs';
 import { DocumentPreview } from '@/components/DocumentPreview';
 import { crumbsForArticle } from '@/lib/breadcrumbs';
+import { articleCardImage } from '@/lib/covers';
 import { headingsFromHtml } from '@/lib/toc';
 import { useActiveHeading } from '@/lib/use-active-heading';
 import { TableOfContents } from '@/ui/components/TableOfContents';
@@ -234,6 +235,7 @@ export function ArticlePage({
                 title={other.title}
                 description={other.description}
                 href={articlePath(other.slug)}
+                image={articleCardImage(other.slug)}
                 onOpen={() => onOpenArticle(other.slug)}
                 tag={other.tag}
                 meta={`${other.readingMinutes} min read`}

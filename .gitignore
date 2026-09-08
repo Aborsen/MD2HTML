@@ -13,3 +13,8 @@ tsconfig.tsbuildinfo
 
 # Probe scripts a review agent leaves behind; never part of the app.
 _*.mjs
+
+# Files fetched while researching an article — somebody else's licensed source, not ours.
+/mao.json
+/md.css
+/mlf.json

@@ -13,6 +13,8 @@ export interface ArticleCardProps {
   meta?: string;
   /** Gives the first card of a list more room, for a lead article. */
   featured?: boolean;
+  /** The cover, drawn by `npm run og`. Without one the card is a title and two lines of grey. */
+  image?: string;
   className?: string;
 }
 
@@ -31,6 +33,7 @@ export function ArticleCard({
   tag,
   meta,
   featured = false,
+  image,
   className,
 }: ArticleCardProps) {
   return (
@@ -54,12 +57,47 @@ export function ArticleCard({
         onOpen();
       }}
       className={cn(
-        'group flex h-full flex-col gap-2 rounded-lg border border-stroke bg-surface-card p-4',
+        'group flex h-full overflow-hidden rounded-lg border border-stroke bg-surface-card',
+        image ? 'gap-0' : 'gap-2 p-4',
+        /*
+         * The lead card splits sideways from `sm`, everything else stacks.
+         *
+         * Stacked, the lead's cover is the full width of the page at 1200 by 630 — 537px tall on a
+         * 1440px screen, which pushed the headline it belongs to below the fold. Beside the text it
+         * is a picture; above the text it is an obstacle.
+         */
+        featured && image ? 'flex-col sm:flex-row' : 'flex-col',
         'transition-colors hover:border-stroke-hover hover:bg-state-hover',
         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-surface-page',
         className
       )}
     >
+      {/*
+        * The cover, at the ratio it was drawn: 1200 by 630. `aspect-[1200/630]` rather than a
+        * height, so a card in a three-column grid and the full-width lead both keep the picture
+        * whole instead of cropping the title out of it.
+        */}
+      {image && (
+        <img
+          src={image}
+          alt=""
+          loading="lazy"
+          className={cn(
+            'aspect-[1200/630] w-full object-cover',
+            featured
+              ? 'border-stroke border-b sm:w-[46%] sm:shrink-0 sm:border-r sm:border-b-0'
+              : 'border-stroke border-b'
+          )}
+        />
+      )}
+
+      <div
+        className={cn(
+          'flex min-w-0 flex-1 flex-col gap-2',
+          image && 'p-4',
+          featured && image && 'sm:justify-center sm:p-6'
+        )}
+      >
       {(tag || meta) && (
         <div className="flex items-center gap-2">
           {tag && (
@@ -97,6 +135,7 @@ export function ArticleCard({
         Read
         <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-0.5" />
       </span>
+      </div>
     </a>
   );
 }

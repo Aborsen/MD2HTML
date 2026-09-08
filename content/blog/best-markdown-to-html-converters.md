@@ -310,7 +310,7 @@ The criteria below are the short version; [the requirements worth writing down b
 
 ## Conclusion
 
-The best Markdown to HTML converter is the one whose output survives the trip. For a document with a recipient, that means a complete file with its styles inline, sanitised, produced without uploading the source anywhere — which is what [transformpipe's Markdown to HTML conversion](/) does in your browser, free, with no install and nothing to sign up for. For a build, use the library your generator already depends on. For anything involving formats beyond HTML, install Pandoc and learn its templates; it will outlast every other tool on this page.
+The best Markdown to HTML converter is the one whose output survives the trip. If you have a file and want it converted in the next minute, [the steps are here](/blog/convert-markdown-to-html-online). For a document with a recipient, that means a complete file with its styles inline, sanitised, produced without uploading the source anywhere — which is what [transformpipe's Markdown to HTML conversion](/) does in your browser, free, with no install and nothing to sign up for. For a build, use the library your generator already depends on. For anything involving formats beyond HTML, install Pandoc and learn its templates; it will outlast every other tool on this page.
 
 ## FAQ
 

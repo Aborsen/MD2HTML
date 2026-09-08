@@ -21,6 +21,7 @@ import { ShareDialog } from '@/components/ShareDialog';
 import { AppBreadcrumbs } from '@/components/AppBreadcrumbs';
 import { ConversionPicker } from '@/components/ConversionPicker';
 import { crumbsForConversion } from '@/lib/breadcrumbs';
+import { articleCardImage } from '@/lib/covers';
 import { Dropzone } from '@/components/Dropzone';
 import {
   type Conversion,
@@ -194,6 +195,7 @@ export function ConverterPage({
                   title={article.title}
                   description={article.description}
                   href={articlePath(article.slug)}
+                  image={articleCardImage(article.slug)}
                   onOpen={() => onOpenArticle(article.slug)}
                   tag={article.tag}
                   meta={formatArticleDate(article.date)}

@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { AppBreadcrumbs } from '@/components/AppBreadcrumbs';
 import { FilterChips } from '@/components/FilterChips';
 import { BLOG_CRUMBS } from '@/lib/breadcrumbs';
+import { articleCardImage } from '@/lib/covers';
 import { ScrollToTop } from '@/components/ScrollToTop';
 import {
   ARTICLES,
@@ -91,6 +92,7 @@ export function BlogPage({ onOpenArticle, onGoToConverter }: BlogPageProps) {
             title={lead.title}
             description={lead.description}
             href={articlePath(lead.slug)}
+            image={articleCardImage(lead.slug)}
             onOpen={() => onOpenArticle(lead.slug)}
             tag={lead.tag}
             meta={`${formatArticleDate(lead.date)} · ${lead.readingMinutes} min read`}
@@ -102,6 +104,7 @@ export function BlogPage({ onOpenArticle, onGoToConverter }: BlogPageProps) {
               title={article.title}
               description={article.description}
               href={articlePath(article.slug)}
+              image={articleCardImage(article.slug)}
               onOpen={() => onOpenArticle(article.slug)}
               tag={article.tag}
               meta={`${formatArticleDate(article.date)} · ${article.readingMinutes} min read`}

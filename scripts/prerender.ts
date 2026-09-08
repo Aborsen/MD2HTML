@@ -22,6 +22,7 @@ import { CONVERSIONS, conversion } from '../shared/conversions.js';
 import { DOCS_SECTIONS } from '../src/lib/docs-sections.js';
 import { HOME_FAQ_ENTRIES } from '../src/lib/faq.js';
 import { STATIC_PAGES } from '../src/lib/pages.js';
+import { articleCover, COVER_SIZE, pageCover } from '../src/lib/covers.js';
 import {
   BLOG_CRUMBS,
   crumbsForArticle,
@@ -126,6 +127,8 @@ interface Page {
   path: string;
   title: string;
   description: string;
+  /** The cover, from public/og. Absolute in the tag: a relative one is ignored by every scraper. */
+  image?: string;
   /** What a crawler — and a reader on a slow connection — sees before the bundle runs. */
   body: string;
   head?: string;
@@ -144,7 +147,17 @@ function render(page: Page): string {
     `<meta property="og:title" content="${escapeHtml(page.title)}" />`,
     `<meta property="og:description" content="${escapeHtml(page.description)}" />`,
     `<meta property="og:url" content="${url}" />`,
-    `<meta name="twitter:card" content="summary" />`,
+    /*
+     * A share with no picture is a grey rectangle with a URL in it, which is what every one of
+     * these pages was until `npm run og` drew the covers. `summary_large_image` is the card that
+     * actually shows a 1200 by 630 image; plain `summary` crops it to a thumbnail.
+     */
+    `<meta property="og:image" content="${SITE}${page.image ?? pageCover(page.path)}" />`,
+    `<meta property="og:image:width" content="${COVER_SIZE.width}" />`,
+    `<meta property="og:image:height" content="${COVER_SIZE.height}" />`,
+    `<meta property="og:image:alt" content="${escapeHtml(page.title)}" />`,
+    `<meta name="twitter:card" content="summary_large_image" />`,
+    `<meta name="twitter:image" content="${SITE}${page.image ?? pageCover(page.path)}" />`,
     FALLBACK_STYLE,
     page.head ?? '',
   ].join('\n    ');
@@ -188,6 +201,7 @@ for (const article of ARTICLES) {
     path: articlePath(article.slug),
     title: `${article.title} — transformpipe`,
     description: article.description,
+    image: articleCover(article.slug),
     lastmod: article.date,
     listed: true,
     head: [
