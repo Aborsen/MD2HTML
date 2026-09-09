@@ -4,7 +4,7 @@ import { createMiddleware } from 'hono/factory';
 import { buildStandaloneHtml, getDocStats } from '../shared/markdown.js';
 import { selfOrigin } from './auth.js';
 import { type Caller, mayWrite, resolveCaller } from './caller.js';
-import { canSendMail, sendShareNotice } from './mail.js';
+import { sendShareNotice } from './mail.js';
 import { sql } from './db.js';
 import {
   checkQuota,
@@ -573,15 +573,18 @@ v1.put('/documents/:id/share', async (c) => {
    * remove. Notices are sent only in `people` mode — a link share has no audience to notify —
    * and only to addresses that were not on the list a moment ago.
    *
-   * Deliberately not awaited into the response. A slow mail provider must not turn a share that
-   * has already been written into a request that looks like it failed, and a share whose email
-   * bounced is still a share: the access is in the database either way. Failures are logged,
-   * because a person who thinks a colleague was told and was not has no way to notice otherwise.
+   * Awaited, with the mailer's own timeout as the ceiling: a send started after the response may
+   * never leave a serverless function. A share whose email bounced is still a share — the access is
+   * in the database either way — so a failure is logged and left out of `notified`, never returned
+   * as an error.
    */
+  const notified: string[] = [];
+
   if (after?.share_mode === 'people' && url && added.length > 0) {
     const sender = c.get('caller').email;
 
-    void Promise.all(
+    /* Awaited, in parallel: see mail.ts on why a send after the response may never leave. */
+    await Promise.all(
       added.map(async (to) => {
         const sent = await sendShareNotice({
           to,
@@ -590,7 +593,9 @@ v1.put('/documents/:id/share', async (c) => {
           url,
         });
 
-        if (!sent.ok) {
+        if (sent.ok) {
+          notified.push(to);
+        } else {
           console.error(`share notice to ${to} not sent: ${sent.reason}`);
         }
       })
@@ -601,11 +606,8 @@ v1.put('/documents/:id/share', async (c) => {
     mode: after?.share_mode,
     url,
     emails: emails.map((entry) => entry.email),
-    /*
-     * What actually happened, so the dialog can stop implying an email that was never sent. A
-     * deployment with no key configured reports zero, which is the truth.
-     */
-    notified: canSendMail() ? added : [],
+    /* The addresses that were actually told, as the mailer reported it. */
+    notified,
   });
 });
 

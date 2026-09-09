@@ -8,7 +8,7 @@ import {
   buildStandaloneHtml,
 } from '../shared/markdown.js';
 import { authProxy, currentUser, selfOrigin, type SessionUser } from './auth.js';
-import { canSendMail, sendShareNotice, sendWelcome } from './mail.js';
+import { sendShareNotice, sendWelcome } from './mail.js';
 import { sql, type DocumentRow } from './db.js';
 import { createKey, forgetKey, listKeys, revokeKey } from './keys.js';
 import {
@@ -231,22 +231,23 @@ api.post('/documents', async (c) => {
    * first thing an account is actually for, and `noteFirstUse` answers true exactly once because
    * the insert is what decides, not a read followed by a write.
    *
-   * Not awaited into the response, and failures only logged: a welcome email that did not send is
-   * not a reason to fail a save that already happened.
+   * Awaited — a send started after the response may never leave a serverless function (see
+   * mail.ts) — but only logged on failure: a welcome that did not send is not a reason to fail a
+   * save that already happened. It costs the first save of an account a few hundred milliseconds,
+   * once.
    */
-  void noteFirstUse(userId).then(async (isNew) => {
+  {
+    const isNew = await noteFirstUse(userId);
     const email = c.get('user').email;
 
-    if (!isNew || !email) {
-      return;
-    }
+    if (isNew && email) {
+      const sent = await sendWelcome({ to: email, origin: selfOrigin(c) });
 
-    const sent = await sendWelcome({ to: email, origin: selfOrigin(c) });
-
-    if (!sent.ok) {
-      console.error(`welcome to ${email} not sent: ${sent.reason}`);
+      if (!sent.ok) {
+        console.error(`welcome to ${email} not sent: ${sent.reason}`);
+      }
     }
-  });
+  }
 
   type CreateBody = {
     name?: string;
@@ -447,37 +448,46 @@ api.post('/documents/:id/share/people', async (c) => {
    * `on conflict do nothing` above means a repeat of the same address is a no-op in the table, and
    * `inserted` below is how this knows it was a no-op in the mailbox too.
    *
-   * Not awaited into the response, and failures only logged: a share that is already written must
-   * not report failure because a mail provider was slow, and the access exists either way.
+   * Failures are logged and reported in `notified`, never as an error: the share is already written
+   * and the access exists whether or not the email got through.
    */
+  let notified = false;
+
   if (state?.mode === 'people' && state.token && inserted) {
     const owner = c.get('user').email;
     const document = (await sql()`
       select name from m2h_document where id = ${id} and user_id = ${userId}
     `) as Array<{ name: string }>;
 
-    void sendShareNotice({
+    /*
+     * Awaited, not fired off. See the note at the top of mail.ts: a send started after the
+     * response may never leave a serverless function. The mailer caps the wait itself.
+     */
+    const sent = await sendShareNotice({
       to: email,
       from: owner ?? 'Somebody',
       documentName: document[0]?.name ?? 'a document',
       url: `${selfOrigin(c)}/s/${state.token}`,
-    }).then((sent) => {
-      if (!sent.ok) {
-        console.error(`share notice to ${email} not sent: ${sent.reason}`);
-      }
     });
+
+    notified = sent.ok;
+
+    if (!sent.ok) {
+      console.error(`share notice to ${email} not sent: ${sent.reason}`);
+    }
   }
 
   /*
-   * Say whether a notice went out, so this is observable from outside.
+   * Say whether a notice actually went out, so this is observable from outside.
    *
-   * Two silent failures in a row looked identical from the dialog — the notice wired to the API
-   * endpoint the dialog does not call, and then a deployment with no mail key — and in both cases
-   * the only symptom was an email that never arrived. A field in the response is the difference
-   * between diagnosing that in a minute and guessing at it.
+   * Three silent failures in a row looked identical from the dialog — the notice wired to the API
+   * endpoint the dialog does not call, then a send fired after the response that the platform froze
+   * before it left, and a deployment with no mail key would look the same — and in every case the
+   * only symptom was an email that never arrived. `notified` is now the mailer's own answer, not a
+   * guess from the environment.
    */
   return state
-    ? c.json({ ...state, notified: inserted && canSendMail() })
+    ? c.json({ ...state, notified })
     : c.json({ error: 'Not found' }, 404);
 });
 

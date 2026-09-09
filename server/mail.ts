@@ -10,12 +10,22 @@
  * that simply does not send mail — silently, not by throwing on the first share. So every function
  * returns what happened and nothing here ever rejects.
  *
+ * And every caller AWAITS it. The first version fired these off after the response and moved on,
+ * which is the natural thing to write and the wrong thing in a serverless function: the platform
+ * may freeze the instance the moment the response is sent, and a fetch that had not left yet never
+ * does. Three addresses were added on a live deployment and Resend logged nothing at all — not a
+ * failure, an absence. So the send is part of the request, and `TIMEOUT_MS` is what keeps a slow
+ * provider from turning that into a slow share.
+ *
  * In English, whatever the sender's language. These messages go to somebody who has never been to
  * the site, at an address we know nothing else about: there is no locale to read, and the shared
  * document page they are about to open is English for the same reason.
  */
 
 const ENDPOINT = 'https://api.resend.com/emails';
+
+/** The most a send may add to the request that triggered it. */
+const TIMEOUT_MS = 4000;
 
 /** Resend refuses anything else, and a from address on an unverified domain bounces silently. */
 const FROM = process.env.MAIL_FROM ?? 'transformpipe <no-reply@transformpipe.com>';
@@ -39,6 +49,14 @@ async function send(message: {
     return NOT_CONFIGURED;
   }
 
+  /*
+   * Resend answers in a few hundred milliseconds. Four seconds is long enough that a normal send
+   * never hits it and short enough that a share is never held hostage by a provider having a bad
+   * minute — the access is already written either way.
+   */
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
+
   try {
     const response = await fetch(ENDPOINT, {
       method: 'POST',
@@ -52,6 +70,7 @@ async function send(message: {
         subject: message.subject,
         text: message.text,
       }),
+      signal: controller.signal,
     });
 
     if (!response.ok) {
@@ -68,8 +87,15 @@ async function send(message: {
   } catch (cause) {
     return {
       ok: false,
-      reason: cause instanceof Error ? cause.message : 'network',
+      reason:
+        cause instanceof Error && cause.name === 'AbortError'
+          ? `no answer in ${TIMEOUT_MS}ms`
+          : cause instanceof Error
+            ? cause.message
+            : 'network',
     };
+  } finally {
+    clearTimeout(timer);
   }
 }
 
