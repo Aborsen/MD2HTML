@@ -733,5 +733,7 @@ writeFileSync(
 );
 
 console.log(
-  `prerendered ${pages.length} pages (${ARTICLES.length} articles), sitemap and robots.txt`
+  `prerendered ${pages.length} pages (${LOCALES.map(
+    (locale) => `${locale} ${articlesFor(locale).length}`
+  ).join(', ')} articles), sitemap and robots.txt`
 );
