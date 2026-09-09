@@ -20,6 +20,7 @@ import { ArticleCard } from '@/ui/components/ArticleCard';
 import { Badge } from '@/ui/components/Badge';
 import { Button } from '@/ui/components/Button';
 import { SectionHeading } from '@/ui/components/SectionHeading';
+import { ShareLinks } from '@/ui/components/ShareLinks';
 import { Typography } from '@/ui/components/Typography';
 
 interface ArticlePageProps {
@@ -265,6 +266,17 @@ export function ArticlePage({
           <DocumentPreview html={html} className="md-article" />
         )}
       </div>
+
+      {/*
+        * Below the prose, not above it: somebody shares an article they have read.
+        *
+        * The origin comes from the browser rather than a constant, so a link shared from a preview
+        * deployment points at the page the reader is actually looking at.
+        */}
+      <ShareLinks
+        url={`${window.location.origin}${articlePath(article.slug)}`}
+        title={article.title}
+      />
 
       <div className="flex flex-wrap items-center gap-3 rounded-lg border border-stroke bg-surface-card p-4">
         <Typography variant="span" textColor="secondary" className="text-sm">
