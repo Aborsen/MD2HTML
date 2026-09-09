@@ -1,4 +1,4 @@
-import { Download, FileText } from 'lucide-react';
+import { Download, FileText, LogIn } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { DocumentPreview } from '@/components/DocumentPreview';
 import { Logo } from '@/components/Logo';
@@ -9,9 +9,9 @@ import { formatDateTime, toFileName } from '@/lib/format';
 import { useI18n, useT } from '@/lib/i18n/context';
 import { INTL_LOCALES } from '@/lib/i18n/locales';
 import { buildStandaloneHtml, markdownToHtml } from '@/lib/markdown';
+import { AuthDialog } from '@/components/AuthDialog';
 import { useTheme } from '@/lib/theme';
 import { Button } from '@/ui/components/Button';
-import { GoogleGlyph } from '@/components/GoogleGlyph';
 import { Spinner } from '@/ui/components/Spinner';
 import { StatusView } from '@/ui/components/StatusView';
 import { Typography } from '@/ui/components/Typography';
@@ -32,7 +32,8 @@ export function SharedDocumentPage({ token }: { token: string }) {
   const t = useT();
   const { locale } = useI18n();
   const { theme } = useTheme();
-  const { user, signIn, isSigningIn } = useAuth();
+  const { user } = useAuth();
+  const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [document, setDocument] = useState<SharedDocument | null>(null);
   const [error, setError] = useState<{ message: string; needsSignIn: boolean } | null>(
     null
@@ -144,9 +145,17 @@ export function SharedDocumentPage({ token }: { token: string }) {
                   variant="secondary"
                   size="sm"
                   rounded="full"
-                  isLoading={isSigningIn}
-                  leftSlot={<GoogleGlyph />}
-                  onClick={() => void signIn()}
+                  leftSlot={<LogIn />}
+                  /*
+                   * The dialog, not straight to Google.
+                   *
+                   * This button was the last place in the product that could only sign somebody in
+                   * one way — and it is the worst place for that, because the person clicking it
+                   * was invited by an email sent to an address that may well not be a Google
+                   * account. Being told to sign in "with the address it was shared with" and then
+                   * offered only Google is a dead end.
+                   */
+                  onClick={() => setIsAuthOpen(true)}
                 >
                   {t('header.signin')}
                 </Button>
@@ -160,6 +169,8 @@ export function SharedDocumentPage({ token }: { token: string }) {
             }
           />
         )}
+
+        <AuthDialog open={isAuthOpen} onOpenChange={setIsAuthOpen} />
 
         {!isLoading && document && (
           <div className="flex flex-col gap-4">

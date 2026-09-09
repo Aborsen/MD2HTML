@@ -20,6 +20,11 @@
  * In English, whatever the sender's language. These messages go to somebody who has never been to
  * the site, at an address we know nothing else about: there is no locale to read, and the shared
  * document page they are about to open is English for the same reason.
+ *
+ * Deliverability is mostly not in this file. SPF and DKIM are Resend's records and verified; the
+ * missing piece when the first notice landed in spam was a DMARC record on the domain, which is
+ * DNS rather than code. What is in here is not making it worse: a subject that does not lead with
+ * a raw address, a Reply-To when there is a person behind the message, and both MIME parts.
  */
 
 const ENDPOINT = 'https://api.resend.com/emails';
@@ -38,10 +43,53 @@ export interface Sent {
 
 const NOT_CONFIGURED: Sent = { ok: false, reason: 'no RESEND_API_KEY' };
 
+/**
+ * The same message, as HTML.
+ *
+ * Built from the text rather than written twice, so the two parts cannot say different things: a
+ * blank line becomes a paragraph and a line that is a URL becomes a link. No images, no tracking,
+ * no styling beyond a readable measure — what this exists for is to be a `text/html` alternative
+ * at all, not to be a design.
+ */
+function asHtml(text: string): string {
+  const escape = (value: string) =>
+    value
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+
+  const paragraphs = text
+    .split(/\n\s*\n/)
+    .map((block) => block.trim())
+    .filter(Boolean)
+    .map((block) => {
+      const lines = block.split('\n').map((line) => {
+        const bare = line.trim();
+
+        return /^https?:\/\/\S+$/.test(bare)
+          ? `<a href="${escape(bare)}">${escape(bare)}</a>`
+          : escape(line);
+      });
+
+      return `<p>${lines.join('<br>')}</p>`;
+    })
+    .join('\n');
+
+  return `<div style="font:16px/1.5 -apple-system,Segoe UI,Roboto,sans-serif;max-width:34em">${paragraphs}</div>`;
+}
+
 async function send(message: {
   to: string;
   subject: string;
   text: string;
+  /**
+   * Where a reply goes, when there is a person to reply to.
+   *
+   * A share notice is from somebody, and a message you cannot answer from an address that says
+   * no-reply is both less useful and more suspicious — filters weigh replyability, and a recipient
+   * who wants to ask "what is this?" should be able to.
+   */
+  replyTo?: string;
 }): Promise<Sent> {
   const key = process.env.RESEND_API_KEY;
 
@@ -69,6 +117,18 @@ async function send(message: {
         to: [message.to],
         subject: message.subject,
         text: message.text,
+        /*
+         * Both parts, not text alone.
+         *
+         * The first version sent text only, on the argument that a notice with one link in it
+         * gains nothing from markup and that an HTML template usually arrives with a tracking
+         * pixel in it. The second half of that is still true and there is no pixel here — but
+         * text-only automated mail from a domain with no sending history is exactly what a filter
+         * treats harshly, and the first share notice this product ever sent went to spam. So the
+         * HTML part is the same words, marked up and nothing more.
+         */
+        html: asHtml(message.text),
+        ...(message.replyTo ? { reply_to: message.replyTo } : {}),
       }),
       signal: controller.signal,
     });
@@ -102,9 +162,9 @@ async function send(message: {
 /**
  * Tells somebody a document has been shared with their address.
  *
- * Plain text, not HTML. A notification with one link in it gains nothing from markup, arrives
- * looking the same in every client, and never lands in a spam folder for having a tracking pixel
- * in it — which is the other thing an HTML template usually brings.
+ * Two parts, text and HTML, generated from the one set of words — see `asHtml`. No images and no
+ * tracking pixel: the reason to have an HTML part at all is that a text-only message from a young
+ * domain is treated as suspicious, not that a notice with one link in it needs design.
  *
  * The sentence about signing in is the whole point of the message. A document shared to named
  * addresses is not a public link: opening it requires being signed in as that address, and somebody
@@ -121,7 +181,15 @@ export async function sendShareNotice(options: {
 
   return send({
     to,
-    subject: `${from} shared "${documentName}" with you`,
+    replyTo: from.includes('@') ? from : undefined,
+    /*
+     * The document's name, not the sharer's address.
+     *
+     * The first version led with the address — `someone@example.com shared "notes.md" with you` —
+     * which puts a raw email address and a quoted filename in the subject line, and that pair is a
+     * shape spam filters know well. Who shared it is the first line of the body, where it belongs.
+     */
+    subject: `${documentName} was shared with you`,
     text: [
       `${from} shared a document with you on transformpipe.`,
       '',
