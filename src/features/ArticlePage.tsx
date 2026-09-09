@@ -3,6 +3,8 @@ import { AppBreadcrumbs } from '@/components/AppBreadcrumbs';
 import { DocumentPreview } from '@/components/DocumentPreview';
 import { crumbsForArticle } from '@/lib/breadcrumbs';
 import { articleCardImage } from '@/lib/covers';
+import { useI18n, useT } from '@/lib/i18n/context';
+import { INTL_LOCALES } from '@/lib/i18n/locales';
 import { headingsFromHtml } from '@/lib/toc';
 import { useActiveHeading } from '@/lib/use-active-heading';
 import { TableOfContents } from '@/ui/components/TableOfContents';
@@ -57,6 +59,10 @@ export function ArticlePage({
   onGoTo,
   onGoToConverter,
 }: ArticlePageProps) {
+  const t = useT();
+  const { content, locale } = useI18n();
+  /* The tag `Intl` wants, which is not the tag in the address — see `INTL_LOCALES`. */
+  const dates = INTL_LOCALES[locale];
   const article = findArticle(slug);
   const body = useRef<HTMLDivElement>(null);
 
@@ -179,13 +185,13 @@ export function ArticlePage({
     return (
       <div className="mx-auto flex w-full max-w-3xl flex-col items-start gap-4 py-12">
         <Typography variant="h2" className="text-xl md:text-xl">
-          No such article
+          {t('article.missing.title')}
         </Typography>
         <Typography variant="p" textColor="secondary" className="text-sm">
-          It may have been renamed. The index has everything that exists.
+          {t('article.missing.blurb')}
         </Typography>
         <Button variant="secondary" onClick={onBack}>
-          Back to the blog
+          {t('article.missing.back')}
         </Button>
       </div>
     );
@@ -208,7 +214,7 @@ export function ArticlePage({
       <TableOfContents
         items={headings}
         activeId={activeHeading}
-        label="In this article"
+        label={t('article.toc')}
         width="w-60"
       />
 
@@ -219,7 +225,7 @@ export function ArticlePage({
           * which a reader arriving from a search result has no way to know.
           */}
         <AppBreadcrumbs
-          items={crumbsForArticle(article)}
+          items={crumbsForArticle(article, content)}
           onNavigate={(view) => (view === 'blog' ? onBack() : onGoToConverter())}
         />
 
@@ -229,12 +235,22 @@ export function ArticlePage({
             {article.tag}
           </Badge>
           <Typography variant="span" textColor="light" className="text-xs">
-            {formatArticleDate(article.date)}
-            {/* Only where it is true: a revision date on an unrevised piece is noise. */}
+            {/*
+              * One sentence with holes in it rather than three fragments in a row: the dates and
+              * the reading time are values, and a language that puts them in a different order can
+              * only do it if the whole line is one string. Two keys because a revision date on an
+              * unrevised piece is noise, so the line that mentions one is its own sentence.
+              */}
             {article.updated
-              ? ` · updated ${formatArticleDate(article.updated)}`
-              : ''}{' '}
-            · {article.readingMinutes} min read
+              ? t('article.meta.updated', {
+                  date: formatArticleDate(article.date, dates),
+                  updated: formatArticleDate(article.updated, dates),
+                  minutes: article.readingMinutes,
+                })
+              : t('article.meta', {
+                  date: formatArticleDate(article.date, dates),
+                  minutes: article.readingMinutes,
+                })}
           </Typography>
         </div>
 
@@ -276,21 +292,24 @@ export function ArticlePage({
       <ShareLinks
         url={`${window.location.origin}${articlePath(article.slug)}`}
         title={article.title}
+        label={t('article.share')}
       />
 
       <div className="flex flex-wrap items-center gap-3 rounded-lg border border-stroke bg-surface-card p-4">
         <Typography variant="span" textColor="secondary" className="text-sm">
-          This page was written in Markdown and rendered by the converter it
-          describes.
+          {t('article.cta.text')}
         </Typography>
         <Button size="sm" className="ml-auto" onClick={onGoToConverter}>
-          Convert a file
+          {t('article.cta.button')}
         </Button>
       </div>
 
       {more.length > 0 && (
         <div className="flex flex-col gap-4 pt-2">
-          <SectionHeading eyebrow="Next" title="Keep reading" />
+          <SectionHeading
+            eyebrow={t('article.more.eyebrow')}
+            title={t('article.more.title')}
+          />
           <div className="grid gap-4 md:grid-cols-2">
             {more.map((other) => (
               <ArticleCard
@@ -301,7 +320,9 @@ export function ArticlePage({
                 image={articleCardImage(other.slug)}
                 onOpen={() => onOpenArticle(other.slug)}
                 tag={other.tag}
-                meta={`${other.readingMinutes} min read`}
+                meta={t('article.more.meta', {
+                  minutes: other.readingMinutes,
+                })}
               />
             ))}
           </div>

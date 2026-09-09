@@ -13,6 +13,7 @@
  * opens that article.
  */
 import { INDEX } from 'virtual:blog-index';
+import { formatDate } from './format';
 
 export interface Article {
   slug: string;
@@ -91,28 +92,21 @@ export function articlePath(slug: string): string {
   return `/blog/${slug}`;
 }
 
-const MONTHS = [
-  'January',
-  'February',
-  'March',
-  'April',
-  'May',
-  'June',
-  'July',
-  'August',
-  'September',
-  'October',
-  'November',
-  'December',
-];
+/*
+ * A date, in the reader's language.
+ *
+ * This used to hold a list of twelve English month names, which was fine while there was one
+ * language and wrong the moment there were five: "8 September 2026" is not what a German reader
+ * expects to see, and translating twelve nouns would still leave the order and the punctuation
+ * wrong — German puts a full stop after the day, American English puts the month first.
+ *
+ * `Intl.DateTimeFormat` knows all of that, ships with the browser and with Node, and is the only
+ * thing that should ever be asked. It lives in `src/lib/format.ts` with the other three formatters
+ * and its cache, because the legal pages state a date too and two copies of one `Intl` options
+ * object is one copy too many. This function is the name the blog and the prerenderer call it by.
+ */
 
-/** "8 September 2026" — dates on an article are read, not sorted. */
-export function formatArticleDate(date: string): string {
-  const parsed = new Date(`${date}T00:00:00`);
-
-  if (Number.isNaN(parsed.getTime())) {
-    return date;
-  }
-
-  return `${parsed.getDate()} ${MONTHS[parsed.getMonth()]} ${parsed.getFullYear()}`;
+/** "8 September 2026", "8. September 2026", "8 settembre 2026" — read, not sorted. */
+export function formatArticleDate(date: string, locale = 'en-GB'): string {
+  return formatDate(date, locale);
 }

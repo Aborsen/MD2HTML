@@ -1,6 +1,7 @@
 import { CloudUpload, FileText } from 'lucide-react';
 import { DOCUMENT_BYTES } from '@shared/limits';
 import { type DragEvent, type ChangeEvent, useRef, useState } from 'react';
+import { useT } from '@/lib/i18n/context';
 import { Button } from '@/ui/components/Button';
 import { Typography } from '@/ui/components/Typography';
 import { cn } from '@/ui/lib/utils';
@@ -25,6 +26,7 @@ export function Dropzone({
   hint,
   onFiles,
 }: DropzoneProps) {
+  const t = useT();
   const inputRef = useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = useState(false);
 
@@ -84,11 +86,12 @@ export function Dropzone({
         leftSlot={<FileText />}
         onClick={() => inputRef.current?.click()}
       >
-        Choose files
+        {t('converter.dropzone.choose')}
       </Button>
 
       <Typography variant="span" textColor="light" className="text-xs">
-        {extensions.join(', ')} · up to 10 MB · processed in your browser
+        {/* One sentence with the extensions dropped into it, so a translator can move them. */}
+        {t('converter.dropzone.limits', { extensions: extensions.join(', ') })}
       </Typography>
 
       <input

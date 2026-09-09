@@ -1,7 +1,9 @@
-import type { Conversion } from '@shared/conversions';
+import type { Conversion, ConversionId } from '@shared/conversions';
 import type { Article } from './blog';
 import { articlePath } from './blog';
-import type { StaticPage } from './pages';
+import type { Content } from './i18n/content';
+import { DEFAULT_LOCALE, localePath, type Locale } from './i18n/locales';
+import type { StaticPage, StaticPageId } from './pages';
 
 /*
  * The trail for every page, in one place.
@@ -10,6 +12,10 @@ import type { StaticPage } from './pages';
  * which emits it as `BreadcrumbList` structured data for a search result to show instead of a bare
  * URL. A trail that says one thing to a reader and another to a crawler is worse than none, because
  * the mismatch is the kind of thing that gets structured data ignored site-wide.
+ *
+ * Every function here takes the catalogue and the locale rather than reading them from a hook,
+ * because the prerenderer has no hooks: it builds five languages of every page in one Node process,
+ * so the words and the language have to be arguments. The app passes what `useI18n()` gave it.
  */
 
 export interface CrumbSpec {
@@ -18,18 +24,42 @@ export interface CrumbSpec {
   path?: string;
 }
 
-const HOME: CrumbSpec = { label: 'Converter', path: '/' };
+/** The trail's root: the converter, in whatever language, at whatever that language's home is. */
+const home = (content: Content, locale: Locale): CrumbSpec => ({
+  label: content.ui['header.nav.converter'],
+  path: localePath(locale, '/'),
+});
 
-export const BLOG_CRUMBS: CrumbSpec[] = [HOME, { label: 'Blog' }];
+export function blogCrumbs(content: Content, locale: Locale): CrumbSpec[] {
+  return [home(content, locale), { label: content.ui['header.nav.blog'] }];
+}
 
-export const DOCS_CRUMBS: CrumbSpec[] = [HOME, { label: 'Documentation' }];
-
-export const HISTORY_CRUMBS: CrumbSpec[] = [HOME, { label: 'History' }];
-
-export function crumbsForArticle(article: Article): CrumbSpec[] {
+export function docsCrumbs(content: Content, locale: Locale): CrumbSpec[] {
   return [
-    HOME,
-    { label: 'Blog', path: '/blog' },
+    home(content, locale),
+    { label: content.ui['header.nav.documentation'] },
+  ];
+}
+
+export function historyCrumbs(content: Content, locale: Locale): CrumbSpec[] {
+  return [home(content, locale), { label: content.ui['header.nav.history'] }];
+}
+
+/*
+ * An article's trail is always English, because the articles are.
+ *
+ * The blog has no translated addresses — five locales of the same English prose would be five
+ * near-duplicates competing with each other — so the trail above one names the English home and
+ * the English blog, whatever language the chrome around it happens to be in. A crumb linking to
+ * `/de/blog` would link to a page that does not exist.
+ */
+export function crumbsForArticle(
+  article: Article,
+  content: Content
+): CrumbSpec[] {
+  return [
+    home(content, DEFAULT_LOCALE),
+    { label: content.ui['header.nav.blog'], path: '/blog' },
     { label: article.title },
   ];
 }
@@ -46,14 +76,24 @@ export function crumbsForArticle(article: Article): CrumbSpec[] {
  * `BreadcrumbList`: two names and no addresses is not a hierarchy, and the root of a site has no
  * position in one to declare.
  */
-export function crumbsForConversion(one: Conversion): CrumbSpec[] {
+export function crumbsForConversion(
+  one: Conversion | { id: ConversionId; path: string },
+  content: Content,
+  locale: Locale
+): CrumbSpec[] {
+  const label = content.conversions[one.id].label;
+
   return one.path === '/'
-    ? [{ label: HOME.label }, { label: one.label }]
-    : [HOME, { label: one.label }];
+    ? [{ label: content.ui['header.nav.converter'] }, { label }]
+    : [home(content, locale), { label }];
 }
 
-export function crumbsForStaticPage(page: StaticPage): CrumbSpec[] {
-  return [HOME, { label: page.label }];
+export function crumbsForStaticPage(
+  page: StaticPage | { id: StaticPageId },
+  content: Content,
+  locale: Locale
+): CrumbSpec[] {
+  return [home(content, locale), { label: content.pages[page.id].label }];
 }
 
 /** The article path, for the prerenderer's structured data. */

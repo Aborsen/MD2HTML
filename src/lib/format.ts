@@ -1,41 +1,180 @@
-export function formatBytes(bytes: number): string {
-  if (bytes < 1024) {
-    return `${bytes} B`;
+/*
+ * Numbers, sizes and times, said the way the reader's language says them.
+ *
+ * None of this is translation and none of it belongs in the catalogue. "1.5 KB" hand-built from a
+ * number and two letters is wrong in four of the five languages at once — German writes the decimal
+ * with a comma, French calls a byte an octet, and "12 min ago" is not a sentence anybody translates
+ * word for word. `Intl` already knows all of it, ships with the browser and with Node, and gets the
+ * separator, the unit, the word order and the month names right without a key per language.
+ *
+ * So every function here takes the locale. It takes the tag `Intl` wants rather than the one in the
+ * address — `en` means British English in this product, see `INTL_LOCALES` — and the caller does
+ * that lookup, which is the same thing `src/lib/blog.ts` asks of its callers.
+ *
+ * The formatters are built once per locale and kept. Constructing one is the expensive part, and a
+ * history of fifty rows asks for the same three formatters fifty times.
+ */
+
+/** A byte count is `byte` under 1 kB, `kilobyte` under 1 MB, `megabyte` above it. */
+type SizeUnit = 'byte' | 'kilobyte' | 'megabyte';
+
+const SIZES = new Map<string, Intl.NumberFormat>();
+
+function sizeFormatter(locale: string, unit: SizeUnit): Intl.NumberFormat {
+  const key = `${locale}/${unit}`;
+  const held = SIZES.get(key);
+
+  if (held) {
+    return held;
   }
-  if (bytes < 1024 * 1024) {
-    return `${(bytes / 1024).toFixed(1)} KB`;
-  }
-  return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
+
+  /*
+   * The short unit for `byte` is the singular whatever the count — "512 byte" — so bytes get the
+   * long form, which is the only one that says "512 bytes" and "1 byte". Kilobytes and megabytes
+   * take the short form, because "1.5 kilobytes" in a table column is not a size, it is a sentence.
+   */
+  const made = new Intl.NumberFormat(
+    locale,
+    unit === 'byte'
+      ? {
+          style: 'unit',
+          unit,
+          unitDisplay: 'long',
+          maximumFractionDigits: 0,
+        }
+      : {
+          style: 'unit',
+          unit,
+          unitDisplay: 'short',
+          // The digits the hand-built version showed: one for kB, two for MB.
+          minimumFractionDigits: unit === 'kilobyte' ? 1 : 2,
+          maximumFractionDigits: unit === 'kilobyte' ? 1 : 2,
+        }
+  );
+
+  SIZES.set(key, made);
+
+  return made;
 }
 
-export function formatDateTime(timestamp: number): string {
-  return new Date(timestamp).toLocaleString(undefined, {
+/**
+ * A file size. The steps are 1024, as they always were; the words and the decimal mark are `Intl`'s.
+ */
+export function formatBytes(bytes: number, locale: string): string {
+  if (bytes < 1024) {
+    return sizeFormatter(locale, 'byte').format(bytes);
+  }
+
+  if (bytes < 1024 * 1024) {
+    return sizeFormatter(locale, 'kilobyte').format(bytes / 1024);
+  }
+
+  return sizeFormatter(locale, 'megabyte').format(bytes / (1024 * 1024));
+}
+
+const DATE_TIMES = new Map<string, Intl.DateTimeFormat>();
+
+function dateTimeFormatter(locale: string): Intl.DateTimeFormat {
+  const held = DATE_TIMES.get(locale);
+
+  if (held) {
+    return held;
+  }
+
+  const made = new Intl.DateTimeFormat(locale, {
     day: '2-digit',
     month: 'short',
     year: 'numeric',
     hour: '2-digit',
     minute: '2-digit',
   });
+
+  DATE_TIMES.set(locale, made);
+
+  return made;
 }
 
-export function formatRelative(timestamp: number): string {
-  const diff = Date.now() - timestamp;
-  const minutes = Math.round(diff / 60_000);
+/** When a document was converted, to the minute: "08 Sept 2026, 17:05". */
+export function formatDateTime(timestamp: number, locale: string): string {
+  return dateTimeFormatter(locale).format(timestamp);
+}
+
+const DATES = new Map<string, Intl.DateTimeFormat>();
+
+function dateFormatter(locale: string): Intl.DateTimeFormat {
+  const held = DATES.get(locale);
+
+  if (held) {
+    return held;
+  }
+
+  const made = new Intl.DateTimeFormat(locale, {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  });
+
+  DATES.set(locale, made);
+
+  return made;
+}
+
+/**
+ * A day, from the ISO date it is stored as: "8 September 2026", "8. September 2026".
+ *
+ * The stored form is the machine's — `2026-09-08` sorts, compares and goes into a sitemap's
+ * `lastmod` — and this is the reader's. An unparseable value is handed back untouched rather than
+ * rendered as "Invalid Date".
+ */
+export function formatDate(iso: string, locale: string): string {
+  const parsed = new Date(`${iso}T00:00:00`);
+
+  return Number.isNaN(parsed.getTime())
+    ? iso
+    : dateFormatter(locale).format(parsed);
+}
+
+const RELATIVES = new Map<string, Intl.RelativeTimeFormat>();
+
+function relativeFormatter(locale: string): Intl.RelativeTimeFormat {
+  const held = RELATIVES.get(locale);
+
+  if (held) {
+    return held;
+  }
+
+  /*
+   * `numeric: 'auto'` is what turns -1 day into "yesterday" and 0 minutes into "this minute", in
+   * each language's own words, which is what the two hand-written English phrases here used to do
+   * for one language.
+   */
+  const made = new Intl.RelativeTimeFormat(locale, { numeric: 'auto' });
+
+  RELATIVES.set(locale, made);
+
+  return made;
+}
+
+/** How long ago, in the coarsest unit that still says something: "5 minutes ago", "yesterday". */
+export function formatRelative(timestamp: number, locale: string): string {
+  const format = relativeFormatter(locale);
+  const minutes = Math.round((Date.now() - timestamp) / 60_000);
 
   if (minutes < 1) {
-    return 'just now';
+    return format.format(0, 'minute');
   }
+
   if (minutes < 60) {
-    return `${minutes} min ago`;
+    return format.format(-minutes, 'minute');
   }
 
   const hours = Math.round(minutes / 60);
+
   if (hours < 24) {
-    return `${hours} h ago`;
+    return format.format(-hours, 'hour');
   }
 
-  const days = Math.round(hours / 24);
-  return days === 1 ? 'yesterday' : `${days} days ago`;
+  return format.format(-Math.round(hours / 24), 'day');
 }
 
 export function toHtmlFileName(markdownName: string): string {

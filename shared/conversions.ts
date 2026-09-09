@@ -1,10 +1,19 @@
 /*
- * The conversions this app offers, in one list.
+ * The conversions this app offers: one list of what they are, and no word of any language.
  *
- * Everything reads it: the menu in the header, the screen each conversion gets, the chips in the
- * history, the badge on a row, the API's `from` parameter, and the prerenderer that gives each one
- * a real page a stranger can arrive on. A second list would mean a menu offering a conversion the
- * dropzone will not accept, which is the kind of thing nobody notices until a person tries it.
+ * There is still only one list, and everything that needs to know which conversions exist reads
+ * it: the menu in the header, the screen each conversion gets, the chips in the history, the badge
+ * on a row, the API's `from` parameter, and the prerenderer that gives each one a real page a
+ * stranger can arrive on. A second list would mean a menu offering a conversion the dropzone will
+ * not accept, which is the kind of thing nobody notices until a person tries it.
+ *
+ * What each one is *called* is no longer here. It could not stay: the server imports this file for
+ * the API's `kind` parameter, and the server has no locale — a list it reads cannot carry a
+ * language without picking one for every reader at once. So the split is by what a thing is, not
+ * by who reads it. An id, a target, an address and a file extension are the same in German as in
+ * English and stay; the label, the heading, the blurb, the dropzone hint and the search-result text
+ * moved to `src/lib/i18n/messages/<locale>/conversions.ts`, keyed by the same `ConversionId`, where
+ * they are written once per language.
  *
  * Every conversion normalises to Markdown or to HTML from Markdown, because Markdown is what a
  * document is stored as — the rendering, the sharing, the API and the assistant tools all stand on
@@ -30,19 +39,8 @@ export interface Conversion {
   to: 'html' | 'markdown';
   /** Its own address, so it can be linked, reloaded and found. */
   path: string;
-  /** In the header menu. */
-  label: string;
-  /** On a row in the history, where there is no room for the long form. */
-  short: string;
-  /** The heading of its screen. */
-  title: string;
-  blurb: string;
   /** What the dropzone accepts, lower case, with the dot. */
   extensions: string[];
-  /** The line under the dropzone's title. */
-  hint: string;
-  /** What the prerendered page says to a crawler and in a search result. */
-  seo: { title: string; description: string };
 }
 
 export const CONVERSIONS: Conversion[] = [
@@ -50,86 +48,31 @@ export const CONVERSIONS: Conversion[] = [
     id: 'markdown-to-html',
     to: 'html',
     path: '/',
-    label: 'Markdown → HTML',
-    short: 'MD → HTML',
-    title: 'Markdown to HTML',
-    blurb:
-      'Upload a Markdown file — see the rendered HTML instantly and download it as a ready-to-use document.',
     extensions: ['.md', '.markdown', '.mdown', '.mkd', '.txt'],
-    hint: 'Upload an .md file and see exactly how it will look in HTML. Drop several and they are chained into one document, in the order you pick them.',
-    seo: {
-      title: 'transformpipe — Markdown to HTML converter',
-      description:
-        'Drop a Markdown file and get the rendered document and a self-contained .html to download. Converts in your browser; sign in to keep, share and publish documents.',
-    },
   },
   {
     id: 'html-to-markdown',
     to: 'markdown',
     path: '/html-to-markdown',
-    label: 'HTML → Markdown',
-    short: 'HTML → MD',
-    title: 'HTML to Markdown',
-    blurb:
-      'Upload an HTML file — or a page you saved — and get Markdown back, with the headings, links, lists and tables intact.',
     extensions: ['.html', '.htm', '.xhtml'],
-    hint: 'Upload an .html file and get Markdown. Tables, task lists and code blocks survive; the styling does not, because Markdown has none.',
-    seo: {
-      title: 'HTML to Markdown converter — transformpipe',
-      description:
-        'Turn an HTML file or a saved page into clean Markdown, tables and code blocks included. Converts in your browser: the file is never sent anywhere.',
-    },
   },
   {
     id: 'word-to-markdown',
     to: 'markdown',
     path: '/word-to-markdown',
-    label: 'Word → Markdown',
-    short: 'DOCX → MD',
-    title: 'Word to Markdown',
-    blurb:
-      'Upload a .docx and get Markdown: the headings, lists, links and tables come across, the fonts and margins do not.',
     extensions: ['.docx'],
-    hint: 'Upload a .docx from Word, Google Docs or LibreOffice. What comes back is the document’s structure as Markdown — not its layout.',
-    seo: {
-      title: 'Word (.docx) to Markdown converter — transformpipe',
-      description:
-        'Convert a Word document to Markdown in the browser: headings, lists, links and tables kept, formatting dropped. Nothing is uploaded.',
-    },
   },
   {
     id: 'csv-to-markdown',
     to: 'markdown',
     path: '/csv-to-markdown',
-    label: 'CSV → Markdown table',
-    short: 'CSV → MD',
-    title: 'CSV to a Markdown table',
-    blurb:
-      'Upload a CSV or a TSV and get a Markdown table, with the first row as its header and the columns aligned.',
     extensions: ['.csv', '.tsv'],
-    hint: 'Upload a .csv or .tsv. Quoted fields, commas inside them and line breaks inside cells are all handled.',
-    seo: {
-      title: 'CSV to Markdown table converter — transformpipe',
-      description:
-        'Turn a CSV or TSV file into a Markdown table, quoted fields and embedded commas handled. Converts in your browser; nothing is uploaded.',
-    },
   },
   {
     id: 'json-to-markdown',
     to: 'markdown',
     path: '/json-to-markdown',
-    label: 'JSON → Markdown',
-    short: 'JSON → MD',
-    title: 'JSON to Markdown',
-    blurb:
-      'Upload a JSON file and read it as a document: a list of records becomes a table, an object becomes sections with its fields above them.',
     extensions: ['.json'],
-    hint: 'Upload a .json file. A list of records becomes a table; nested objects become headings. One value per line — a log export — is understood too.',
-    seo: {
-      title: 'JSON to Markdown converter — transformpipe',
-      description:
-        'Turn a JSON file into readable Markdown: arrays of records become tables, objects become sections. Converts in your browser; nothing is uploaded.',
-    },
   },
 ];
 

@@ -1,6 +1,7 @@
 import { KeyRound, LogOut, Moon, Sun, User } from 'lucide-react';
 import { useState } from 'react';
 import { useAuth } from '@/lib/auth';
+import { useT } from '@/lib/i18n/context';
 import { useTheme } from '@/lib/theme';
 import { ApiKeysDialog } from './ApiKeysDialog';
 import { GoogleGlyph } from './GoogleGlyph';
@@ -23,6 +24,7 @@ import { Skeleton } from '@/ui/components/Skeleton';
 import { Typography } from '@/ui/components/Typography';
 
 function ThemeChoice() {
+  const t = useT();
   const { theme, setTheme } = useTheme();
 
   return (
@@ -36,11 +38,11 @@ function ThemeChoice() {
       <SegmentedControlList className="w-full">
         <SegmentedControlTrigger value="dark">
           <Moon />
-          Dark
+          {t('header.theme.dark')}
         </SegmentedControlTrigger>
         <SegmentedControlTrigger value="light">
           <Sun />
-          Light
+          {t('header.theme.light')}
         </SegmentedControlTrigger>
       </SegmentedControlList>
     </SegmentedControl>
@@ -49,6 +51,7 @@ function ThemeChoice() {
 
 /** Account menu when signed in — theme and sign-out live behind the avatar. */
 export function UserMenu() {
+  const t = useT();
   const { user, isLoading, isSigningIn, signIn, signOut } = useAuth();
   const { theme, toggle } = useTheme();
   const [isKeysOpen, setIsKeysOpen] = useState(false);
@@ -60,11 +63,17 @@ export function UserMenu() {
   if (!user) {
     return (
       <div className="flex items-center gap-1">
-        <Hint content={theme === 'dark' ? 'Switch to light' : 'Switch to dark'}>
+        <Hint
+          content={
+            theme === 'dark'
+              ? t('header.theme.tolight')
+              : t('header.theme.todark')
+          }
+        >
           <IconButton
             variant="tertiary"
             size="sm"
-            aria-label="Switch theme"
+            aria-label={t('header.theme.toggle')}
             onClick={toggle}
           >
             {theme === 'dark' ? <Sun /> : <Moon />}
@@ -84,13 +93,13 @@ export function UserMenu() {
           variant="secondary"
           size="sm"
           rounded="full"
-          aria-label="Sign in"
+          aria-label={t('header.signin')}
           isLoading={isSigningIn}
           leftSlot={<GoogleGlyph />}
           className="!px-2 sm:!px-3"
           onClick={() => void signIn()}
         >
-          <span className="hidden sm:inline">Sign in</span>
+          <span className="hidden sm:inline">{t('header.signin')}</span>
         </Button>
       </div>
     );
@@ -102,7 +111,7 @@ export function UserMenu() {
       <DropdownMenuTrigger asChild>
         <button
           type="button"
-          aria-label="Account"
+          aria-label={t('header.account')}
           className="flex cursor-pointer items-center gap-2 rounded-full border border-transparent py-0.5 pr-2 pl-0.5 transition-colors hover:bg-state-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-surface-card pressed:bg-state-hover"
         >
           {user.image ? (
@@ -148,7 +157,7 @@ export function UserMenu() {
 
         <div className="flex flex-col gap-1.5 px-1 py-1.5">
           <Typography variant="span" textColor="secondary" className="text-xs">
-            Theme
+            {t('header.theme.label')}
           </Typography>
           <ThemeChoice />
         </div>
@@ -157,12 +166,12 @@ export function UserMenu() {
 
         <DropdownMenuItem onSelect={() => setIsKeysOpen(true)}>
           <KeyRound />
-          API keys
+          {t('header.apikeys')}
         </DropdownMenuItem>
 
         <DropdownMenuItem variant="danger" onSelect={() => void signOut()}>
           <LogOut />
-          Log out
+          {t('header.logout')}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

@@ -6,11 +6,8 @@ import {
   History,
   Newspaper,
 } from 'lucide-react';
-import {
-  CONVERSIONS,
-  conversion,
-  type ConversionId,
-} from '@shared/conversions';
+import { CONVERSIONS, type ConversionId } from '@shared/conversions';
+import { useI18n, useT } from '@/lib/i18n/context';
 import { Logo } from './Logo';
 import { MobileNav } from './MobileNav';
 import { UserMenu } from './UserMenu';
@@ -42,11 +39,17 @@ interface AppHeaderProps {
   onHome: () => void;
 }
 
-/* The converter is a menu of its own; these are the destinations beside it. */
+/*
+ * The converter is a menu of its own; these are the destinations beside it.
+ *
+ * A key rather than a label: what a destination is called is language, and the words come from the
+ * catalogue at render time. What is here is what does not change with the language — which view,
+ * and which glyph.
+ */
 const NAV_ITEMS = [
-  { id: 'history' as const, label: 'History', icon: History },
-  { id: 'docs' as const, label: 'Docs', icon: BookOpen },
-  { id: 'blog' as const, label: 'Blog', icon: Newspaper },
+  { id: 'history' as const, label: 'header.nav.history', icon: History },
+  { id: 'docs' as const, label: 'header.nav.docs', icon: BookOpen },
+  { id: 'blog' as const, label: 'header.nav.blog', icon: Newspaper },
 ];
 
 export function AppHeader({
@@ -58,6 +61,8 @@ export function AppHeader({
   onOpenPage,
   onHome,
 }: AppHeaderProps) {
+  const t = useT();
+  const { content } = useI18n();
   const isConverter = view === 'converter';
   return (
     <header className="sticky top-0 z-20 border-stroke border-b bg-surface-card/85 backdrop-blur">
@@ -65,7 +70,7 @@ export function AppHeader({
         <button
           type="button"
           onClick={onHome}
-          aria-label="New file"
+          aria-label={t('header.home')}
           className={cn(
             'cursor-pointer rounded-md px-1 py-0.5 transition-opacity',
             'hover:opacity-80',
@@ -93,8 +98,10 @@ export function AppHeader({
           className="hidden lg:block"
         >
           {view === 'converter'
-            ? `${conversion(conversionId).label} converter`
-            : 'document converter'}
+            ? t('header.tagline.conversion', {
+                name: content.conversions[conversionId].label,
+              })
+            : t('header.tagline.app')}
         </Typography>
 
         {/*
@@ -111,8 +118,8 @@ export function AppHeader({
             <DropdownMenuTrigger asChild>
               <button
                 type="button"
-                aria-label="Converter"
-                title="Converter"
+                aria-label={t('header.nav.converter')}
+                title={t('header.nav.converter')}
                 className={cn(
                   'flex h-9 cursor-pointer items-center gap-1.5 rounded-md border border-transparent px-2 font-medium text-sm transition-colors md:px-3',
                   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring-brand focus-visible:ring-offset-2',
@@ -122,7 +129,9 @@ export function AppHeader({
                 )}
               >
                 <FileCode2 className="size-4 shrink-0" />
-                <span className="hidden md:inline">Converter</span>
+                <span className="hidden md:inline">
+                  {t('header.nav.converter')}
+                </span>
                 <ChevronDown className="size-3.5 shrink-0 opacity-70" />
               </button>
             </DropdownMenuTrigger>
@@ -144,7 +153,7 @@ export function AppHeader({
                   />
                   <span className="flex min-w-0 flex-col">
                     <Typography variant="span" weight="medium" textColor="primary">
-                      {one.label}
+                      {content.conversions[one.id].label}
                     </Typography>
                     <Typography variant="span" textColor="secondary" className="text-xs">
                       {one.extensions.join(', ')}
@@ -155,8 +164,9 @@ export function AppHeader({
             </DropdownMenuContent>
           </DropdownMenu>
 
-          {NAV_ITEMS.map(({ id, label, icon: Icon }) => {
+          {NAV_ITEMS.map(({ id, label: key, icon: Icon }) => {
             const isActive = view === id;
+            const label = t(key);
 
             return (
               <button

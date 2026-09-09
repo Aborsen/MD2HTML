@@ -4,6 +4,7 @@ import { createMiddleware } from 'hono/factory';
 import { buildStandaloneHtml, getDocStats } from '../shared/markdown.js';
 import { selfOrigin } from './auth.js';
 import { type Caller, mayWrite, resolveCaller } from './caller.js';
+import { canSendMail, sendShareNotice } from './mail.js';
 import { sql } from './db.js';
 import { checkQuota, countCall, QUOTA, RATE, usageOf } from './limits.js';
 import {
@@ -494,10 +495,29 @@ v1.put('/documents/:id/share', async (c) => {
     `;
   }
 
+  /* Who gets told, worked out before the list is rewritten. Empty unless somebody is added. */
+  let added: string[] = [];
+
   if (body.emails) {
     const clean = body.emails
       .map((email) => String(email).trim().toLowerCase())
       .filter((email) => /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email));
+
+    /*
+     * The difference, not the list.
+     *
+     * This endpoint replaces the whole audience on every call, which is right for the data and
+     * wrong for the mail: the share dialog saves when a name is removed too, and a person who was
+     * already on the list would then get a second "shared with you" for a document they have had
+     * for a week. Only an address that was not there a moment ago is new.
+     */
+    const before = (await sql()`
+      select email from m2h_document_share where document_id = ${id}
+    `) as Array<{ email: string }>;
+
+    const known = new Set(before.map((entry) => entry.email));
+
+    added = clean.filter((email) => !known.has(email));
 
     await sql()`delete from m2h_document_share where document_id = ${id}`;
 
@@ -515,10 +535,49 @@ v1.put('/documents/:id/share', async (c) => {
     select email from m2h_document_share where document_id = ${id} order by created_at
   `) as Array<{ email: string }>;
 
+  const url = shareUrl(c, after?.share_token ?? null);
+
+  /*
+   * Tell the people who were just added, and do not make the share wait for it.
+   *
+   * Until this existed, naming an address granted access and told nobody: the person found out
+   * when the sharer sent them the link by hand, which is the step the feature was supposed to
+   * remove. Notices are sent only in `people` mode — a link share has no audience to notify —
+   * and only to addresses that were not on the list a moment ago.
+   *
+   * Deliberately not awaited into the response. A slow mail provider must not turn a share that
+   * has already been written into a request that looks like it failed, and a share whose email
+   * bounced is still a share: the access is in the database either way. Failures are logged,
+   * because a person who thinks a colleague was told and was not has no way to notice otherwise.
+   */
+  if (after?.share_mode === 'people' && url && added.length > 0) {
+    const sender = c.get('caller').email;
+
+    void Promise.all(
+      added.map(async (to) => {
+        const sent = await sendShareNotice({
+          to,
+          from: sender ?? 'Somebody',
+          documentName: after.name,
+          url,
+        });
+
+        if (!sent.ok) {
+          console.error(`share notice to ${to} not sent: ${sent.reason}`);
+        }
+      })
+    );
+  }
+
   return c.json({
     mode: after?.share_mode,
-    url: shareUrl(c, after?.share_token ?? null),
+    url,
     emails: emails.map((entry) => entry.email),
+    /*
+     * What actually happened, so the dialog can stop implying an email that was never sent. A
+     * deployment with no key configured reports zero, which is the truth.
+     */
+    notified: canSendMail() ? added : [],
   });
 });
 

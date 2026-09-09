@@ -9,14 +9,15 @@ import {
   Share2,
   Terminal,
 } from 'lucide-react';
-import type { ReactNode } from 'react';
+import { Fragment, useMemo, type ReactNode } from 'react';
 import { AppBreadcrumbs } from '@/components/AppBreadcrumbs';
 import { ScrollToTop } from '@/components/ScrollToTop';
-import { DOCS_CRUMBS } from '@/lib/breadcrumbs';
+import { docsCrumbs } from '@/lib/breadcrumbs';
 import { CONVERSIONS } from '@shared/conversions';
-import { DOCS_SECTIONS } from '@/lib/docs-sections';
+import { DOCS_SECTION_IDS } from '@/lib/docs-sections';
+import { useI18n, useT } from '@/lib/i18n/context';
 import { MCP_PATH, MCP_TOOL_NAMES, MCP_TOOLS } from '@/lib/mcp-facts';
-import { FAQ_ENTRIES } from '@/lib/faq';
+import { FAQ_FLAGS } from '@/lib/faq';
 import { useTheme } from '@/lib/theme';
 import { useActiveHeading } from '@/lib/use-active-heading';
 import { CodeBlock, InlineCode } from '@/ui/components/Code';
@@ -34,9 +35,14 @@ import { cn } from '@/ui/lib/utils';
  * whenever someone remembered. Here the screenshots are captured from this app by
  * `npm run docs:shots`, the tokens are the app's own, and the header links to it — so the page can
  * only ever be as stale as the deployment it ships in.
+ *
+ * None of the words are in this file. The prose is `docs.*` in the catalogue and the eleven section
+ * titles are `content.docs`, keyed by the same id the contents list and the address use, so the
+ * page reads in whichever language the reader chose. What stays here is everything that is not
+ * language: the order, the ids, the icons, and the paths, flags and endpoints the sentences wrap.
  */
 
-/** The order and the wording live in one place; the icons are this page's own business. */
+/** The order and the ids come from `DOCS_SECTION_IDS`; the icons are this page's own business. */
 const ICONS: Record<string, typeof BookOpen> = {
   start: BookOpen,
   converting: FileCode2,
@@ -51,10 +57,45 @@ const ICONS: Record<string, typeof BookOpen> = {
   faq: HelpCircle,
 };
 
-const SECTIONS = DOCS_SECTIONS.map((section) => ({
-  ...section,
-  icon: ICONS[section.id] ?? BookOpen,
+const SECTIONS = DOCS_SECTION_IDS.map((id) => ({
+  id,
+  icon: ICONS[id] ?? BookOpen,
 }));
+
+/**
+ * One catalogue sentence with elements dropped into its `{placeholders}`.
+ *
+ * A sentence that wraps a path, a flag or a bold label is one entry in the catalogue rather than
+ * the two or three fragments the JSX would otherwise cut it into. Fragments cannot be reordered,
+ * and a German sentence does not put the code where an English one does — so the whole sentence is
+ * translated at once and the elements are dropped in wherever it asks for them. The code itself
+ * stays in the JSX below, because a header name or a file extension is not a word anybody
+ * translates.
+ *
+ * A placeholder with nothing to fill it renders as it is written, which is visible in review rather
+ * than silently missing from the page.
+ */
+function Rich({
+  text,
+  parts,
+}: {
+  text: string;
+  parts: Record<string, ReactNode>;
+}) {
+  return (
+    <>
+      {text.split(/(\{\w+\})/g).map((piece, index) => {
+        const name = /^\{(\w+)\}$/.exec(piece)?.[1];
+
+        return (
+          <Fragment key={index}>
+            {name && name in parts ? parts[name] : piece}
+          </Fragment>
+        );
+      })}
+    </>
+  );
+}
 
 function Section({
   id,
@@ -81,7 +122,8 @@ function Section({
  * A screenshot of this app, in whichever theme the reader is using.
  *
  * `npm run docs:shots` captures every one of them twice, light and dark, because a dark screenshot
- * on a light page reads as somebody else's product.
+ * on a light page reads as somebody else's product. The name picks the file and is the same in
+ * every language; the alt text and the caption are words, and arrive translated.
  */
 function Shot({
   name,
@@ -93,6 +135,7 @@ function Shot({
   caption: string;
 }) {
   const { theme } = useTheme();
+  const t = useT();
 
   return (
     <figure className="space-y-2">
@@ -102,7 +145,8 @@ function Shot({
         caption={caption}
       />
       <figcaption className="text-ink-secondary text-xs">
-        {caption} <span className="text-ink-inactive">— click to enlarge</span>
+        {caption}{' '}
+        <span className="text-ink-inactive">{t('docs.shot.enlarge')}</span>
       </figcaption>
     </figure>
   );
@@ -110,16 +154,51 @@ function Shot({
 
 export function DocsPage({ onGoToConverter }: { onGoToConverter: () => void }) {
   const active = useActiveHeading(SECTIONS.map((one) => one.id));
+  const t = useT();
+  /*
+   * Three kinds of word on this page are not the page's own, and each is read from the slice that
+   * owns it rather than copied into `docs.*`: the trail at the top, which every page shares; the
+   * section titles, which the contents list beside the page needs as well; and the name of each
+   * conversion, which the header's menu shows. Keyed by the same id in both places, so a heading
+   * and the line linking to it — or a menu entry and the list item under it — cannot end up saying
+   * two different things.
+   */
+  const { content, locale } = useI18n();
+  const titles = content.docs;
+
+  /*
+   * The whole list of questions, in the reader's language.
+   *
+   * Not `FAQ_ENTRIES`: that one is zipped against the English slice on purpose, because the
+   * connector's `tp_help` tool reads it from the server and answers in English. Rendering it here
+   * put an English FAQ at the foot of a French manual — the words come from the catalogue, and the
+   * flags stay in the code, position being the only id a question has.
+   *
+   * Unlike the converter's shorter list, nothing is filtered out: somebody in the documentation is
+   * past deciding whether to use the thing and is looking for the detail.
+   */
+  const questions = useMemo(
+    () => content.faq.map((one, index) => ({ ...one, ...FAQ_FLAGS[index] })),
+    [content.faq]
+  );
 
   return (
     <div className="mx-auto flex w-full max-w-5xl gap-10">
       <TableOfContents
-        items={SECTIONS.map(({ id, title, icon }) => ({ id, title, icon }))}
+        items={SECTIONS.map(({ id, icon }) => ({
+          id,
+          title: titles[id].title,
+          icon,
+        }))}
         activeId={active}
+        label={t('docs.toc')}
       />
 
       <div className="min-w-0 max-w-3xl flex-1 space-y-12 pb-8">
-        <AppBreadcrumbs items={DOCS_CRUMBS} onNavigate={onGoToConverter} />
+        <AppBreadcrumbs
+          items={docsCrumbs(content, locale)}
+          onNavigate={onGoToConverter}
+        />
 
         <header className="space-y-3">
           <Typography
@@ -127,43 +206,35 @@ export function DocsPage({ onGoToConverter }: { onGoToConverter: () => void }) {
             textColor="light"
             className="block text-xxs uppercase tracking-wide"
           >
-            Documentation
+            {t('docs.eyebrow')}
           </Typography>
           <Typography variant="h1" className="text-2xl md:text-2xl">
-            Everything transformpipe does
+            {t('docs.title')}
           </Typography>
           <Typography variant="p" textColor="secondary" className="text-sm">
-            Markdown, HTML, Word, CSV or JSON in — a document out as HTML, Markdown, plain
-            text or print. From this page, from a terminal, from a pull request or
-            from an assistant. This is the whole of it; nothing here sits behind a
-            plan.
+            {t('docs.lede')}
           </Typography>
         </header>
 
-        <Section id="start" title="Start here">
-          <p>
-            Drop a file on the converter and you have the converted document and a
-            download. Signed out, nothing is stored and nothing is sent anywhere —
-            the conversion runs in this browser, on your own machine.
-          </p>
-          <p>
-            Sign in with Google and the same documents follow you between devices, can
-            be shared by link or by address, and can be reached by a script with an API
-            key. Whatever you converted before signing in moves into the account on the
-            way.
-          </p>
+        <Section id="start" title={titles.start.title}>
+          <p>{t('docs.start.signedOut')}</p>
+          <p>{t('docs.start.signedIn')}</p>
         </Section>
 
-        <Section id="converting" title="Converting">
+        <Section id="converting" title={titles.converting.title}>
           <p>
-            <strong>Converter</strong> in the header lists what this app converts.
-            Each one has its own page, its own dropzone and its own address, so a
-            conversion can be linked and bookmarked rather than set up again:
+            <Rich
+              text={t('docs.converting.intro')}
+              parts={{
+                menu: <strong>{t('docs.converting.menu')}</strong>,
+              }}
+            />
           </p>
           <ul>
             {CONVERSIONS.map((one) => (
               <li key={one.id}>
-                <a href={one.path}>{one.label}</a> —{' '}
+                {/* Each conversion is named by the same entry the header's menu reads. */}
+                <a href={one.path}>{content.conversions[one.id].label}</a> —{' '}
                 {one.extensions.map((extension, index) => (
                   <span key={extension}>
                     {index > 0 && ', '}
@@ -174,143 +245,117 @@ export function DocsPage({ onGoToConverter }: { onGoToConverter: () => void }) {
             ))}
           </ul>
           <p>
-            Up to 10 MB a file. Drop several Markdown files at once and they are
-            chained into a single document, in the order they arrive, separated by a
-            rule. Drop a file the page does not take — a{' '}
-            <InlineCode>.docx</InlineCode> on the Markdown page, say — and it goes to
-            the conversion that does take it rather than being refused; a mixture of
-            kinds is refused, because chaining a spreadsheet onto a Word document is
-            not something anybody meant.
+            <Rich
+              text={t('docs.converting.sizes')}
+              parts={{ docx: <InlineCode>.docx</InlineCode> }}
+            />
           </p>
-          <p>
-            Everything ends as Markdown, and that is deliberate: it is what a document
-            is stored, previewed, shared and reached by a script as, so the whole of
-            the app stands on one shape rather than four.
-          </p>
+          <p>{t('docs.converting.oneShape')}</p>
           <Shot
             name="converter"
-            alt="The transformpipe converter with an empty dropzone"
-            caption="The converter. The logo doubles as “start over”."
+            alt={t('docs.converting.shot.converter.alt')}
+            caption={t('docs.converting.shot.converter.caption')}
           />
-          <p>
-            What comes out is GitHub Flavored Markdown: tables, task lists,
-            strikethrough, autolinks, fenced code. The preview is the document itself,
-            styled with the same tokens as the app, so a dark app hands over a dark
-            page — and printing always flips to light, because a dark page on paper is
-            a wall of ink.
-          </p>
+          <p>{t('docs.converting.flavour')}</p>
           <Shot
             name="preview"
-            alt="A converted document shown in the preview tab"
-            caption="Preview, with the counts the document actually has."
+            alt={t('docs.converting.shot.preview.alt')}
+            caption={t('docs.converting.shot.preview.caption')}
           />
           <p>
-            The source tab is not a summary of the output. It is the exact thing the
-            download hands over — the standalone HTML when you converted{' '}
-            <em>to</em> HTML, the Markdown when you converted to Markdown: one
-            document, styles inline, no scripts, no network.
+            <Rich
+              text={t('docs.converting.source')}
+              parts={{
+                to: <em>{t('docs.converting.source.emphasis')}</em>,
+              }}
+            />
           </p>
           <p>
-            The download button carries the format the conversion produced —{' '}
-            <InlineCode>.html</InlineCode> on the Markdown page,{' '}
-            <InlineCode>.md</InlineCode> on the others — and the arrow beside it holds
-            the rest: Markdown, HTML, plain text, and printing. Print builds the
-            exported file in a frame of its own and opens the browser's dialog, so a
-            PDF is the document and not a screenshot of the app around it; the export
-            flips to a light palette on paper whatever the app is set to.
+            <Rich
+              text={t('docs.converting.download')}
+              parts={{
+                html: <InlineCode>.html</InlineCode>,
+                md: <InlineCode>.md</InlineCode>,
+              }}
+            />
           </p>
           <Shot
             name="source"
-            alt="The HTML source tab showing the standalone document"
-            caption="The HTML source tab: what you get, before you get it."
+            alt={t('docs.converting.shot.source.alt')}
+            caption={t('docs.converting.shot.source.caption')}
           />
-          <p>
-            For reading rather than checking, the preview goes fullscreen and keeps a
-            readable measure; Escape comes back. A long document grows a back-to-top
-            button, in both views.
-          </p>
+          <p>{t('docs.converting.reading')}</p>
         </Section>
 
-        <Section id="history" title="History">
-          <p>
-            Every conversion lands in the history — in your account when signed in, in
-            this browser when not. Search runs over file names, the columns sort, and a
-            row opens the document.
-          </p>
+        <Section id="history" title={titles.history.title}>
+          <p>{t('docs.history.intro')}</p>
           <Shot
             name="history"
-            alt="The history list with search, chips and sortable columns"
-            caption="HTML or Markdown, search, sortable columns."
+            alt={t('docs.history.shot.history.alt')}
+            caption={t('docs.history.shot.history.caption')}
           />
           <p>
-            The chips filter by where a document came from: <em>All formats</em> to
-            begin with, then one chip per conversion that actually has rows, and{' '}
-            <em>Shared with me</em> for files somebody sent you. A row's badge says
-            the same thing — <InlineCode>DOCX → MD</InlineCode> on a Word file — so a
-            list of thirty documents still tells you which is which.
+            <Rich
+              text={t('docs.history.chips')}
+              parts={{
+                all: <em>{t('docs.history.chip.all')}</em>,
+                shared: <em>{t('docs.chip.shared')}</em>,
+                badge: <InlineCode>DOCX → MD</InlineCode>,
+              }}
+            />
           </p>
-          <p>
-            Downloading is a menu rather than a chip: only the Markdown is ever
-            stored, and the HTML and the plain text are built on the spot, so one row
-            can hand over any of the three without keeping three copies.
-          </p>
-          <p>
-            Tick rows and the selection bar appears: merge them into one document,
-            download them, or delete them. Merging keeps the order of the list.
-          </p>
+          <p>{t('docs.history.downloading')}</p>
+          <p>{t('docs.history.selection')}</p>
           <Shot
             name="selection"
-            alt="Two rows selected, with the bulk action bar"
-            caption="Bulk merge, download and delete."
+            alt={t('docs.history.shot.selection.alt')}
+            caption={t('docs.history.shot.selection.caption')}
           />
         </Section>
 
-        <Section id="sharing" title="Sharing">
+        <Section id="sharing" title={titles.sharing.title}>
           <p>
-            <strong>Anyone with the link</strong> publishes the document at{' '}
-            <InlineCode>/s/&lt;token&gt;</InlineCode> — a read-only page with the document and a
-            download, nothing else. <strong>Only these addresses</strong> asks the
-            reader to sign in with an address you listed.
+            <Rich
+              text={t('docs.sharing.modes')}
+              parts={{
+                anyone: <strong>{t('docs.sharing.mode.link')}</strong>,
+                path: <InlineCode>/s/&lt;token&gt;</InlineCode>,
+                only: <strong>{t('docs.sharing.mode.people')}</strong>,
+              }}
+            />
+          </p>
+          <p>{t('docs.sharing.revoking')}</p>
+          <p>
+            <Rich
+              text={t('docs.sharing.incoming')}
+              parts={{ shared: <strong>{t('docs.chip.shared')}</strong> }}
+            />
           </p>
           <p>
-            Revoking drops the token, so a link you already sent stops working; sharing
-            again mints a different one. No email is ever sent — you pass the link on
-            yourself.
-          </p>
-          <p>
-            Documents other people addressed to you appear under the{' '}
-            <strong>Shared with me</strong> chip, with who shared each one. They are
-            read-only: open and download, no delete, no re-share. A link share belongs
-            to whoever holds the link, so it appears on no one's list.
-          </p>
-          <p>
-            A shared page carries someone's content on our domain, so it is served with{' '}
-            <InlineCode>script-src 'none'</InlineCode> and cannot be framed, and every one of them links
-            to a report form that needs no JavaScript. Nothing is revoked automatically:
-            a report is a stranger's claim about someone else's document, and both
-            mistakes — leaving a bad page up, killing an innocent link — deserve a
-            person reading it first.
-          </p>
-        </Section>
-
-        <Section id="account" title="Account">
-          <p>
-            Sign-in is Google, through Neon Auth. The account menu holds the theme (dark
-            by default, remembered per browser), the API keys, and the way out.
-          </p>
-          <p>
-            A key is shown once and stored only as a hash. It reaches documents and
-            shares — never the account or the keys themselves, so a leaked key cannot
-            mint its replacement or lock you out. Revoking one takes effect on the next
-            request.
+            <Rich
+              text={t('docs.sharing.safety')}
+              parts={{
+                csp: <InlineCode>script-src 'none'</InlineCode>,
+              }}
+            />
           </p>
         </Section>
 
-        <Section id="api" title="API">
+        <Section id="account" title={titles.account.title}>
+          <p>{t('docs.account.signIn')}</p>
+          <p>{t('docs.account.keys')}</p>
+        </Section>
+
+        <Section id="api" title={titles.api.title}>
           <p>
-            Everything the app does, a script can do. Send the key as{' '}
-            <InlineCode>Authorization: Bearer tp_live_…</InlineCode>; a browser session works too, so the
-            same endpoints can be tried while signed in.
+            <Rich
+              text={t('docs.api.intro')}
+              parts={{
+                auth: (
+                  <InlineCode>Authorization: Bearer tp_live_…</InlineCode>
+                ),
+              }}
+            />
           </p>
           {/* The origin comes from the page, so this stays right on whatever domain it is read from. */}
           <CodeBlock>{`curl -H "Authorization: Bearer tp_live_…" \\
@@ -324,70 +369,86 @@ export function DocsPage({ onGoToConverter }: { onGoToConverter: () => void }) {
                 key: 'post',
                 term: <InlineCode>POST /api/v1/documents</InlineCode>,
                 text: (
-                  <>
-                    Markdown as the body (<InlineCode>?name=</InlineCode>) or JSON{' '}
-                    <InlineCode>{'{name, markdown}'}</InlineCode>. <InlineCode>?share=link|people</InlineCode> publishes it
-                    in the same call. <InlineCode>?kind=html-to-markdown</InlineCode>,{' '}
-                    <InlineCode>?kind=csv-to-markdown</InlineCode> or{' '}
-                    <InlineCode>?kind=json-to-markdown</InlineCode> converts the body first, so a
-                    page, a spreadsheet or an API response can be posted as it is;{' '}
-                    <InlineCode>word-to-markdown</InlineCode> is refused here, because reading a{' '}
-                    <InlineCode>.docx</InlineCode> happens in the browser.
-                  </>
+                  <Rich
+                    text={t('docs.api.post')}
+                    parts={{
+                      name: <InlineCode>?name=</InlineCode>,
+                      json: <InlineCode>{'{name, markdown}'}</InlineCode>,
+                      share: <InlineCode>?share=link|people</InlineCode>,
+                      kindHtml: (
+                        <InlineCode>?kind=html-to-markdown</InlineCode>
+                      ),
+                      kindCsv: <InlineCode>?kind=csv-to-markdown</InlineCode>,
+                      kindJson: (
+                        <InlineCode>?kind=json-to-markdown</InlineCode>
+                      ),
+                      word: <InlineCode>word-to-markdown</InlineCode>,
+                      docx: <InlineCode>.docx</InlineCode>,
+                    }}
+                  />
                 ),
               },
               {
                 key: 'list',
                 term: <InlineCode>GET /api/v1/documents</InlineCode>,
-                text: 'The newest 500, with sizes, stats and share state.',
+                text: t('docs.api.list'),
               },
               {
                 key: 'one',
                 term: <InlineCode>GET /api/v1/documents/:id</InlineCode>,
-                text: 'Metadata and the Markdown source.',
+                text: t('docs.api.one'),
               },
               {
                 key: 'html',
                 term: <InlineCode>GET /api/v1/documents/:id.html</InlineCode>,
                 text: (
-                  <>
-                    The standalone document. <InlineCode>?theme=dark</InlineCode> optional.
-                  </>
+                  <Rich
+                    text={t('docs.api.html')}
+                    parts={{ theme: <InlineCode>?theme=dark</InlineCode> }}
+                  />
                 ),
               },
               {
                 key: 'delete',
                 term: <InlineCode>DELETE /api/v1/documents/:id</InlineCode>,
-                text: 'Removes the row and its stored source.',
+                text: t('docs.api.delete'),
               },
               {
                 key: 'share',
                 term: <InlineCode>GET | PUT /api/v1/documents/:id/share</InlineCode>,
                 text: (
-                  <>
-                    <InlineCode>{'{mode, emails[]}'}</InlineCode>. <InlineCode>private</InlineCode> drops the token.
-                  </>
+                  <Rich
+                    text={t('docs.api.share')}
+                    parts={{
+                      modes: <InlineCode>{'{mode, emails[]}'}</InlineCode>,
+                      private: <InlineCode>private</InlineCode>,
+                    }}
+                  />
                 ),
               },
               {
                 key: 'usage',
                 term: <InlineCode>GET /api/v1/usage</InlineCode>,
-                text: 'What the account is using, against the limits.',
+                text: t('docs.api.usage'),
               },
             ]}
           />
           <p>
-            Errors are <InlineCode>{'{ "error": "…" }'}</InlineCode> with a status that means what it
-            says: 401 unknown key, 404 not yours, 413 the document is over 4 MB, 403 the
-            account is out of room, 429 too fast, 410 the source is gone.
+            <Rich
+              text={t('docs.api.errors')}
+              parts={{
+                shape: <InlineCode>{'{ "error": "…" }'}</InlineCode>,
+              }}
+            />
           </p>
         </Section>
 
-        <Section id="cli" title="Command line">
+        <Section id="cli" title={titles.cli.title}>
           <p>
-            <InlineCode>cli/tp.mjs</InlineCode> in the repository is the same API with a friendlier face,
-            and no dependencies — a tool that runs in CI should not drag a package tree
-            behind it.
+            <Rich
+              text={t('docs.cli.intro')}
+              parts={{ cli: <InlineCode>cli/tp.mjs</InlineCode> }}
+            />
           </p>
           <CodeBlock>{`node cli/tp.mjs login tp_live_…          # remembers the key for this machine
 node cli/tp.mjs push README.md --share    # prints the link
@@ -397,103 +458,115 @@ node cli/tp.mjs list
 node cli/tp.mjs rm <id>
 node cli/tp.mjs usage                     # 65.8 kB of 100.0 MB · 3 of 500 documents`}</CodeBlock>
           <p>
-            A pushed <InlineCode>.html</InlineCode>, <InlineCode>.csv</InlineCode>,{' '}
-            <InlineCode>.tsv</InlineCode> or <InlineCode>.json</InlineCode> is converted by the
-            endpoint rather than stored as if it were already Markdown; a{' '}
-            <InlineCode>.docx</InlineCode> is refused, with the page that can read it.{' '}
-            <InlineCode>--merge</InlineCode> chains Markdown only.
+            <Rich
+              text={t('docs.cli.extensions')}
+              parts={{
+                html: <InlineCode>.html</InlineCode>,
+                csv: <InlineCode>.csv</InlineCode>,
+                tsv: <InlineCode>.tsv</InlineCode>,
+                json: <InlineCode>.json</InlineCode>,
+                docx: <InlineCode>.docx</InlineCode>,
+                merge: <InlineCode>--merge</InlineCode>,
+              }}
+            />
           </p>
           <p>
-            The key comes from <InlineCode>--key</InlineCode>, then <InlineCode>TP_API_KEY</InlineCode>, then{' '}
-            <InlineCode>~/.config/tp/config.json</InlineCode>. <InlineCode>TP_HOST</InlineCode> points it at another
-            deployment, and <InlineCode>--json</InlineCode> prints the API's own answer.
+            <Rich
+              text={t('docs.cli.key')}
+              parts={{
+                key: <InlineCode>--key</InlineCode>,
+                env: <InlineCode>TP_API_KEY</InlineCode>,
+                config: <InlineCode>~/.config/tp/config.json</InlineCode>,
+                host: <InlineCode>TP_HOST</InlineCode>,
+                json: <InlineCode>--json</InlineCode>,
+              }}
+            />
           </p>
         </Section>
 
-        <Section id="action" title="GitHub Action">
-          <p>
-            Given no file list, the action publishes the Markdown a pull request changed
-            and comments the links on it — so a reviewer opens the rendered document
-            instead of reading a diff of asterisks.
-          </p>
+        <Section id="action" title={titles.action.title}>
+          <p>{t('docs.action.intro')}</p>
           <CodeBlock>{`- uses: Aborsen/MD2HTML@v1
   with:
     api-key: \${{ secrets.TP_API_KEY }}`}</CodeBlock>
           <p>
-            <InlineCode>examples/publish-markdown.yml</InlineCode> is a complete workflow to copy.
-            Checkout needs <InlineCode>fetch-depth: 0</InlineCode> for the base commit the file list is
-            compared against, and the comment needs <InlineCode>pull-requests: write</InlineCode>.
+            <Rich
+              text={t('docs.action.workflow')}
+              parts={{
+                example: (
+                  <InlineCode>examples/publish-markdown.yml</InlineCode>
+                ),
+                depth: <InlineCode>fetch-depth: 0</InlineCode>,
+                permission: <InlineCode>pull-requests: write</InlineCode>,
+              }}
+            />
           </p>
           <DefinitionTable
             rows={[
               {
                 key: 'api-key',
                 term: <InlineCode>api-key</InlineCode>,
-                text: 'Required. Keep it in a repository secret.',
+                text: t('docs.action.input.apiKey'),
               },
               {
                 key: 'files',
                 term: <InlineCode>files</InlineCode>,
-                text: 'Space-separated paths. Defaults to what the pull request changed.',
+                text: t('docs.action.input.files'),
               },
               {
                 key: 'share',
                 term: <InlineCode>share</InlineCode>,
                 text: (
-                  <>
-                    <InlineCode>link</InlineCode> (default), <InlineCode>people</InlineCode>, or <InlineCode>none</InlineCode> to publish
-                    privately.
-                  </>
+                  <Rich
+                    text={t('docs.action.input.share')}
+                    parts={{
+                      link: <InlineCode>link</InlineCode>,
+                      people: <InlineCode>people</InlineCode>,
+                      none: <InlineCode>none</InlineCode>,
+                    }}
+                  />
                 ),
               },
               {
                 key: 'merge',
                 term: <InlineCode>merge</InlineCode>,
-                text: 'Chain the files into one document instead of one each.',
+                text: t('docs.action.input.merge'),
               },
               {
                 key: 'comment',
                 term: <InlineCode>comment</InlineCode>,
-                text: 'Comment the links on the pull request.',
+                text: t('docs.action.input.comment'),
               },
               {
                 key: 'host',
                 term: <InlineCode>host</InlineCode>,
-                text: 'Another deployment of transformpipe.',
+                text: t('docs.action.input.host'),
               },
             ]}
           />
-          <p>
-            A push publishes new documents rather than overwriting the old ones, so a
-            link in an older comment keeps showing what that commit said.
-          </p>
+          <p>{t('docs.action.pushes')}</p>
         </Section>
 
-        <Section id="assistant" title="In an assistant">
+        <Section id="assistant" title={titles.assistant.title}>
           <p>
-            transformpipe is an MCP server, so it can be added to Claude as a connector. The
-            address is this deployment plus <InlineCode>{MCP_PATH}</InlineCode>:
+            <Rich
+              text={t('docs.assistant.intro')}
+              parts={{ path: <InlineCode>{MCP_PATH}</InlineCode> }}
+            />
           </p>
 
           <CodeBlock>{`${window.location.origin}${MCP_PATH}`}</CodeBlock>
 
-          <p>
-            On claude.ai that goes in Settings → Connectors → Add custom connector.
-            From a terminal:
-          </p>
+          <p>{t('docs.assistant.adding')}</p>
 
           <CodeBlock>{`claude mcp add --transport http transformpipe ${window.location.origin}${MCP_PATH}`}</CodeBlock>
 
-          <p>
-            There is no key to paste. The first call comes back unauthorised, your
-            assistant follows that to a page here, and you sign in with the same
-            Google account and approve a named client — which is why the page tells
-            you which address it is about to act as. What it gets is a token of ours,
-            good for your documents and nothing else: not your account, not your
-            sign-in, and not your API keys. Disconnect it from the account menu, under
-            API keys, and it stops working on the next call.
-          </p>
+          <p>{t('docs.assistant.auth')}</p>
 
+          {/*
+            * The connector's own table stays English: `mcp-facts.ts` is what the server hands a
+            * model as its tool list, and a tool name and its description are part of a protocol.
+            */}
           <DefinitionTable
             rows={MCP_TOOL_NAMES.map((name) => ({
               key: name,
@@ -502,56 +575,44 @@ node cli/tp.mjs usage                     # 65.8 kB of 100.0 MB · 3 of 500 docu
             }))}
           />
 
-          <p>
-            The tools are the same code as the API above, called in process, so a
-            conversation and a script get the same answer. Two of them are shaped for
-            the trouble they can cause: sharing publishes a page on the public web, and
-            deleting takes an explicit confirmation and removes exactly one document.
-          </p>
+          <p>{t('docs.assistant.tools')}</p>
         </Section>
 
-        <Section id="limits" title="Limits">
+        <Section id="limits" title={titles.limits.title}>
           <DefinitionTable
             rows={[
               {
                 key: 'account',
-                term: 'Per account',
-                text: '100 MB of Markdown, 500 documents',
+                term: t('docs.limits.account.term'),
+                text: t('docs.limits.account.text'),
               },
               {
                 key: 'convert',
-                term: 'Per conversion',
-                text: '10 MB — roughly 1.5 million words. Several files dropped together count as the one document they become',
+                term: t('docs.limits.convert.term'),
+                text: t('docs.limits.convert.text'),
               },
               {
                 key: 'document',
-                term: 'Per kept document',
-                text: '4 MB, and not by our choice: a Vercel Function refuses a request or a response body over 4.5 MB before any of this code runs, so a larger document could be neither saved nor read back. It still converts, previews and downloads — it stays out of the history, and the app says so rather than reporting a save that did not happen',
+                term: t('docs.limits.document.term'),
+                text: t('docs.limits.document.text'),
               },
               {
                 key: 'caller',
-                term: 'Per caller',
-                text: '60 requests a minute, counted by key or by session',
+                term: t('docs.limits.caller.term'),
+                text: t('docs.limits.caller.text'),
               },
             ]}
           />
-          <p>
-            Reaching a limit is a refusal, not a silent eviction. This app used to drop
-            the oldest document to stay under its cap, which quietly destroyed something
-            its owner had chosen to keep; now it says what to delete instead.
-          </p>
+          <p>{t('docs.limits.refusal')}</p>
         </Section>
 
-        <Section id="faq" title="Questions">
-          <p>
-            The same answers the converter shows under its dropzone — one set of
-            them, so the two pages cannot drift apart.
-          </p>
-          <Faq items={FAQ_ENTRIES} />
+        <Section id="faq" title={titles.faq.title}>
+          <p>{t('docs.faq.intro')}</p>
+          <Faq items={questions} />
         </Section>
 
         <footer className="border-stroke border-t pt-6 text-ink-secondary text-sm">
-          Source and issues:{' '}
+          {t('docs.footer.source')}{' '}
           <a
             href="https://github.com/Aborsen/MD2HTML"
             target="_blank"

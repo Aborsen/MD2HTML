@@ -2,6 +2,8 @@ import { Ban, Check, Copy, KeyRound, Plug, Plus, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { api, type ApiKey, type Grant } from '@/lib/api';
 import { formatRelative } from '@/lib/format';
+import { useI18n, useT } from '@/lib/i18n/context';
+import { INTL_LOCALES } from '@/lib/i18n/locales';
 import { Hint } from './Hint';
 import { Button } from '@/ui/components/Button';
 import { CodeBlock, InlineCode } from '@/ui/components/Code';
@@ -28,6 +30,10 @@ interface ApiKeysDialogProps {
 }
 
 export function ApiKeysDialog({ open, onOpenChange }: ApiKeysDialogProps) {
+  const t = useT();
+  const { locale } = useI18n();
+  /* The tag `Intl` wants, which is not the tag in the address — see `INTL_LOCALES`. */
+  const times = INTL_LOCALES[locale];
   const [keys, setKeys] = useState<ApiKey[]>([]);
   const [grants, setGrants] = useState<Grant[]>([]);
   const [name, setName] = useState('');
@@ -73,7 +79,9 @@ export function ApiKeysDialog({ open, onOpenChange }: ApiKeysDialogProps) {
       setKeys((current) => [created.created, ...current]);
       setName('');
     } catch (cause) {
-      toast.error(cause instanceof Error ? cause.message : 'Could not create the key');
+      toast.error(
+        cause instanceof Error ? cause.message : t('dialog.keys.create.error')
+      );
     } finally {
       setIsBusy(false);
     }
@@ -128,7 +136,7 @@ export function ApiKeysDialog({ open, onOpenChange }: ApiKeysDialogProps) {
       setIsCopied(true);
       setTimeout(() => setIsCopied(false), 2000);
     } catch {
-      toast.error('Could not access the clipboard');
+      toast.error(t('common.clipboard.error'));
     }
   };
 
@@ -142,10 +150,9 @@ export function ApiKeysDialog({ open, onOpenChange }: ApiKeysDialogProps) {
         */}
       <ModalContent className="h-[30rem] max-w-xl">
         <ModalHeader>
-          <ModalTitle>API keys</ModalTitle>
+          <ModalTitle>{t('dialog.keys.title')}</ModalTitle>
           <Typography variant="span" textColor="secondary" className="text-xs">
-            Convert and share documents from a script, a terminal or CI — and the
-            assistants you have connected.
+            {t('dialog.keys.blurb')}
           </Typography>
         </ModalHeader>
 
@@ -158,8 +165,8 @@ export function ApiKeysDialog({ open, onOpenChange }: ApiKeysDialogProps) {
               </InputGroupAddon>
               <InputGroupInput
                 value={name}
-                placeholder="What will use it — “CI”, “my laptop”"
-                aria-label="Key name"
+                placeholder={t('dialog.keys.name.placeholder')}
+                aria-label={t('dialog.keys.name.label')}
                 onChange={(event) => setName(event.target.value)}
                 onKeyDown={(event) => {
                   if (event.key === 'Enter') {
@@ -177,14 +184,14 @@ export function ApiKeysDialog({ open, onOpenChange }: ApiKeysDialogProps) {
               disabled={isBusy || name.trim().length === 0}
               onClick={() => void create()}
             >
-              Create
+              {t('dialog.keys.create')}
             </Button>
           </div>
 
           {fresh && (
             <div className="flex shrink-0 flex-col gap-2 rounded-lg border border-brand-primary/40 bg-surface-accent p-3">
               <Typography variant="span" weight="semibold" textColor="primary">
-                Copy it now — it is not shown again
+                {t('dialog.keys.fresh')}
               </Typography>
 
               <div className="flex items-center gap-2">
@@ -197,7 +204,7 @@ export function ApiKeysDialog({ open, onOpenChange }: ApiKeysDialogProps) {
                   leftSlot={isCopied ? <Check /> : <Copy />}
                   onClick={() => void copy()}
                 >
-                  {isCopied ? 'Copied' : 'Copy'}
+                  {isCopied ? t('common.copied') : t('common.copy')}
                 </Button>
               </div>
 
@@ -216,15 +223,14 @@ export function ApiKeysDialog({ open, onOpenChange }: ApiKeysDialogProps) {
             <div className="flex items-center gap-2 py-2">
               <Spinner />
               <Typography variant="span" textColor="secondary">
-                Loading…
+                {t('common.loading')}
               </Typography>
             </div>
           )}
 
           {!isLoading && keys.length === 0 && (
             <Typography variant="span" textColor="light" className="text-xs">
-              No keys yet. A key can read, write and share your documents — it
-              cannot touch your account or these keys.
+              {t('dialog.keys.empty')}
             </Typography>
           )}
 
@@ -246,38 +252,51 @@ export function ApiKeysDialog({ open, onOpenChange }: ApiKeysDialogProps) {
                       textColor={key.revoked_at ? 'light' : 'primary'}
                       className="truncate"
                     >
-                      {key.name}
-                      {key.revoked_at ? ' · revoked' : ''}
+                      {/* The name is a value in a sentence, not a fragment glued to one. */}
+                      {key.revoked_at
+                        ? t('dialog.keys.revoked', { name: key.name })
+                        : key.name}
                     </Typography>
                     <Typography
                       variant="span"
                       textColor="secondary"
                       className="truncate font-mono text-xs"
                     >
-                      {key.prefix}… ·{' '}
-                      {key.last_used_at
-                        ? `used ${formatRelative(new Date(key.last_used_at).getTime())}`
-                        : 'never used'}
+                      {t('dialog.keys.meta', {
+                        prefix: key.prefix,
+                        used: key.last_used_at
+                          ? t('dialog.keys.used', {
+                              when: formatRelative(
+                                new Date(key.last_used_at).getTime(),
+                                times
+                              ),
+                            })
+                          : t('dialog.keys.never'),
+                      })}
                     </Typography>
                   </div>
 
                   {key.revoked_at ? (
-                    <Hint content="Remove from the list">
+                    <Hint content={t('dialog.keys.forget')}>
                       <IconButton
                         variant="destructiveTertiary"
                         size="sm"
-                        aria-label={`Remove ${key.name}`}
+                        aria-label={t('dialog.keys.forget.label', {
+                          name: key.name,
+                        })}
                         onClick={() => void forget(key)}
                       >
                         <Trash2 />
                       </IconButton>
                     </Hint>
                   ) : (
-                    <Hint content="Revoke — stops it working immediately">
+                    <Hint content={t('dialog.keys.revoke')}>
                       <IconButton
                         variant="destructiveTertiary"
                         size="sm"
-                        aria-label={`Revoke ${key.name}`}
+                        aria-label={t('dialog.keys.revoke.label', {
+                          name: key.name,
+                        })}
                         onClick={() => void revoke(key)}
                       >
                         <Ban />
@@ -292,7 +311,7 @@ export function ApiKeysDialog({ open, onOpenChange }: ApiKeysDialogProps) {
           {grants.length > 0 && (
             <div className="flex shrink-0 flex-col gap-2">
               <Typography variant="span" textColor="light" className="text-xxs uppercase tracking-wide">
-                Connected assistants
+                {t('dialog.keys.grants')}
               </Typography>
 
               <ul className="flex flex-col divide-y divide-stroke rounded-md border border-stroke">
@@ -317,19 +336,31 @@ export function ApiKeysDialog({ open, onOpenChange }: ApiKeysDialogProps) {
                           textColor="secondary"
                           className="truncate text-xs"
                         >
-                          connected {formatRelative(new Date(grant.since).getTime())}
-                          {grant.lastUsed
-                            ? ` · used ${formatRelative(new Date(grant.lastUsed).getTime())}`
-                            : ' · never used'}
+                          {t('dialog.keys.grant.meta', {
+                            since: formatRelative(
+                              new Date(grant.since).getTime(),
+                              times
+                            ),
+                            used: grant.lastUsed
+                              ? t('dialog.keys.used', {
+                                  when: formatRelative(
+                                    new Date(grant.lastUsed).getTime(),
+                                    times
+                                  ),
+                                })
+                              : t('dialog.keys.never'),
+                          })}
                         </Typography>
                       </div>
                     </div>
 
-                    <Hint content="Disconnect — it stops acting as you immediately">
+                    <Hint content={t('dialog.keys.disconnect')}>
                       <IconButton
                         variant="destructiveTertiary"
                         size="sm"
-                        aria-label={`Disconnect ${grant.name}`}
+                        aria-label={t('dialog.keys.disconnect.label', {
+                          name: grant.name,
+                        })}
                         onClick={() => void disconnect(grant)}
                       >
                         <Ban />

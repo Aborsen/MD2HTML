@@ -18,18 +18,36 @@ import { dirname, join, resolve } from 'node:path';
 import { markdownToHtml } from '../server/render.js';
 import { MD_DOC_STYLE, mdDocTheme } from '../shared/md-doc-css.js';
 import { ARTICLES, articlePath, formatArticleDate } from '../src/lib/blog.js';
-import { CONVERSIONS, conversion } from '../shared/conversions.js';
-import { DOCS_SECTIONS } from '../src/lib/docs-sections.js';
-import { HOME_FAQ_ENTRIES } from '../src/lib/faq.js';
+import { formatDate } from '../src/lib/format.js';
+import {
+  CONVERSIONS,
+  conversion,
+  DEFAULT_CONVERSION,
+} from '../shared/conversions.js';
+import { DOCS_SECTION_IDS } from '../src/lib/docs-sections.js';
+import { FAQ_FLAGS } from '../src/lib/faq.js';
 import { STATIC_PAGES } from '../src/lib/pages.js';
 import { articleCover, COVER_SIZE, pageCover } from '../src/lib/covers.js';
+import { hasTranslation } from '../src/lib/route.js';
 import {
-  BLOG_CRUMBS,
+  DEFAULT_LOCALE,
+  LOCALES,
+  INTL_LOCALES,
+  localePath,
+  splitLocale,
+  type Locale,
+} from '../src/lib/i18n/locales.js';
+import {
+  assertCatalogueShapes,
+  CATALOGUES,
+} from '../src/lib/i18n/catalogues.js';
+import {
+  blogCrumbs,
   crumbsForArticle,
   crumbsForConversion,
   crumbsForStaticPage,
   type CrumbSpec,
-  DOCS_CRUMBS,
+  docsCrumbs,
 } from '../src/lib/breadcrumbs.js';
 
 const SITE = process.env.SITE_URL ?? 'https://transformpipe.com';
@@ -56,19 +74,19 @@ const SHELL = readFileSync(join(DIST, 'index.html'), 'utf8')
     '<div id="root"></div>'
   );
 
+/*
+ * Before anything is written: the five catalogues line up.
+ *
+ * Here rather than in a check script of its own, because this is the one build step that already
+ * imports every locale — and a translation that has lost a paragraph should stop a deploy, not
+ * reach a reader in one language out of five. Throws with the list of what does not match.
+ */
+assertCatalogueShapes();
+
 if (!SHELL.includes('<div id="root"></div>')) {
   throw new Error(
     'dist/index.html has no empty <div id="root"></div> to render into — run `vite build` first.'
   );
-}
-
-/** "8 September 2026" as 2026-09-08 — the only form a sitemap's lastmod may take. */
-function isoDate(human: string): string | undefined {
-  const parsed = new Date(`${human} UTC`);
-
-  return Number.isNaN(parsed.valueOf())
-    ? undefined
-    : parsed.toISOString().slice(0, 10);
 }
 
 /**
@@ -150,13 +168,44 @@ interface Page {
   /** Left out of the sitemap when false. */
   listed?: boolean;
   lastmod?: string;
+  /** Which language this file is. English when absent, which is most of them. */
+  locale?: Locale;
+}
+
+/*
+ * Every language's address for one page, as `hreflang`.
+ *
+ * Emitted on all five, and each set names all five plus the English one as `x-default` — a search
+ * engine reads a group of alternates as a group only when every member points at every other, and
+ * a page that lists the others without being listed by them is read as a duplicate instead.
+ *
+ * Only for pages that exist in five languages. The blog is English, so it gets none: claiming an
+ * alternate that does not exist is worse than claiming nothing.
+ */
+function alternates(rest: string): string {
+  if (!hasTranslation(rest)) {
+    return '';
+  }
+
+  const href = (locale: Locale) =>
+    `${SITE}${localePath(locale, rest) === '/' ? '' : localePath(locale, rest)}`;
+
+  return [
+    ...LOCALES.map(
+      (locale) =>
+        `<link rel="alternate" hreflang="${locale}" href="${href(locale)}" />`
+    ),
+    `<link rel="alternate" hreflang="x-default" href="${href(DEFAULT_LOCALE)}" />`,
+  ].join('\n    ');
 }
 
 function render(page: Page): string {
   const url = `${SITE}${page.path === '/' ? '' : page.path}`;
+  const locale = page.locale ?? DEFAULT_LOCALE;
 
   const head = [
     `<link rel="canonical" href="${url}" />`,
+    alternates(splitLocale(page.path).rest),
     `<meta property="og:type" content="${page.path.startsWith('/blog/') ? 'article' : 'website'}" />`,
     `<meta property="og:site_name" content="transformpipe" />`,
     `<meta property="og:title" content="${escapeHtml(page.title)}" />`,
@@ -167,20 +216,32 @@ function render(page: Page): string {
      * these pages was until `npm run og` drew the covers. `summary_large_image` is the card that
      * actually shows a 1200 by 630 image; plain `summary` crops it to a thumbnail.
      */
-    `<meta property="og:image" content="${SITE}${page.image ?? pageCover(page.path)}" />`,
+    /*
+     * The cover of the English page, whatever the language.
+     *
+     * The covers carry their title as drawn text, and `npm run og` is plain Node with no bundler in
+     * front of it, so it cannot read a TypeScript catalogue to draw a German one. Four more sets of
+     * thirteen page covers is a small job and a later one; an English picture on a German share is
+     * a picture, and no picture is a grey rectangle.
+     */
+    `<meta property="og:image" content="${SITE}${page.image ?? pageCover(splitLocale(page.path).rest)}" />`,
     `<meta property="og:image:width" content="${COVER_SIZE.width}" />`,
     `<meta property="og:image:height" content="${COVER_SIZE.height}" />`,
     `<meta property="og:image:alt" content="${escapeHtml(page.title)}" />`,
     `<meta name="twitter:card" content="summary_large_image" />`,
-    `<meta name="twitter:image" content="${SITE}${page.image ?? pageCover(page.path)}" />`,
+    `<meta name="twitter:image" content="${SITE}${page.image ?? pageCover(splitLocale(page.path).rest)}" />`,
     FALLBACK_STYLE,
     page.head ?? '',
   ].join('\n    ');
 
   return SHELL.replace(
-    /<title>[\s\S]*?<\/title>/,
-    `<title>${escapeHtml(page.title)}</title>`
+    /<html lang="[a-z-]+"/,
+    `<html lang="${locale}"`
   )
+    .replace(
+      /<title>[\s\S]*?<\/title>/,
+      `<title>${escapeHtml(page.title)}</title>`
+    )
     .replace(
       /<meta\s+name="description"[\s\S]*?\/>/,
       `<meta name="description" content="${escapeHtml(page.description)}" />`
@@ -225,7 +286,7 @@ for (const article of ARTICLES) {
         ? [`<meta property="article:modified_time" content="${article.updated}" />`]
         : []),
       `<meta property="article:tag" content="${escapeHtml(article.tag)}" />`,
-      breadcrumbs(crumbsForArticle(article)),
+      breadcrumbs(crumbsForArticle(article, CATALOGUES.en)),
       jsonLd({
         '@context': 'https://schema.org',
         '@type': 'BlogPosting',
@@ -270,7 +331,7 @@ pages.push({
   lastmod: ARTICLES.map((article) => article.updated ?? article.date)
     .sort()
     .at(-1),
-  head: breadcrumbs(BLOG_CRUMBS) + jsonLd({
+  head: breadcrumbs(blogCrumbs(CATALOGUES.en, DEFAULT_LOCALE)) + jsonLd({
     '@context': 'https://schema.org',
     '@type': 'Blog',
     name: 'transformpipe Blog',
@@ -298,26 +359,35 @@ pages.push({
  * and "word to markdown" are things people type into a search box, and a dropdown that only changes
  * state is not something a search engine can send anybody to.
  */
-for (const one of CONVERSIONS.filter((each) => each.path !== '/')) {
-  pages.push({
-    path: one.path,
-    title: one.seo.title,
-    description: one.seo.description,
-    listed: true,
-    head: jsonLd({
-      '@context': 'https://schema.org',
-      '@type': 'WebApplication',
-      name: one.label,
-      applicationCategory: 'UtilitiesApplication',
-      operatingSystem: 'Any',
-      description: one.seo.description,
-      url: `${SITE}${one.path}`,
-      offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
-    }) + breadcrumbs(crumbsForConversion(one)),
-    body: `<h1>${escapeHtml(one.title)}</h1><p>${escapeHtml(one.blurb)}</p><p>${escapeHtml(
-      one.hint
-    )}</p><p>Takes ${escapeHtml(one.extensions.join(', '))}, up to 10 MB, converted in your browser.</p>`,
-  });
+for (const locale of LOCALES) {
+  const words = CATALOGUES[locale];
+
+  for (const one of CONVERSIONS.filter((each) => each.path !== '/')) {
+    const said = words.conversions[one.id];
+
+    pages.push({
+      locale,
+      path: localePath(locale, one.path),
+      title: said.seo.title,
+      description: said.seo.description,
+      listed: true,
+      head: jsonLd({
+        '@context': 'https://schema.org',
+        '@type': 'WebApplication',
+        name: said.label,
+        applicationCategory: 'UtilitiesApplication',
+        operatingSystem: 'Any',
+        description: said.seo.description,
+        url: `${SITE}${localePath(locale, one.path)}`,
+        offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+      }) + breadcrumbs(crumbsForConversion(one, words, locale)),
+      body: `<h1>${escapeHtml(said.title)}</h1><p>${escapeHtml(said.blurb)}</p><p>${escapeHtml(
+        said.hint
+      )}</p><p>${escapeHtml(
+        words.ui['converter.dropzone.limits'].replace('{extensions}', one.extensions.join(', '))
+      )}</p>`,
+    });
+  }
 }
 
 /*
@@ -327,10 +397,21 @@ for (const one of CONVERSIONS.filter((each) => each.path !== '/')) {
  * answers a visitor cannot see on the page is the kind of structured data that gets a site's
  * markup ignored, and it would drift the moment somebody added a question for the manual only.
  */
-const home = conversion('markdown-to-html');
+for (const locale of LOCALES) {
+  const words = CATALOGUES[locale];
+  const home = words.conversions[DEFAULT_CONVERSION];
 
-pages.push({
-  path: '/',
+  /*
+   * The questions the running app shows, in this language.
+   *
+   * `FAQ_FLAGS` says which entries the front page carries and the catalogue says what they say —
+   * position is the only id a question has, which is why the two are zipped rather than joined.
+   */
+  const asked = words.faq.filter((_, index) => !FAQ_FLAGS[index]?.detail);
+
+  pages.push({
+  locale,
+  path: localePath(locale, '/'),
   title: home.seo.title,
   description: home.seo.description,
   listed: true,
@@ -340,7 +421,15 @@ pages.push({
      * — the articles, the conversion pages — can reference those ids instead of restating a name
      * and a URL that would then have two places to go stale.
      */
-    jsonLd({
+    /*
+     * Declared on the English front page alone.
+     *
+     * These two nodes are the site and its publisher, and they carry fixed `@id`s that everything
+     * else refers to. Repeating them on five language homes would state the same identity five
+     * times over, which is not extra information — it is five places for one name to go stale.
+     */
+    (locale === DEFAULT_LOCALE
+      ? jsonLd({
       '@context': 'https://schema.org',
       '@graph': [
         {
@@ -349,7 +438,7 @@ pages.push({
           url: SITE,
           name: 'transformpipe',
           description: home.seo.description,
-          inLanguage: 'en',
+          inLanguage: locale,
           publisher: { '@id': `${SITE}/#organization` },
         },
         {
@@ -360,21 +449,41 @@ pages.push({
           brand: { '@type': 'Brand', name: 'transformpipe' },
         },
       ],
-    }) +
+        })
+      : '') +
     jsonLd({
     '@context': 'https://schema.org',
     '@type': 'FAQPage',
-    mainEntity: HOME_FAQ_ENTRIES.map((entry) => ({
+    inLanguage: locale,
+    mainEntity: asked.map((entry) => ({
       '@type': 'Question',
       name: entry.question,
       acceptedAnswer: { '@type': 'Answer', text: String(entry.answer) },
     })),
-  }),
-  body: `<h1>${escapeHtml(home.title)}</h1><p>${escapeHtml(home.blurb)}</p><p>Also converts <a href="/html-to-markdown">HTML to Markdown</a>, <a href="/word-to-markdown">Word to Markdown</a> and <a href="/csv-to-markdown">CSV to a Markdown table</a>.</p>${HOME_FAQ_ENTRIES.map(
-    (entry) =>
-      `<section><h2>${escapeHtml(entry.question)}</h2><p>${escapeHtml(String(entry.answer))}</p></section>`
-  ).join('')}`,
-});
+  }) + breadcrumbs(crumbsForConversion(conversion(DEFAULT_CONVERSION), words, locale)),
+  /*
+   * The other conversions, named and linked in this language.
+   *
+   * Built from the list rather than written out, because a hand-written sentence naming three of
+   * the four was already wrong once — JSON was added and the sentence was not.
+   */
+  body: `<h1>${escapeHtml(home.title)}</h1><p>${escapeHtml(home.blurb)}</p><p>${CONVERSIONS.filter(
+    (each) => each.path !== '/'
+  )
+    .map(
+      (each) =>
+        `<a href="${localePath(locale, each.path)}">${escapeHtml(
+          words.conversions[each.id].title
+        )}</a>`
+    )
+    .join(', ')}</p>${asked
+    .map(
+      (entry) =>
+        `<section><h2>${escapeHtml(entry.question)}</h2><p>${escapeHtml(String(entry.answer))}</p></section>`
+    )
+    .join('')}`,
+  });
+}
 
 /*
  * ---------------------------------------------------------------- about, contact and the legal
@@ -383,22 +492,39 @@ pages.push({
  * usually the first visitor. Rendered in full rather than as a title and a promise, from the same
  * list the app renders, so what a search result shows is what the page says.
  */
-for (const one of STATIC_PAGES) {
+for (const locale of LOCALES) {
+  const catalogue = CATALOGUES[locale];
+
+  for (const one of STATIC_PAGES) {
+  const said = catalogue.pages[one.id];
+
   pages.push({
-    path: one.path,
-    title: one.seo.title,
-    description: one.seo.description,
+    locale,
+    path: localePath(locale, one.path),
+    title: said.seo.title,
+    description: said.seo.description,
     listed: true,
     /*
      * `lastmod` only where the page itself states a date. A build stamp would change on every
      * deploy whether the words did or not, and a sitemap whose dates cannot be trusted is a
      * sitemap whose dates get ignored.
+     *
+     * The date is stored as `2026-09-08`, which is what `lastmod` takes, so it goes in as it is —
+     * there is nothing left to parse back out of an English sentence. What the page shows a reader
+     * is that same day written out, which is `formatDate`'s job and not this file's.
      */
-    lastmod: one.updated ? isoDate(one.updated) : undefined,
-    head: breadcrumbs(crumbsForStaticPage(one)),
-    body: `<h1>${escapeHtml(one.title)}</h1><p>${escapeHtml(one.lede)}</p>${
-      one.updated ? `<p>Last updated ${escapeHtml(one.updated)}</p>` : ''
-    }${one.sections
+    lastmod: one.updated,
+    head: breadcrumbs(crumbsForStaticPage(one, catalogue, locale)),
+    body: `<h1>${escapeHtml(said.title)}</h1><p>${escapeHtml(said.lede)}</p>${
+      one.updated
+        ? `<p>${escapeHtml(
+            catalogue.ui['page.updated'].replace(
+              '{date}',
+              formatDate(one.updated, INTL_LOCALES[locale])
+            )
+          )}</p>`
+        : ''
+    }${said.sections
       .map(
         (section) =>
           `<section><h2>${escapeHtml(section.heading)}</h2>${section.body
@@ -411,21 +537,40 @@ for (const one of STATIC_PAGES) {
       )
       .join('')}`,
   });
+  }
 }
 
 // ---------------------------------------------------------------- the documentation
-pages.push({
-  path: '/docs',
-  title: 'Documentation — transformpipe',
-  description:
-    'What transformpipe does, in full: the five conversions, the history, sharing by link or by address, the API, the command line client, the GitHub Action and the limits.',
+for (const locale of LOCALES) {
+  const catalogue = CATALOGUES[locale];
+
+  /*
+   * The title and the description come from the page's own words rather than a pair of SEO strings
+   * of their own. The manual already says what it is in `docs.title` and `docs.lede`, and a second
+   * pair to translate would be two more strings that mean the same thing and drift apart.
+   */
+  pages.push({
+  locale,
+  path: localePath(locale, '/docs'),
+  title: `${catalogue.ui['header.nav.documentation']} — transformpipe`,
+  /*
+   * The lede's first sentence, not the whole of it: the full paragraph is over two hundred
+   * characters and a search result shows about a hundred and sixty, so the rest is spent on an
+   * ellipsis. Every language ends a sentence with a full stop, so the split holds in all five.
+   */
+  description: `${catalogue.ui['docs.lede'].split('. ')[0]}.`,
   listed: true,
-  head: breadcrumbs(DOCS_CRUMBS),
-  body: `<h1>Everything transformpipe does</h1><p>Markdown, HTML, Word, CSV or JSON in — a document out as HTML, Markdown, plain text or print — from the app, from a terminal, or from a pull request.</p>${DOCS_SECTIONS.map(
-    (section) =>
-      `<section><h2>${escapeHtml(section.title)}</h2><p>${escapeHtml(section.summary)}</p></section>`
+  head: breadcrumbs(docsCrumbs(catalogue, locale)),
+  body: `<h1>${escapeHtml(catalogue.ui['docs.title'])}</h1><p>${escapeHtml(
+    catalogue.ui['docs.lede']
+  )}</p>${DOCS_SECTION_IDS.map(
+    (id) =>
+      `<section><h2>${escapeHtml(catalogue.docs[id].title)}</h2><p>${escapeHtml(
+        catalogue.docs[id].summary
+      )}</p></section>`
   ).join('')}`,
-});
+  });
+}
 
 for (const page of pages) {
   write(page);

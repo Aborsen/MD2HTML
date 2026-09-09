@@ -1,5 +1,6 @@
 import { ArrowUp } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
+import { useT } from '@/lib/i18n/context';
 import { IconButton } from '@/ui/components/IconButton';
 import { cn } from '@/ui/lib/utils';
 
@@ -46,6 +47,7 @@ function scrollToTop(element: HTMLElement | null) {
  * enough to need it.
  */
 export function ScrollToTop({ className }: { className?: string }) {
+  const t = useT();
   const [isVisible, setIsVisible] = useState(false);
 
   const measure = useCallback(() => {
@@ -75,7 +77,7 @@ export function ScrollToTop({ className }: { className?: string }) {
       variant="secondary"
       size="lg"
       rounded="full"
-      aria-label="Scroll to top"
+      aria-label={t('common.scrolltotop')}
       className={cn(
         'fixed right-6 bottom-6 z-40 shadow-dropdown',
         'transition-opacity hover:opacity-100',

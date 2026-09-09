@@ -1,14 +1,21 @@
+import { faq } from './i18n/messages/en/faq';
+
 /*
- * The questions people arrive with, answered once.
+ * The questions people arrive with, and which of them each page asks.
  *
- * They live here rather than in a page because two pages need them — the converter, where someone
- * is deciding whether to drop a file at all, and the documentation, where they are looking for the
- * same answer in a different mood. Two copies would drift, and the copy that drifts is always the
- * one being read.
+ * The list lives here rather than in a page because two pages need it — the converter, where
+ * someone is deciding whether to drop a file at all, and the documentation, where they are looking
+ * for the same answer in a different mood. Two copies would drift, and the copy that drifts is
+ * always the one being read.
+ *
+ * The words are not here any more. A question and its answer are language, so they sit in the
+ * catalogue — `i18n/messages/en/faq.ts` for English, the same array in the same order for every
+ * other locale. What is left in this file is the part that is the same in every language: how many
+ * questions there are, what order they are asked in, and where each one belongs.
  */
-export interface FaqEntry {
-  question: string;
-  answer: string;
+
+/** What is true of a question in every language: not its words, but its place in the product. */
+export interface FaqFlags {
   /**
    * True when this is a detail rather than a doubt.
    *
@@ -19,53 +26,40 @@ export interface FaqEntry {
   detail?: boolean;
 }
 
+/** One question, ready to render: the flags from this file, the words from the catalogue. */
+export interface FaqEntry extends FaqFlags {
+  question: string;
+  answer: string;
+}
+
 /*
- * Plain strings, not nodes: the same list is read by the server — the MCP tool that answers "how
- * does transformpipe work" hands these to an assistant — and the server has no React in it.
+ * One entry per question, in the order they are asked. Position is what ties a flag to its words:
+ * a question has no id of its own, so the list is the id, and `FAQ_FLAGS[n]` belongs to `faq[n]`.
+ * A bare `{}` is a doubt — a question the front page has to answer before anyone drops a file.
  */
-export const FAQ_ENTRIES: FaqEntry[] = [
-  {
-    question: 'What can it convert?',
-    answer:
-      'Five things, each with its own page under Converter in the header: Markdown to HTML, and HTML, Word (.docx), CSV or TSV, and JSON to Markdown. Everything but the first ends as Markdown, which is what a document is stored, previewed and shared as here — so a Word file, a spreadsheet and an API response become the same kind of thing once they are in.',
-  },
-  {
-    question: 'Does my file get uploaded anywhere?',
-    answer:
-      'Signed out, no. The file is read by this browser, converted here, and never sent to a server — close the tab and nothing of it remains anywhere but your own machine. Signed in, the Markdown source is stored in your account so the document can follow you to another device, and it stays private until you share it.',
-  },
-  {
-    question: 'Which Markdown does it understand?',
-    detail: true,
-    answer:
-      'GitHub Flavored Markdown, in both directions: tables, task lists, strikethrough, autolinks and fenced code blocks, on top of everything CommonMark defines. Raw HTML inside the document is passed through a sanitiser first, so a script tag in a file someone sent you cannot run.',
-  },
-  {
-    question: 'What exactly do I get when I download?',
-    answer:
-      'Whatever the conversion produced, first: an .html file when you converted to HTML, an .md file when you converted to Markdown. The arrow beside the button holds the others — Markdown, HTML, plain text, or the print dialog for a PDF. The HTML is one file with its styles inline: no scripts, no fonts to fetch, no requests of any kind, so it opens the same on a machine with no network. On paper it always flips to the light palette, because a dark page in print is a wall of ink.',
-  },
-  {
-    question: 'Can I send a converted document to someone?',
-    answer:
-      'Sign in and share it, either as a link anyone can open or addressed to particular people, who then sign in with that address. A shared page is read-only: the document and a download, nothing else. Revoking drops the link, so one you have already sent stops working.',
-  },
-  {
-    question: 'Is there a size limit?',
-    answer:
-      '10 MB a file to convert — around 1.5 million words — because converting happens on your own machine. Keeping one in an account is capped at 4 MB, which is not our number: the platform refuses a larger request outright. A bigger file still converts, previews and downloads; it just stays out of the history, and the app says so instead of pretending it saved. An account holds 500 documents or 100 MB, whichever comes first. Reaching a limit refuses the write and says so; nothing you saved is ever quietly deleted to make room.',
-  },
-  {
-    question: 'Can I convert files from a script?',
-    answer:
-      'Yes. Create an API key from the account menu and post Markdown to /api/v1/documents; there is also a command-line client and a GitHub Action that publishes the Markdown a pull request changed and comments the links on it. The documentation has the endpoints and the flags.',
-  },
-  {
-    question: 'What does it cost?',
-    answer:
-      'Nothing. Converting and downloading work without an account at all; an account adds history, sharing and the API, within the limits above.',
-  },
+export const FAQ_FLAGS: FaqFlags[] = [
+  {},
+  {},
+  { detail: true },
+  {},
+  {},
+  {},
+  {},
+  {},
 ];
+
+/*
+ * English, and deliberately so. The same list is read by the server — the MCP tool that answers
+ * "how does transformpipe work" hands these to an assistant — and the connector answers in
+ * English, so it imports the English slice directly rather than asking for a locale it does not
+ * have. Plain strings, not nodes, for the same reason: there is no React in the server.
+ *
+ * A page with a reader to speak to zips `FAQ_FLAGS` with the `faq` of the locale it was handed.
+ */
+export const FAQ_ENTRIES: FaqEntry[] = faq.map((words, index) => ({
+  ...words,
+  ...FAQ_FLAGS[index],
+}));
 
 /** The front page's shorter list: the doubts, without the details. */
 export const HOME_FAQ_ENTRIES = FAQ_ENTRIES.filter((one) => !one.detail);

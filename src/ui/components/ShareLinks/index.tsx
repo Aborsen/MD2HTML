@@ -21,6 +21,12 @@ export interface ShareLinksProps {
   /** The absolute URL to share. A relative one gives the reader a broken post. */
   url: string;
   title: string;
+  /**
+   * The word beside the icon. A prop with a default, because this component is part of the design
+   * system and must not reach into an application's message table for a translation; the network
+   * names below are not translatable either way — they are the names of the services.
+   */
+  label?: string;
   className?: string;
 }
 
@@ -53,7 +59,12 @@ const TARGETS: Target[] = [
   },
 ];
 
-export function ShareLinks({ url, title, className }: ShareLinksProps) {
+export function ShareLinks({
+  url,
+  title,
+  label = 'Share',
+  className,
+}: ShareLinksProps) {
   return (
     <div className={cn('flex flex-wrap items-center gap-2', className)}>
       <Typography
@@ -62,7 +73,7 @@ export function ShareLinks({ url, title, className }: ShareLinksProps) {
         className="flex items-center gap-1.5 text-xs"
       >
         <Share2 aria-hidden className="size-3.5" />
-        Share
+        {label}
       </Typography>
 
       {TARGETS.map((target) => (

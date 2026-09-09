@@ -1,6 +1,7 @@
 import { X } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { Hint } from './Hint';
+import { useT } from '@/lib/i18n/context';
 import { Button } from '@/ui/components/Button';
 import { IconButton } from '@/ui/components/IconButton';
 import { Typography } from '@/ui/components/Typography';
@@ -33,6 +34,7 @@ export function ListSelectionBar({
   onClearSelection,
   onSelectAll,
 }: ListSelectionBarProps) {
+  const t = useT();
   const isSelecting = selectedCount > 0;
   const toggleSelectAll = isSelecting && allSelected;
 
@@ -45,7 +47,7 @@ export function ListSelectionBar({
     >
       <div className="flex min-w-0 items-center gap-3">
         <Typography variant="span" textColor="secondary" weight="normal" noWrap>
-          {isSelecting ? `${selectedCount} selected` : title}
+          {isSelecting ? t('common.selected', { count: selectedCount }) : title}
         </Typography>
 
         <Button
@@ -59,7 +61,7 @@ export function ListSelectionBar({
           disabled={!isSelecting && isEmpty}
           onClick={toggleSelectAll ? onClearSelection : onSelectAll}
         >
-          {toggleSelectAll ? 'Deselect all' : 'Select all'}
+          {toggleSelectAll ? t('common.deselectall') : t('common.selectall')}
         </Button>
       </div>
 
@@ -68,13 +70,13 @@ export function ListSelectionBar({
           {rightSlot}
 
           {isSelecting && (
-            <Hint content="Exit selection">
+            <Hint content={t('common.exitselection')}>
               <IconButton
                 variant="tertiary"
                 size="xs"
                 rounded="rounded"
                 className="text-ink-secondary hover:bg-brand-primary/[0.06] hover:text-ink-body [&_svg]:size-3.5"
-                aria-label="Exit selection"
+                aria-label={t('common.exitselection')}
                 onClick={onClearSelection}
               >
                 <X />

@@ -19,9 +19,10 @@ import { ShareDialog } from '@/components/ShareDialog';
 import {
   ALL_EXTENSIONS,
   CONVERSIONS,
-  conversion,
   type ConversionId,
 } from '@shared/conversions';
+import { useI18n, useT } from '@/lib/i18n/context';
+import { INTL_LOCALES } from '@/lib/i18n/locales';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -70,10 +71,13 @@ interface RowPartProps {
 
 /** What made this document. The name cannot say whether it came from a page, a Word file or a CSV. */
 function KindBadge({ entry, isShared, className }: RowPartProps & { className?: string }) {
+  const t = useT();
+  const { content } = useI18n();
+
   if (isShared) {
     return (
       <span className="truncate text-ink-secondary">
-        {entry.sharedBy || 'someone'}
+        {entry.sharedBy || t('history.row.someone')}
       </span>
     );
   }
@@ -85,7 +89,7 @@ function KindBadge({ entry, isShared, className }: RowPartProps & { className?: 
       rounded="full"
       className={cn('justify-center', className)}
     >
-      {conversion(entry.kind).short}
+      {content.conversions[entry.kind].short}
     </Badge>
   );
 }
@@ -110,14 +114,16 @@ function RowActions({
   onDownload: (entry: HistoryEntry, format: DocFormat) => void;
   onRemove: (id: string) => void;
 }) {
+  const t = useT();
+
   return (
     <span className="flex items-center justify-end gap-1">
       {entry.remote && !isShared && (
-        <Hint content="Share">
+        <Hint content={t('history.row.share')}>
           <IconButton
             variant="tertiary"
             size="sm"
-            aria-label={`Share ${entry.name}`}
+            aria-label={t('history.row.share.label', { name: entry.name })}
             onClick={() => onShare(entry)}
           >
             <Share2 />
@@ -134,7 +140,7 @@ function RowActions({
           <IconButton
             variant="tertiary"
             size="sm"
-            aria-label={`Download ${entry.name}`}
+            aria-label={t('history.row.download.label', { name: entry.name })}
             disabled={!isReopenable}
           >
             <Download />
@@ -150,12 +156,12 @@ function RowActions({
       </DropdownMenu>
 
       {!isShared && (
-        <Hint content="Remove from history">
+        <Hint content={t('history.row.remove')}>
           <span>
             <IconButton
               variant="destructiveTertiary"
               size="sm"
-              aria-label="Remove from history"
+              aria-label={t('history.row.remove')}
               onClick={() => onRemove(entry.id)}
             >
               <Trash2 />
@@ -198,6 +204,10 @@ export function HistoryPage({
   onClear,
   onGoToConverter,
 }: HistoryPageProps) {
+  const t = useT();
+  const { content, locale } = useI18n();
+  /* The tag `Intl` wants, which is not the tag in the address — see `INTL_LOCALES`. */
+  const numbers = INTL_LOCALES[locale];
   const [selected, setSelected] = useState<string[]>([]);
   const [query, setQuery] = useState('');
   /**
@@ -288,10 +298,10 @@ export function HistoryPage({
 
     return CONVERSIONS.filter((one) => counted.has(one.id)).map((one) => ({
       value: one.id,
-      label: one.label,
+      label: content.conversions[one.id].label,
       count: counted.get(one.id) ?? 0,
     }));
-  }, [entries]);
+  }, [entries, content]);
 
   const source = isShared
     ? shared
@@ -385,15 +395,13 @@ export function HistoryPage({
     return (
       <StatusView
         tone="muted"
-        title="No conversions yet"
+        title={t('history.empty.title')}
         description={
-          isSynced
-            ? 'Every file you convert is saved to your account — open it from any device.'
-            : 'Every file you convert shows up here. Sign in to keep the list across devices.'
+          isSynced ? t('history.empty.synced') : t('history.empty.local')
         }
         actions={
           <Button variant="primary" size="sm" onClick={onGoToConverter}>
-            Convert a file
+            {t('history.empty.action')}
           </Button>
         }
       />
@@ -404,7 +412,7 @@ export function HistoryPage({
     <div className="flex flex-col gap-4">
       <div className="flex flex-col gap-1">
         <Typography variant="h4" weight="semibold" textColor="primary">
-          History
+          {t('history.title')}
         </Typography>
         <Typography
           variant="p"
@@ -416,13 +424,16 @@ export function HistoryPage({
           ) : (
             <MonitorSmartphone className="size-4" />
           )}
-          {isSynced
-            ? 'Saved to your account'
-            : 'Kept in this browser — sign in to reach them anywhere'}
+          {isSynced ? t('history.synced') : t('history.local')}
           {usage && (
             <span className="text-ink-inactive">
-              · {formatBytes(usage.bytes)} of {formatBytes(usage.limits.bytes)} ·{' '}
-              {usage.documents} of {usage.limits.documents} documents
+              {/* Four numbers in one sentence: all four are values, none of them is a word. */}
+              {t('history.usage', {
+                bytes: formatBytes(usage.bytes, numbers),
+                maxBytes: formatBytes(usage.limits.bytes, numbers),
+                documents: usage.documents,
+                maxDocuments: usage.limits.documents,
+              })}
             </span>
           )}
         </Typography>
@@ -460,10 +471,10 @@ export function HistoryPage({
           */}
         <span className="flex items-center gap-2 font-semibold text-ink-primary text-sm">
           <Upload className="size-4 text-brand-tertiary" />
-          Drop files
+          {t('history.drop.title')}
         </span>
         <Typography variant="span" textColor="secondary" className="text-xs">
-          or click to browse — several files are chained into one document
+          {t('history.drop.hint')}
         </Typography>
       </button>
 
@@ -491,8 +502,8 @@ export function HistoryPage({
           </InputGroupAddon>
           <InputGroupInput
             value={query}
-            placeholder="Search by name"
-            aria-label="Search history by file name"
+            placeholder={t('history.search.placeholder')}
+            aria-label={t('history.search.label')}
             onChange={(event) => setQuery(event.target.value)}
           />
           {query && (
@@ -500,7 +511,7 @@ export function HistoryPage({
               <IconButton
                 variant="tertiary"
                 size="xs"
-                aria-label="Clear search"
+                aria-label={t('history.search.clear')}
                 onClick={() => setQuery('')}
               >
                 <X />
@@ -513,14 +524,14 @@ export function HistoryPage({
       <FilterChips
         value={chip}
         items={[
-          { value: 'all', label: 'All formats', count: entries.length },
+          { value: 'all', label: t('history.chip.all'), count: entries.length },
           ...(kinds.length > 1 ? kinds : []),
           // Nobody can share with a browser: the chip belongs to an account.
           ...(isSynced
             ? [
                 {
                   value: 'shared',
-                  label: 'Shared with me',
+                  label: t('history.chip.shared'),
                   count: shared.length,
                 },
               ]
@@ -541,16 +552,31 @@ export function HistoryPage({
         >
           <Users className="size-4" />
           {isLoadingShared
-            ? 'Loading…'
-            : `${found.length} ${found.length === 1 ? 'document' : 'documents'} shared with you`}
+            ? t('common.loading')
+            : t(
+                found.length === 1
+                  ? 'history.shared.one'
+                  : 'history.shared.many',
+                { count: found.length }
+              )}
         </Typography>
       ) : (
       <ListSelectionBar
         sticky
         title={
           query
-            ? `${found.length} of ${entries.length} ${entries.length === 1 ? 'file' : 'files'}`
-            : `${entries.length} ${entries.length === 1 ? 'file' : 'files'}`
+            ? t(
+                entries.length === 1
+                  ? 'history.count.filtered.one'
+                  : 'history.count.filtered.many',
+                { found: found.length, total: entries.length }
+              )
+            : t(
+                entries.length === 1
+                  ? 'history.count.one'
+                  : 'history.count.many',
+                { count: entries.length }
+              )
         }
         selectedCount={selected.length}
         allSelected={allSelected}
@@ -563,8 +589,8 @@ export function HistoryPage({
               <Hint
                 content={
                   selected.length < 2
-                    ? 'Pick at least two files to chain'
-                    : 'Chain the selected files into one document, oldest first'
+                    ? t('history.merge.hint.few')
+                    : t('history.merge.hint')
                 }
               >
                 <span>
@@ -576,7 +602,7 @@ export function HistoryPage({
                     disabled={selected.length < 2}
                     onClick={() => onMerge(selectedEntries)}
                   >
-                    Merge
+                    {t('history.merge')}
                   </Button>
                 </span>
               </Hint>
@@ -589,7 +615,7 @@ export function HistoryPage({
                     className="!px-1.5 !py-1"
                     leftSlot={<Download />}
                   >
-                    Download
+                    {t('history.download')}
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
@@ -611,7 +637,7 @@ export function HistoryPage({
                 leftSlot={<Trash2 />}
                 onClick={() => onRemoveMany(selected)}
               >
-                Delete
+                {t('history.delete')}
               </Button>
             </div>
           ) : (
@@ -622,7 +648,7 @@ export function HistoryPage({
               leftSlot={<Trash2 />}
               onClick={onClear}
             >
-              Clear history
+              {t('history.clear')}
             </Button>
           )
         }
@@ -658,7 +684,7 @@ export function HistoryPage({
                     onKeyDown={stopRowClick}
                   >
                     <Checkbox
-                      aria-label={`Select ${entry.name}`}
+                      aria-label={t('history.row.select', { name: entry.name })}
                       checked={isSelected}
                       disabled={!isReopenable}
                       onCheckedChange={() => toggle(entry.id)}
@@ -685,19 +711,24 @@ export function HistoryPage({
 
                   <span className="flex flex-wrap items-center gap-2 text-ink-secondary text-xs">
                     <KindBadge entry={entry} isShared={isShared} />
-                    <span>{formatBytes(entry.size)}</span>
+                    <span>{formatBytes(entry.size, numbers)}</span>
                     <span aria-hidden>·</span>
-                    <span>{formatRelative(entry.createdAt)}</span>
+                    <span>{formatRelative(entry.createdAt, numbers)}</span>
                   </span>
                 </button>
               </div>
 
               <div className="flex items-center justify-between gap-2 border-stroke border-t pt-2">
                 <Typography variant="span" textColor="light" className="text-xs">
-                  {entry.stats.words} words ·{' '}
-                  {entry.stats.headings === 1
-                    ? '1 heading'
-                    : `${entry.stats.headings} headings`}
+                  {t(
+                    entry.stats.headings === 1
+                      ? 'history.row.stats.one'
+                      : 'history.row.stats.many',
+                    {
+                      words: entry.stats.words,
+                      headings: entry.stats.headings,
+                    }
+                  )}
                 </Typography>
 
                 <RowActions
@@ -723,7 +754,9 @@ export function HistoryPage({
             {!isShared && (
             <TableHead className="w-10">
               <Checkbox
-                aria-label={allSelected ? 'Deselect all' : 'Select all'}
+                aria-label={
+                  allSelected ? t('common.deselectall') : t('common.selectall')
+                }
                 checked={
                   allSelected
                     ? true
@@ -743,10 +776,12 @@ export function HistoryPage({
               sortDirection={directionOf('name')}
               onSort={() => sortBy('name')}
             >
-              File
+              {t('history.column.file')}
             </TableHead>
             <TableHead className="hidden w-52 sm:table-cell">
-              {isShared ? 'Shared by' : 'Type'}
+              {isShared
+                ? t('history.column.sharedby')
+                : t('history.column.type')}
             </TableHead>
             <TableHead
               className="hidden w-32 sm:table-cell"
@@ -754,7 +789,7 @@ export function HistoryPage({
               sortDirection={directionOf('size')}
               onSort={() => sortBy('size')}
             >
-              Source size
+              {t('history.column.size')}
             </TableHead>
             <TableHead
               className="hidden w-52 md:table-cell"
@@ -762,7 +797,7 @@ export function HistoryPage({
               sortDirection={directionOf('words')}
               onSort={() => sortBy('words')}
             >
-              Content
+              {t('history.column.content')}
             </TableHead>
             <TableHead
               className="w-36"
@@ -770,9 +805,11 @@ export function HistoryPage({
               sortDirection={directionOf('createdAt')}
               onSort={() => sortBy('createdAt')}
             >
-              Converted
+              {t('history.column.converted')}
             </TableHead>
-            <TableHead className="w-32 text-right">Actions</TableHead>
+            <TableHead className="w-32 text-right">
+              {t('history.column.actions')}
+            </TableHead>
           </TableRow>
         </TableHeader>
 
@@ -789,7 +826,11 @@ export function HistoryPage({
                 data-interactive={isReopenable ? '' : undefined}
                 role={isReopenable ? 'button' : undefined}
                 tabIndex={isReopenable ? 0 : undefined}
-                aria-label={isReopenable ? `Open ${entry.name}` : undefined}
+                aria-label={
+                  isReopenable
+                    ? t('history.row.open.label', { name: entry.name })
+                    : undefined
+                }
                 className={cn(
                   isSelected && 'is-selected',
                   isReopenable &&
@@ -806,7 +847,7 @@ export function HistoryPage({
                 {!isShared && (
                 <TableCell onClick={stopRowClick} onKeyDown={stopRowClick}>
                   <Checkbox
-                    aria-label={`Select ${entry.name}`}
+                    aria-label={t('history.row.select', { name: entry.name })}
                     checked={isSelected}
                     disabled={!isReopenable}
                     onCheckedChange={() => toggle(entry.id)}
@@ -818,8 +859,8 @@ export function HistoryPage({
                   <Hint
                     content={
                       isReopenable
-                        ? 'Open preview'
-                        : 'Source was too large to keep locally'
+                        ? t('history.row.open')
+                        : t('history.row.unavailable')
                     }
                   >
                     <span className="flex min-w-0 items-center gap-2">
@@ -836,19 +877,24 @@ export function HistoryPage({
                 </TableCell>
 
                 <TableCell className="hidden sm:table-cell">
-                  {formatBytes(entry.size)}
+                  {formatBytes(entry.size, numbers)}
                 </TableCell>
 
                 <TableCell className="hidden text-ink-secondary md:table-cell">
-                  {entry.stats.words} words ·{' '}
-                  {entry.stats.headings === 1
-                    ? '1 heading'
-                    : `${entry.stats.headings} headings`}
+                  {t(
+                    entry.stats.headings === 1
+                      ? 'history.row.stats.one'
+                      : 'history.row.stats.many',
+                    {
+                      words: entry.stats.words,
+                      headings: entry.stats.headings,
+                    }
+                  )}
                 </TableCell>
 
                 <TableCell>
-                  <Hint content={formatDateTime(entry.createdAt)}>
-                    <span>{formatRelative(entry.createdAt)}</span>
+                  <Hint content={formatDateTime(entry.createdAt, numbers)}>
+                    <span>{formatRelative(entry.createdAt, numbers)}</span>
                   </Hint>
                 </TableCell>
 

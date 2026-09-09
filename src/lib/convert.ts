@@ -3,6 +3,7 @@ import {
   conversion,
   conversionForFile,
 } from '@shared/conversions';
+import type { Translate } from './i18n/context';
 
 /*
  * Running a conversion in the browser.
@@ -15,6 +16,10 @@ import {
  * Everything ends as Markdown. That is what a document is stored and rendered as, so a conversion
  * that produced anything else would need its own version of the preview, the share page, the
  * export, the API and the assistant tools.
+ *
+ * A failure here is read by a person — it becomes the second line of the toast — so the words for
+ * one are the caller's, handed in as `t`. A module cannot call a hook, and importing the catalogue
+ * to get around that would pin every reader to English.
  */
 
 export interface Converted {
@@ -42,7 +47,8 @@ async function readText(file: File): Promise<string> {
 
 export async function convertFile(
   id: ConversionId,
-  file: File
+  file: File,
+  t: Translate
 ): Promise<Converted> {
   switch (id) {
     case 'html-to-markdown': {
@@ -64,7 +70,7 @@ export async function convertFile(
       });
 
       if (!table) {
-        throw new Error('That file has no rows in it.');
+        throw new Error(t('converter.error.norows'));
       }
 
       // The name is worth keeping: a table with no title is a table nobody can place later.
@@ -112,9 +118,9 @@ export async function convertFile(
           messages
             .map((message) => message.message)
             .slice(0, 2)
-            .join('; ') || 'the file has no text in it';
+            .join('; ') || t('converter.error.empty.why');
 
-        throw new Error(`Nothing came out of that document — ${why}.`);
+        throw new Error(t('converter.error.empty', { why }));
       }
 
       return { markdown, name: renamed(file.name, '.md'), kind: id };
@@ -140,7 +146,8 @@ export async function convertFile(
  */
 export function conversionForFiles(
   here: ConversionId,
-  files: File[]
+  files: File[],
+  t: Translate
 ): { id: ConversionId; rejected?: string } {
   const guesses = files.map((file) => conversionForFile(file.name));
   const unknown = files.find((file, index) => guesses[index] === null);
@@ -148,7 +155,10 @@ export function conversionForFiles(
   if (unknown) {
     return {
       id: here,
-      rejected: `${unknown.name} — ${conversion(here).extensions.join(', ')} is what this page takes.`,
+      rejected: t('converter.reject.extension', {
+        name: unknown.name,
+        extensions: conversion(here).extensions.join(', '),
+      }),
     };
   }
 
@@ -157,7 +167,7 @@ export function conversionForFiles(
   if (ids.length > 1) {
     return {
       id: here,
-      rejected: `Those are ${ids.length} different kinds of file. Convert one kind at a time.`,
+      rejected: t('converter.reject.mixed', { count: ids.length }),
     };
   }
 

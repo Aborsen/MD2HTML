@@ -6,6 +6,8 @@ import { ScrollToTop } from '@/components/ScrollToTop';
 import { api, type SharedDocument } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
 import { formatDateTime, toFileName } from '@/lib/format';
+import { useI18n, useT } from '@/lib/i18n/context';
+import { INTL_LOCALES } from '@/lib/i18n/locales';
 import { buildStandaloneHtml, markdownToHtml } from '@/lib/markdown';
 import { useTheme } from '@/lib/theme';
 import { Button } from '@/ui/components/Button';
@@ -17,10 +19,18 @@ import { Typography } from '@/ui/components/Typography';
 /**
  * A document someone shared, read-only.
  *
- * Reached at /s/<token> and nowhere else in the app: it has no history, no upload and no account
+ * Reached at /open/<token> and nowhere else in the app: it has no history, no upload and no account
  * of its own — a link handed to somebody should open the document, not the product.
+ *
+ * Not to be confused with the page at /s/<token>, which the server renders for a reader it knows
+ * nothing about — see `GET /s/:token` in `server/app.ts`, and the exclusions in
+ * `src/lib/i18n/content.ts`. That one has only `Accept-Language` to guess a language from and its
+ * words are not in the catalogue. This is the app, arrived at by somebody the server sent here to
+ * sign in, so it reads the catalogue and follows the language they chose like every other screen.
  */
 export function SharedDocumentPage({ token }: { token: string }) {
+  const t = useT();
+  const { locale } = useI18n();
   const { theme } = useTheme();
   const { user, signIn, isSigningIn } = useAuth();
   const [document, setDocument] = useState<SharedDocument | null>(null);
@@ -98,7 +108,7 @@ export function SharedDocumentPage({ token }: { token: string }) {
                 leftSlot={<Download />}
                 onClick={download}
               >
-                Download .html
+                {t('converter.download', { format: 'html' })}
               </Button>
             </>
           )}
@@ -110,7 +120,7 @@ export function SharedDocumentPage({ token }: { token: string }) {
           <div className="flex items-center justify-center gap-2 py-16">
             <Spinner />
             <Typography variant="span" textColor="secondary">
-              Opening the document…
+              {t('shared.loading')}
             </Typography>
           </div>
         )}
@@ -120,12 +130,12 @@ export function SharedDocumentPage({ token }: { token: string }) {
             tone={error.needsSignIn ? 'info' : 'muted'}
             title={
               error.needsSignIn
-                ? 'This document was shared with specific people'
-                : 'This link does not open a document'
+                ? t('shared.signin.title')
+                : t('shared.missing.title')
             }
             description={
               error.needsSignIn
-                ? 'Sign in with the address it was shared with.'
+                ? t('shared.signin.detail')
                 : error.message
             }
             actions={
@@ -138,13 +148,13 @@ export function SharedDocumentPage({ token }: { token: string }) {
                   leftSlot={<GoogleGlyph />}
                   onClick={() => void signIn()}
                 >
-                  Sign in
+                  {t('header.signin')}
                 </Button>
               ) : (
                 <Button variant="primary" size="sm" onClick={() => {
                   window.location.href = '/';
                 }}>
-                  Convert your own file
+                  {t('shared.missing.action')}
                 </Button>
               )
             }
@@ -163,7 +173,12 @@ export function SharedDocumentPage({ token }: { token: string }) {
                 textColor="secondary"
                 className="text-xs"
               >
-                shared · converted {formatDateTime(document.createdAt)}
+                {t('shared.meta', {
+                  date: formatDateTime(
+                    document.createdAt,
+                    INTL_LOCALES[locale]
+                  ),
+                })}
               </Typography>
             </div>
 

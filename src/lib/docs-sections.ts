@@ -1,9 +1,17 @@
+import { docs } from './i18n/messages/en/docs';
+
 /*
  * The shape of the documentation page, in one list.
  *
  * The page itself builds its contents list from this, and the prerenderer builds the static page a
  * crawler receives from it — otherwise /docs ships as a title and a sentence, and the ten sections
  * that make it worth reading exist only after the bundle has run.
+ *
+ * The wording is not here any more: a title and a summary are language, so they live in the
+ * catalogue under the section's id — `i18n/messages/en/docs.ts` for English, the same keys for
+ * every other locale. What stays is the part no translation may touch: which sections exist, in
+ * what order, and under which id. The id is the anchor in the address a reader can link to and the
+ * key the icons on the page are chosen by, so it is the same word in every language.
  */
 
 export interface DocsSection {
@@ -13,71 +21,28 @@ export interface DocsSection {
   summary: string;
 }
 
-export const DOCS_SECTIONS: DocsSection[] = [
-  {
-    id: 'start',
-    title: 'Start here',
-    summary:
-      'Drop a file and you have the converted document and a download; sign in and the same documents follow you between devices, can be shared, and can be reached by a script.',
-  },
-  {
-    id: 'converting',
-    title: 'Converting',
-    summary:
-      'The five conversions — Markdown to HTML, and HTML, Word, CSV and JSON to Markdown — what each accepts, chaining several files into one document, the source tab, and the formats a download can hand over: Markdown, HTML, plain text or a printed PDF.',
-  },
-  {
-    id: 'history',
-    title: 'History',
-    summary:
-      'Search, sortable columns, and a chip per conversion so a mixed list can be narrowed to one kind. Rows can be merged, downloaded in any format, or deleted in bulk.',
-  },
-  {
-    id: 'sharing',
-    title: 'Sharing',
-    summary:
-      'A link anyone can open, or named addresses that ask the reader to sign in. Revoking drops the token, so a link already sent stops working.',
-  },
-  {
-    id: 'account',
-    title: 'Account',
-    summary:
-      'Google sign-in, the theme, and API keys — shown once, stored as a hash, and unable to reach the account or the keys themselves.',
-  },
-  {
-    id: 'api',
-    title: 'API',
-    summary:
-      'Every endpoint under /api/v1, what each returns, and what the error statuses mean.',
-  },
-  {
-    id: 'cli',
-    title: 'Command line',
-    summary:
-      'A dependency-free client: login, push, list, rm and usage, with --share, --merge and --json.',
-  },
-  {
-    id: 'action',
-    title: 'GitHub Action',
-    summary:
-      'Publishes the Markdown a pull request changed and comments the links on it. Every input, and the two permissions it needs.',
-  },
-  {
-    id: 'assistant',
-    title: 'In an assistant',
-    summary:
-      'Add transformpipe to Claude as a connector and it can convert, save, share and delete documents in this account — signed in as you, with no key to paste.',
-  },
-  {
-    id: 'limits',
-    title: 'Limits',
-    summary:
-      '10 MB a file to convert and 4 MB to keep one in an account, 100 MB and 500 documents an account, 60 requests a minute. Reaching one refuses the write rather than deleting anything.',
-  },
-  {
-    id: 'faq',
-    title: 'Questions',
-    summary:
-      'The same answers the converter shows under its dropzone, kept in one place so the two cannot drift apart.',
-  },
-];
+/** The order of the page, and the id of each section. Every id needs an entry in `docs`. */
+export const DOCS_SECTION_IDS = [
+  'start',
+  'converting',
+  'history',
+  'sharing',
+  'account',
+  'api',
+  'cli',
+  'action',
+  'assistant',
+  'limits',
+  'faq',
+] as const;
+
+/*
+ * English, by importing the English slice rather than asking for a locale. Two of the readers of
+ * this list can only want English: the prerenderer, which writes the static `/docs` a crawler and
+ * a search result see, and the server, whose connector answers in English. A page with a reader to
+ * speak to walks `DOCS_SECTION_IDS` against the `docs` of the locale it was handed instead.
+ */
+export const DOCS_SECTIONS: DocsSection[] = DOCS_SECTION_IDS.map((id) => ({
+  id,
+  ...docs[id],
+}));

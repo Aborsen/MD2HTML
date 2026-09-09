@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { api } from './api';
+import type { Translate } from './i18n/context';
 import {
   addHistoryEntry,
   clearHistory,
@@ -22,11 +23,21 @@ interface NewEntry {
  * One history API over two backends: the account (Neon, shared across devices)
  * when signed in, this browser's localStorage otherwise. Local entries are
  * migrated into the account on first sign-in.
+ *
+ * What it says when something fails is the screen's language, so the screen hands it a `t`. It is
+ * kept in a ref and not read from the closure: `t` is a new function every time the catalogue
+ * changes, and putting it in these dependency lists would make switching language reload the list
+ * from the server — a request nobody asked for, for words that are only read when something breaks.
  */
-export function useHistory(isSignedIn: boolean) {
+export function useHistory(isSignedIn: boolean, t: Translate) {
   const [entries, setEntries] = useState<HistoryEntry[]>([]);
   const [error, setError] = useState<string | null>(null);
   const migratedFor = useRef<boolean | null>(null);
+  const words = useRef(t);
+
+  useEffect(() => {
+    words.current = t;
+  }, [t]);
 
   const refresh = useCallback(async () => {
     if (!isSignedIn) {
@@ -38,7 +49,11 @@ export function useHistory(isSignedIn: boolean) {
       setEntries((await api.listDocuments()).sort(byNewest));
       setError(null);
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : 'Could not load history');
+      setError(
+        cause instanceof Error
+          ? cause.message
+          : words.current('history.error.load')
+      );
     }
   }, [isSignedIn]);
 
@@ -96,7 +111,11 @@ export function useHistory(isSignedIn: boolean) {
 
         return created;
       } catch (cause) {
-        setError(cause instanceof Error ? cause.message : 'Could not save file');
+        setError(
+          cause instanceof Error
+            ? cause.message
+            : words.current('history.error.save')
+        );
 
         return null;
       }
@@ -151,8 +170,16 @@ export function useHistory(isSignedIn: boolean) {
 
       setError(
         failed.length === ids.length
-          ? `Could not delete: ${first.reason instanceof Error ? first.reason.message : 'server refused'}`
-          : `${failed.length} of ${ids.length} files could not be deleted`
+          ? words.current('history.error.delete', {
+              reason:
+                first.reason instanceof Error
+                  ? first.reason.message
+                  : words.current('history.error.delete.reason'),
+            })
+          : words.current('history.error.delete.some', {
+              failed: failed.length,
+              total: ids.length,
+            })
       );
       await refresh();
 
@@ -204,7 +231,9 @@ export function useHistory(isSignedIn: boolean) {
       return true;
     } catch (cause) {
       setError(
-        cause instanceof Error ? cause.message : 'Could not clear the history'
+        cause instanceof Error
+          ? cause.message
+          : words.current('history.error.clear')
       );
       await refresh();
       return false;

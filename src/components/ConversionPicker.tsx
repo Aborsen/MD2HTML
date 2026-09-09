@@ -3,6 +3,7 @@ import {
   CONVERSIONS,
   type ConversionId,
 } from '@shared/conversions';
+import { useI18n, useT } from '@/lib/i18n/context';
 import { Typography } from '@/ui/components/Typography';
 import { cn } from '@/ui/lib/utils';
 
@@ -28,6 +29,9 @@ export function ConversionPicker({
   onChange,
   className,
 }: ConversionPickerProps) {
+  const t = useT();
+  const { content } = useI18n();
+
   return (
     <div className={cn('flex flex-col gap-3', className)}>
       <Typography
@@ -36,7 +40,7 @@ export function ConversionPicker({
         textColor="light"
         className="text-xxs uppercase tracking-wide"
       >
-        Or convert something else
+        {t('converter.picker.label')}
       </Typography>
 
       {/*
@@ -84,7 +88,7 @@ export function ConversionPicker({
                   textColor={isCurrent ? 'accent' : 'primary'}
                   className="text-sm"
                 >
-                  {one.label}
+                  {content.conversions[one.id].label}
                 </Typography>
 
                 {isCurrent ? (

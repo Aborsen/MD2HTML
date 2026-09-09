@@ -110,8 +110,11 @@ export const api = {
    * Starts Google sign-in and returns the URL to send the browser to. The callback lands on
    * /api/auth/finish, which exchanges the one-time verifier for a session cookie — only a server
    * can do that — and sends the browser back where it started.
+   *
+   * `failed` is the sentence to throw when there is no URL to go to, because that one is shown to
+   * a person and this file has no language: everything else it throws is a developer's line.
    */
-  startGoogleSignIn: async (returnTo: string): Promise<string> => {
+  startGoogleSignIn: async (returnTo: string, failed: string): Promise<string> => {
     const body = await request<{ url?: string; message?: string }>(
       '/api/auth/sign-in/social',
       {
@@ -124,7 +127,7 @@ export const api = {
     );
 
     if (!body.url) {
-      throw new Error(body.message ?? 'Sign-in could not be started');
+      throw new Error(body.message ?? failed);
     }
 
     return body.url;

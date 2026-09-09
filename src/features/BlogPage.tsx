@@ -1,8 +1,10 @@
 import { useMemo, useState } from 'react';
 import { AppBreadcrumbs } from '@/components/AppBreadcrumbs';
 import { FilterChips } from '@/components/FilterChips';
-import { BLOG_CRUMBS } from '@/lib/breadcrumbs';
+import { blogCrumbs } from '@/lib/breadcrumbs';
 import { articleCardImage } from '@/lib/covers';
+import { useI18n, useT } from '@/lib/i18n/context';
+import { INTL_LOCALES } from '@/lib/i18n/locales';
 import { ScrollToTop } from '@/components/ScrollToTop';
 import {
   ARTICLES,
@@ -28,18 +30,28 @@ const ALL = 'all';
  * row and one card in the design system, used wherever a list of things needs narrowing.
  */
 export function BlogPage({ onOpenArticle, onGoToConverter }: BlogPageProps) {
+  const t = useT();
+  const { content, locale } = useI18n();
+  /* The tag `Intl` wants, which is not the tag in the address — see `INTL_LOCALES`. */
+  const dates = INTL_LOCALES[locale];
   const [tag, setTag] = useState(ALL);
 
+  /*
+   * Only the first chip has a word of its own. The rest are the articles' own tags, and the
+   * articles are English — see the note in `src/lib/i18n/content.ts` about why they are not in the
+   * catalogue — so a tag is shown as written rather than translated into a filter that matches
+   * nothing.
+   */
   const chips = useMemo(
     () => [
-      { value: ALL, label: 'All', count: ARTICLES.length },
+      { value: ALL, label: t('blog.chip.all'), count: ARTICLES.length },
       ...articleTags().map((name) => ({
         value: name,
         label: name,
         count: ARTICLES.filter((article) => article.tag === name).length,
       })),
     ],
-    []
+    [t]
   );
 
   const shown = useMemo(
@@ -54,15 +66,15 @@ export function BlogPage({ onOpenArticle, onGoToConverter }: BlogPageProps) {
       <SectionHeading
         align="center"
         size="lg"
-        eyebrow="Blog"
-        title="Markdown, and what to do with it"
-        description="Conversion, syntax that breaks, publishing, and getting the whole thing to run without you."
+        eyebrow={t('blog.eyebrow')}
+        title={t('blog.title')}
+        description={t('blog.blurb')}
         className="pt-2 pb-2"
       />
 
       {/* Centred under a centred heading; below `lg` they scroll, so they stay flush left there. */}
       <AppBreadcrumbs
-        items={BLOG_CRUMBS}
+        items={blogCrumbs(content, locale)}
         onNavigate={onGoToConverter}
         className="lg:self-center"
       />
@@ -76,7 +88,7 @@ export function BlogPage({ onOpenArticle, onGoToConverter }: BlogPageProps) {
 
       {shown.length === 0 ? (
         <Typography variant="p" textColor="secondary" className="py-8 text-sm">
-          Nothing under that tag yet.
+          {t('blog.empty')}
         </Typography>
       ) : (
         /*
@@ -95,7 +107,10 @@ export function BlogPage({ onOpenArticle, onGoToConverter }: BlogPageProps) {
             image={articleCardImage(lead.slug)}
             onOpen={() => onOpenArticle(lead.slug)}
             tag={lead.tag}
-            meta={`${formatArticleDate(lead.date)} · ${lead.readingMinutes} min read`}
+            meta={t('blog.card.meta', {
+              date: formatArticleDate(lead.date, dates),
+              minutes: lead.readingMinutes,
+            })}
           />
 
           {rest.map((article) => (
@@ -107,7 +122,10 @@ export function BlogPage({ onOpenArticle, onGoToConverter }: BlogPageProps) {
               image={articleCardImage(article.slug)}
               onOpen={() => onOpenArticle(article.slug)}
               tag={article.tag}
-              meta={`${formatArticleDate(article.date)} · ${article.readingMinutes} min read`}
+              meta={t('blog.card.meta', {
+                date: formatArticleDate(article.date, dates),
+                minutes: article.readingMinutes,
+              })}
             />
           ))}
         </div>

@@ -19,6 +19,13 @@ import { StaticPage } from './features/StaticPage';
 import { staticPage, type StaticPageId } from './lib/pages';
 import { AuthProvider, useAuth } from './lib/auth';
 import { ThemeProvider, useTheme } from './lib/theme';
+import { autoLocale, I18nProvider, useI18n, useT } from './lib/i18n/context';
+import {
+  INTL_LOCALES,
+  type Locale,
+  localePath,
+  splitLocale,
+} from './lib/i18n/locales';
 import { type DocFormat, formatBytes, toFileName } from './lib/format';
 import { downloadDoc } from './lib/download';
 import type { HistoryEntry } from './lib/history';
@@ -30,6 +37,8 @@ import {
   goToArticle,
   goToConversion,
   goToPage,
+  goToPath,
+  hasTranslation,
   readRoute,
 } from './lib/route';
 import type { ConvertedDoc } from './lib/types';
@@ -61,6 +70,10 @@ function convert(
 }
 
 function Shell() {
+  const t = useT();
+  const { content, locale } = useI18n();
+  /* The tag `Intl` wants, which is not the tag in the address — see `INTL_LOCALES`. */
+  const sizes = INTL_LOCALES[locale];
   const { user, error: authError } = useAuth();
   const { theme } = useTheme();
   const [view, setViewState] = useState<AppView>(() => readRoute().view);
@@ -138,7 +151,7 @@ function Shell() {
   const [doc, setDoc] = useState<ConvertedDoc | null>(null);
   const [isBusy, setIsBusy] = useState(false);
 
-  const history = useHistory(Boolean(user));
+  const history = useHistory(Boolean(user), t);
 
   useEffect(() => {
     if (history.error) {
@@ -148,9 +161,9 @@ function Shell() {
 
   useEffect(() => {
     if (authError) {
-      toast.error('Sign-in did not complete', { description: authError });
+      toast.error(t('auth.incomplete'), { description: authError });
     }
-  }, [authError]);
+  }, [authError, t]);
 
   /**
    * One file converts; several are chained into a single document, in the order they arrive.
@@ -161,10 +174,10 @@ function Shell() {
    */
   const handleFiles = useCallback(
     async (files: File[]) => {
-      const { id, rejected } = conversionForFiles(conversionId, files);
+      const { id, rejected } = conversionForFiles(conversionId, files, t);
 
       if (rejected) {
-        toast.error('Not a file this can convert', { description: rejected });
+        toast.error(t('converter.reject.title'), { description: rejected });
         return;
       }
 
@@ -176,9 +189,19 @@ function Shell() {
       const dropped = files.reduce((total, file) => total + file.size, 0);
 
       if (dropped > MAX_FILE_SIZE) {
-        toast.error(files.length > 1 ? 'Those files are too large' : 'File is too large', {
-          description: `${formatBytes(dropped)} — the limit for one document is ${formatBytes(MAX_FILE_SIZE)}.`,
-        });
+        toast.error(
+          t(
+            files.length > 1
+              ? 'converter.toolarge.many'
+              : 'converter.toolarge.one'
+          ),
+          {
+            description: t('converter.toolarge.detail', {
+              size: formatBytes(dropped, sizes),
+              limit: formatBytes(MAX_FILE_SIZE, sizes),
+            }),
+          }
+        );
         return;
       }
 
@@ -187,7 +210,7 @@ function Shell() {
       try {
         const parts = await Promise.all(
           files.map(async (file) => {
-            const done = await convertFile(id, file);
+            const done = await convertFile(id, file, t);
 
             return { name: done.name, markdown: done.markdown };
           })
@@ -197,7 +220,7 @@ function Shell() {
         const names = parts.map((part) => part.name);
         const converted = convert(
           id,
-          mergedName(names),
+          mergedName(names, t),
           dropped,
           markdown,
           Date.now(),
@@ -237,16 +260,28 @@ function Shell() {
         }
 
         if (tooBigToKeep) {
-          toast.warning('Converted, but not saved to your account', {
-            description: `A kept document can be ${formatBytes(KEEP_BYTES)}; this one is ${formatBytes(
-              new TextEncoder().encode(converted.markdown).length
-            )}. Download it — it is ready.`,
+          toast.warning(t('converter.notkept.title'), {
+            description: t('converter.notkept.detail', {
+              limit: formatBytes(KEEP_BYTES, sizes),
+              size: formatBytes(
+                new TextEncoder().encode(converted.markdown).length,
+                sizes
+              ),
+            }),
           });
         } else {
           toast.success(
             files.length > 1
-              ? `Chained ${files.length} files into one document`
-              : `Converted to ${conversion(id).short.split(' → ')[1] ?? 'Markdown'}`,
+              ? t('common.chained', { count: files.length })
+              : t('converter.converted', {
+                  /*
+                   * The right-hand half of "MD → HTML". The short name is an abbreviation and its
+                   * arrow is punctuation, so it reads the same in all five catalogues; a locale
+                   * that wrote it some other way gets the fallback rather than a wrong word.
+                   */
+                  format:
+                    content.conversions[id].short.split(' → ')[1] ?? 'Markdown',
+                }),
             { description: converted.name }
           );
         }
@@ -256,15 +291,20 @@ function Shell() {
          * files" — which covered a file that was not what it claimed, a converter that failed to
          * load, and a document with nothing in it, and told the person none of them.
          */
-        toast.error(`${conversion(id).label} did not work`, {
-          description:
-            cause instanceof Error ? cause.message : 'The file could not be read.',
-        });
+        toast.error(
+          t('converter.failed', { conversion: content.conversions[id].label }),
+          {
+            description:
+              cause instanceof Error
+                ? cause.message
+                : t('converter.failed.detail'),
+          }
+        );
       } finally {
         setIsBusy(false);
       }
     },
-    [history, setView]
+    [content, conversionId, history, sizes, t, user]
   );
 
   const handleOpenFromHistory = useCallback(
@@ -272,7 +312,7 @@ function Shell() {
       const markdown = await history.getSource(entry);
 
       if (!markdown) {
-        toast.error('The source of this file is no longer available');
+        toast.error(t('history.source.missing'));
         return;
       }
 
@@ -287,7 +327,7 @@ function Shell() {
       setDoc(entry.remote ? { ...reopened, remoteId: entry.id } : reopened);
       setView('converter');
     },
-    [history, setView]
+    [history, setView, t]
   );
 
   const handleDownloadFromHistory = useCallback(
@@ -295,16 +335,16 @@ function Shell() {
       const markdown = await history.getSource(entry);
 
       if (!markdown) {
-        toast.error('The source of this file is no longer available');
+        toast.error(t('history.source.missing'));
         return;
       }
 
       downloadDoc(entry.name, markdown, entry.createdAt, theme, format);
-      toast.success('File downloaded', {
+      toast.success(t('history.download.done'), {
         description: toFileName(entry.name, format),
       });
     },
-    [history, theme]
+    [history, t, theme]
   );
 
   const startOver = useCallback(() => {
@@ -328,8 +368,8 @@ function Shell() {
         }
 
         if (parts.length < 2) {
-          toast.error('Nothing to merge', {
-            description: 'The sources of these files are no longer available.',
+          toast.error(t('history.merge.none'), {
+            description: t('history.merge.none.detail'),
           });
           return;
         }
@@ -343,7 +383,7 @@ function Shell() {
           */
         const converted = convert(
           entries[0]?.kind ?? DEFAULT_CONVERSION,
-          mergedName(names),
+          mergedName(names, t),
           new Blob([markdown]).size,
           markdown,
           Date.now(),
@@ -369,14 +409,14 @@ function Shell() {
           );
         }
 
-        toast.success(`Chained ${parts.length} files into one document`, {
+        toast.success(t('common.chained', { count: parts.length }), {
           description: converted.name,
         });
       } finally {
         setIsBusy(false);
       }
     },
-    [history]
+    [history, setView, t]
   );
 
   const handleDownloadMany = useCallback(
@@ -398,7 +438,7 @@ function Shell() {
       }
 
       if (saved === 0) {
-        toast.error('Nothing could be downloaded');
+        toast.error(t('history.download.none'));
         return;
       }
 
@@ -406,11 +446,11 @@ function Shell() {
 
       toast.success(
         saved === 1
-          ? `${label} file downloaded`
-          : `${saved} ${label} files downloaded`
+          ? t('history.download.one', { format: label })
+          : t('history.download.many', { count: saved, format: label })
       );
     },
-    [history, theme]
+    [history, t, theme]
   );
 
   const handleRemoveMany = useCallback(
@@ -418,18 +458,20 @@ function Shell() {
       // Only claim success when the store says the delete actually stuck.
       if (await history.removeMany(ids)) {
         toast.info(
-          ids.length === 1 ? 'File removed' : `${ids.length} files removed`
+          ids.length === 1
+            ? t('history.removed.one')
+            : t('history.removed.many', { count: ids.length })
         );
       }
     },
-    [history]
+    [history, t]
   );
 
   const handleClear = useCallback(async () => {
     if (await history.clear()) {
-      toast.info('History cleared');
+      toast.info(t('history.cleared'));
     }
-  }, [history]);
+  }, [history, t]);
 
   return (
     <div className="flex min-h-full flex-col bg-surface-page">
@@ -504,17 +546,75 @@ function Shell() {
   );
 }
 
+/*
+ * The providers, and the language everything inside them speaks.
+ *
+ * `I18nProvider` goes above everything that says anything — the auth provider included, because a
+ * sign-in that failed is a sentence somebody reads — and inside the theme, which has no words in it.
+ *
+ * The locale comes off the address and nowhere else, so a link into `/de/docs` opens in German and
+ * a reload stays there. `popstate` covers Back; `onNavigate` covers the switcher, which changes
+ * language by changing address — and `pushState` raises no event, so the state is set here.
+ */
 export default function App() {
+  const [locale, setLocale] = useState<Locale>(() => readRoute().locale);
   const token = readRoute().sharedToken;
+
+  useEffect(() => {
+    const sync = () => setLocale(readRoute().locale);
+
+    window.addEventListener('popstate', sync);
+
+    return () => window.removeEventListener('popstate', sync);
+  }, []);
+
+  /*
+   * The language the browser asks for, once, on a first visit.
+   *
+   * Four conditions, and every one of them is a way this could be annoying instead of helpful.
+   * `autoLocale` refuses if a language was ever chosen here, if the address already names one, or
+   * if the browser's preference is English or something we do not have — a Slavic tag lands on
+   * English by the list in `locales.ts` rather than by accident. This adds the fourth: only where
+   * the page has a translation to go to, so a German arriving on an English article from a search
+   * result is left on the article they came for rather than thrown at a German front page.
+   *
+   * `replaceState`, not `pushState`: a redirect the reader did not ask for must not become an entry
+   * that Back returns them to, which is the trap that makes language detection feel broken.
+   *
+   * It runs in the browser after the bundle, so a crawler reading the prerendered HTML never sees
+   * it — `hreflang` is what tells a crawler about the other four, and that is in the static file.
+   */
+  useEffect(() => {
+    const { rest } = splitLocale(window.location.pathname);
+    const guess = autoLocale(hasTranslation(rest));
+
+    if (!guess) {
+      return;
+    }
+
+    window.history.replaceState(
+      null,
+      '',
+      localePath(guess, rest) + window.location.search
+    );
+    setLocale(guess);
+  }, []);
+
+  const navigate = useCallback((path: string) => {
+    goToPath(path);
+    setLocale(readRoute().locale);
+  }, []);
 
   return (
     <ThemeProvider>
-      <AuthProvider>
-        <TooltipProvider delayDuration={200}>
-          {token ? <SharedDocumentPage token={token} /> : <Shell />}
-          <Toaster />
-        </TooltipProvider>
-      </AuthProvider>
+      <I18nProvider locale={locale} onNavigate={navigate}>
+        <AuthProvider>
+          <TooltipProvider delayDuration={200}>
+            {token ? <SharedDocumentPage token={token} /> : <Shell />}
+            <Toaster />
+          </TooltipProvider>
+        </AuthProvider>
+      </I18nProvider>
     </ThemeProvider>
   );
 }

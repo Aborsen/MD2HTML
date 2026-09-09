@@ -30,6 +30,14 @@ interface SiteFooterProps {
   columns: FooterColumn[];
   /** The bottom line: a copyright, usually. */
   note?: string;
+  /**
+   * What a screen reader hears after the name of a link that leaves the site.
+   *
+   * A prop with a default rather than a sentence in the markup: this component belongs to the
+   * design system and has no business knowing which application's message table to ask, so the
+   * caller hands over the words and the default keeps a caller who does not care working.
+   */
+  externalLabel?: string;
   className?: string;
 }
 
@@ -50,6 +58,7 @@ export function SiteFooter({
   builtBy,
   columns,
   note,
+  externalLabel = ' (opens in a new tab)',
   className,
 }: SiteFooterProps) {
   return (
@@ -125,7 +134,9 @@ export function SiteFooter({
                         )}
                       >
                         {link.label}
-                        {link.external && <span className="sr-only"> (opens in a new tab)</span>}
+                        {link.external && (
+                          <span className="sr-only">{externalLabel}</span>
+                        )}
                       </a>
                     </li>
                   ))}

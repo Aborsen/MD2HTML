@@ -1,3 +1,5 @@
+import type { Translate } from './i18n/context';
+
 export interface MergePart {
   name: string;
   markdown: string;
@@ -18,8 +20,14 @@ export function mergeMarkdown(parts: MergePart[]): string {
     .join('\n\n---\n\n');
 }
 
-/** "notes.md + 2 more" — short enough for a row, specific enough to recognise. */
-export function mergedName(names: string[]): string {
+/**
+ * "notes.md + 2 more" — short enough for a row, specific enough to recognise.
+ *
+ * The words come from the caller, because this is a module and not a component: `t` is handed in
+ * rather than fetched from a hook that only exists inside one. The two names that are not words —
+ * one file's own name, and `merged.md` for a merge of nothing — stay here.
+ */
+export function mergedName(names: string[], t: Translate): string {
   if (names.length === 0) {
     return 'merged.md';
   }
@@ -28,5 +36,8 @@ export function mergedName(names: string[]): string {
     return names[0];
   }
 
-  return `${names[0]} + ${names.length - 1} more`;
+  return t('common.merged.name', {
+    first: names[0],
+    count: names.length - 1,
+  });
 }

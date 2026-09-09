@@ -1,6 +1,7 @@
 import { Check, Copy, Link2, Lock, Mail, Users, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { api, type ShareMode, type ShareState } from '@/lib/api';
+import { useT } from '@/lib/i18n/context';
 import { FilterChips } from './FilterChips';
 import { Button } from '@/ui/components/Button';
 import { IconButton } from '@/ui/components/IconButton';
@@ -36,6 +37,7 @@ export function ShareDialog({
   open,
   onOpenChange,
 }: ShareDialogProps) {
+  const t = useT();
   const [state, setState] = useState<ShareState | null>(null);
   const [isBusy, setIsBusy] = useState(false);
   const [email, setEmail] = useState('');
@@ -64,7 +66,9 @@ export function ShareDialog({
     try {
       setState(await action);
     } catch (cause) {
-      toast.error(cause instanceof Error ? cause.message : 'Sharing failed');
+      toast.error(
+        cause instanceof Error ? cause.message : t('dialog.share.error')
+      );
     } finally {
       setIsBusy(false);
     }
@@ -80,7 +84,7 @@ export function ShareDialog({
       setIsCopied(true);
       setTimeout(() => setIsCopied(false), 2000);
     } catch {
-      toast.error('Could not access the clipboard');
+      toast.error(t('common.clipboard.error'));
     }
   };
 
@@ -98,7 +102,7 @@ export function ShareDialog({
     <Modal open={open} onOpenChange={onOpenChange}>
       <ModalContent className="max-w-md">
         <ModalHeader>
-          <ModalTitle>Share</ModalTitle>
+          <ModalTitle>{t('dialog.share.title')}</ModalTitle>
           <Typography variant="span" textColor="secondary" className="text-xs">
             {name}
           </Typography>
@@ -108,9 +112,9 @@ export function ShareDialog({
           <FilterChips
             value={state?.mode ?? 'private'}
             items={[
-              { value: 'private', label: 'Private' },
-              { value: 'link', label: 'Anyone with the link' },
-              { value: 'people', label: 'Specific people' },
+              { value: 'private', label: t('dialog.share.mode.private') },
+              { value: 'link', label: t('dialog.share.mode.link') },
+              { value: 'people', label: t('dialog.share.mode.people') },
             ]}
             onValueChange={(value) =>
               void run(api.setShareMode(documentId, value as ShareMode))
@@ -121,7 +125,7 @@ export function ShareDialog({
             <div className="flex items-center gap-2 py-2">
               <Spinner />
               <Typography variant="span" textColor="secondary">
-                Loading…
+                {t('common.loading')}
               </Typography>
             </div>
           )}
@@ -133,7 +137,7 @@ export function ShareDialog({
               className="flex items-start gap-2 text-xs"
             >
               <Lock className="mt-0.5 size-4 shrink-0" />
-              Only you can open this document. Pick a mode above to share it.
+              {t('dialog.share.private.note')}
             </Typography>
           )}
 
@@ -144,7 +148,7 @@ export function ShareDialog({
                 textColor="secondary"
                 className="text-xs"
               >
-                Link
+                {t('dialog.share.link')}
               </Typography>
 
               <div className="flex items-center gap-2">
@@ -155,7 +159,7 @@ export function ShareDialog({
                   <InputGroupInput
                     readOnly
                     value={shareUrl(state.token)}
-                    aria-label="Share link"
+                    aria-label={t('dialog.share.link.field')}
                     onFocus={(event) => event.currentTarget.select()}
                   />
                 </InputGroup>
@@ -166,7 +170,7 @@ export function ShareDialog({
                   leftSlot={isCopied ? <Check /> : <Copy />}
                   onClick={() => void copyLink()}
                 >
-                  {isCopied ? 'Copied' : 'Copy'}
+                  {isCopied ? t('common.copied') : t('common.copy')}
                 </Button>
               </div>
 
@@ -178,14 +182,12 @@ export function ShareDialog({
                 {state.mode === 'link' ? (
                   <>
                     <Users className="mt-0.5 size-4 shrink-0" />
-                    Anyone with this link can read the document.
+                    {t('dialog.share.link.note')}
                   </>
                 ) : (
                   <>
                     <Mail className="mt-0.5 size-4 shrink-0" />
-                    Only the people below can open it, after signing in with that
-                    address. Send them the link yourself — the app does not email
-                    anyone.
+                    {t('dialog.share.people.note')}
                   </>
                 )}
               </Typography>
@@ -203,7 +205,7 @@ export function ShareDialog({
                     value={email}
                     type="email"
                     placeholder="name@company.com"
-                    aria-label="Recipient email"
+                    aria-label={t('dialog.share.email.label')}
                     onChange={(event) => setEmail(event.target.value)}
                     onKeyDown={(event) => {
                       if (event.key === 'Enter') {
@@ -220,7 +222,7 @@ export function ShareDialog({
                   disabled={isBusy || email.trim().length === 0}
                   onClick={addRecipient}
                 >
-                  Add
+                  {t('dialog.share.add')}
                 </Button>
               </div>
 
@@ -242,7 +244,9 @@ export function ShareDialog({
                       <IconButton
                         variant="destructiveTertiary"
                         size="xs"
-                        aria-label={`Remove ${address}`}
+                        aria-label={t('dialog.share.remove.label', {
+                          email: address,
+                        })}
                         disabled={isBusy}
                         onClick={() =>
                           void run(
@@ -261,7 +265,7 @@ export function ShareDialog({
                   textColor="light"
                   className="text-xs"
                 >
-                  Nobody yet — the link opens for you only.
+                  {t('dialog.share.people.empty')}
                 </Typography>
               )}
             </div>

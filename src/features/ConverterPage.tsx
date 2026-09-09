@@ -29,7 +29,9 @@ import {
   DEFAULT_CONVERSION,
 } from '@shared/conversions';
 import { ARTICLES, articlePath, formatArticleDate } from '@/lib/blog';
-import { HOME_FAQ_ENTRIES } from '@/lib/faq';
+import { FAQ_FLAGS } from '@/lib/faq';
+import { useI18n, useT } from '@/lib/i18n/context';
+import { INTL_LOCALES } from '@/lib/i18n/locales';
 import { ArticleCard } from '@/ui/components/ArticleCard';
 import { CodeBlock } from '@/ui/components/Code';
 import { Faq } from '@/ui/components/Faq';
@@ -66,7 +68,7 @@ import { cn } from '@/ui/lib/utils';
 import { toast } from '@/ui/components/Toast';
 
 interface ConverterPageProps {
-  /** Which conversion this screen is: what it accepts, what it says, and what it names things. */
+  /** Which conversion this screen is: what it accepts and where it lives. Its words come from the catalogue. */
   conversion: Conversion;
   doc: ConvertedDoc | null;
   isBusy: boolean;
@@ -87,6 +89,10 @@ export function ConverterPage({
   onGoToBlog,
   onOpenArticle,
 }: ConverterPageProps) {
+  const t = useT();
+  const { content, locale } = useI18n();
+  /** What this conversion is called and says, in the reader's language. */
+  const words = content.conversions[conversion.id];
   const [isCopied, setIsCopied] = useState(false);
   const [tab, setTab] = useState<'preview' | 'source'>('preview');
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -109,7 +115,7 @@ export function ConverterPage({
     }
 
     void previewFrame.current?.requestFullscreen().catch(() => {
-      toast.error('Fullscreen is not available here');
+      toast.error(t('converter.fullscreen.error'));
     });
   };
   const { theme } = useTheme();
@@ -124,6 +130,21 @@ export function ConverterPage({
   const primary: DocFormat = conversion.to === 'html' ? 'html' : 'md';
   const secondary: DocFormat[] = (['md', 'html', 'txt'] as DocFormat[]).filter(
     (one) => one !== primary
+  );
+
+  /*
+   * The front page's shorter list of questions: the doubts, without the details.
+   *
+   * Zipped here rather than imported ready-made, because the words belong to the locale on screen
+   * and the flags do not — `FAQ_FLAGS[n]` is about `content.faq[n]`, position being the only id a
+   * question has. See `src/lib/faq.ts`.
+   */
+  const questions = useMemo(
+    () =>
+      content.faq
+        .map((one, index) => ({ ...one, ...FAQ_FLAGS[index] }))
+        .filter((one) => !one.detail),
+    [content.faq]
   );
 
   const standalone = useMemo(
@@ -144,7 +165,7 @@ export function ConverterPage({
       <div className="flex flex-col gap-6">
         {/* On the front page the trail is there but unlinked — see `crumbsForConversion`. */}
         <AppBreadcrumbs
-          items={crumbsForConversion(conversion)}
+          items={crumbsForConversion(conversion, content, locale)}
           onNavigate={() => onConversionChange(DEFAULT_CONVERSION)}
         />
 
@@ -156,18 +177,20 @@ export function ConverterPage({
             textColor="primary"
             className="text-lg md:text-lg"
           >
-            {conversion.title}
+            {words.title}
           </Typography>
           <Typography variant="p" textColor="secondary">
-            {conversion.blurb}
+            {words.blurb}
           </Typography>
         </div>
 
         <Dropzone
           isBusy={isBusy}
           extensions={conversion.extensions}
-          title={`Drop ${conversion.extensions[0]} files here`}
-          hint={conversion.hint}
+          title={t('converter.dropzone.title', {
+            extension: conversion.extensions[0],
+          })}
+          hint={words.hint}
           onFiles={onFiles}
         />
 
@@ -182,9 +205,9 @@ export function ConverterPage({
             <SectionHeading
               align="center"
               size="lg"
-              eyebrow="Blog"
-              title="Making Markdown behave"
-              description="Syntax that breaks, documents that have to reach other people, and getting the whole thing to run without you."
+              eyebrow={t('converter.blog.eyebrow')}
+              title={t('converter.blog.title')}
+              description={t('converter.blog.blurb')}
             />
 
             {/* Six: two full rows of three, so the last row is never one card on its own. */}
@@ -198,13 +221,13 @@ export function ConverterPage({
                   image={articleCardImage(article.slug)}
                   onOpen={() => onOpenArticle(article.slug)}
                   tag={article.tag}
-                  meta={formatArticleDate(article.date)}
+                  meta={formatArticleDate(article.date, INTL_LOCALES[locale])}
                 />
               ))}
             </div>
 
             <Button variant="secondary" size="sm" onClick={onGoToBlog}>
-              All articles
+              {t('converter.blog.all')}
             </Button>
           </section>
         )}
@@ -213,12 +236,12 @@ export function ConverterPage({
           <SectionHeading
             align="center"
             size="lg"
-            eyebrow="FAQ"
-            title="Questions people arrive with"
-            description="What happens to the file, what the download contains, and what an account adds."
+            eyebrow={t('converter.faq.eyebrow')}
+            title={t('converter.faq.title')}
+            description={t('converter.faq.blurb')}
           />
 
-          <Faq items={HOME_FAQ_ENTRIES} className="max-w-3xl" />
+          <Faq items={questions} className="max-w-3xl" />
         </section>
       </div>
     );
@@ -229,18 +252,20 @@ export function ConverterPage({
   const handleDownload = (format: DocFormat) => {
     downloadDoc(doc.name, doc.markdown, doc.createdAt, theme, format);
 
-    toast.success(`${FORMAT_LABELS[format]} downloaded`, {
+    toast.success(t('converter.download.done', { format: FORMAT_LABELS[format] }), {
       description: toFileName(doc.name, format),
     });
   };
 
   const handlePrint = async () => {
     try {
-      await printDoc(doc.name, doc.html, doc.createdAt, theme);
+      await printDoc(doc.name, doc.html, doc.createdAt, theme, t);
     } catch (cause) {
-      toast.error('Could not open the print dialog', {
+      toast.error(t('converter.print.error'), {
         description:
-          cause instanceof Error ? cause.message : 'Try downloading it instead.',
+          cause instanceof Error
+            ? cause.message
+            : t('converter.print.error.hint'),
       });
     }
   };
@@ -250,9 +275,11 @@ export function ConverterPage({
       await navigator.clipboard.writeText(source);
       setIsCopied(true);
       setTimeout(() => setIsCopied(false), 2000);
-      toast.success(`${FORMAT_LABELS[primary]} copied to clipboard`);
+      toast.success(
+        t('converter.copy.done', { format: FORMAT_LABELS[primary] })
+      );
     } catch {
-      toast.error('Could not access the clipboard');
+      toast.error(t('common.clipboard.error'));
     }
   };
 
@@ -280,17 +307,18 @@ export function ConverterPage({
                 {doc.name}
               </Typography>
               <Badge variant="success" size="sm" rounded="full">
-                converted
+                {t('converter.badge.converted')}
               </Badge>
 
               {doc.sources && (
                 <Badge variant="secondary" size="sm" rounded="full">
-                  {doc.sources.length} files merged
+                  {t('converter.badge.merged', { count: doc.sources.length })}
                 </Badge>
               )}
             </div>
             <Typography variant="span" textColor="secondary" className="text-xs">
-              {formatBytes(doc.size)} · {formatDateTime(doc.createdAt)}
+              {formatBytes(doc.size, INTL_LOCALES[locale])} ·{' '}
+              {formatDateTime(doc.createdAt, INTL_LOCALES[locale])}
             </Typography>
             <div className="mt-1">
               <DocStats stats={doc.stats} />
@@ -305,13 +333,13 @@ export function ConverterPage({
             leftSlot={<RotateCcw />}
             onClick={onReset}
           >
-            New file
+            {t('converter.newfile')}
           </Button>
           <Hint
             content={
               doc.remoteId
-                ? 'Share a link to this document'
-                : 'Sign in to share — sharing needs the document in your account'
+                ? t('converter.share.hint')
+                : t('converter.share.hint.signedout')
             }
           >
             <span>
@@ -322,7 +350,7 @@ export function ConverterPage({
                 disabled={!doc.remoteId}
                 onClick={() => setIsShareOpen(true)}
               >
-                Share
+                {t('converter.share')}
               </Button>
             </span>
           </Hint>
@@ -333,7 +361,9 @@ export function ConverterPage({
             leftSlot={isCopied ? <Check /> : <Copy />}
             onClick={handleCopy}
           >
-            {isCopied ? 'Copied' : `Copy ${FORMAT_LABELS[primary]}`}
+            {isCopied
+              ? t('common.copied')
+              : t('converter.copy', { format: FORMAT_LABELS[primary] })}
           </Button>
 
           {/* A split button: the conversion's own format under the thumb, the others in the menu. */}
@@ -345,14 +375,14 @@ export function ConverterPage({
               className="rounded-r-none"
               onClick={() => handleDownload(primary)}
             >
-              Download .{primary}
+              {t('converter.download', { format: primary })}
             </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <IconButton
                   variant="primary"
                   size="sm"
-                  aria-label="Other formats"
+                  aria-label={t('converter.download.more')}
                   className="ml-px rounded-l-none"
                 >
                   <ChevronDown />
@@ -370,7 +400,7 @@ export function ConverterPage({
                 ))}
                 <DropdownMenuItem onSelect={() => void handlePrint()}>
                   <Printer className="size-4" />
-                  Print or save as PDF
+                  {t('converter.print')}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -387,20 +417,32 @@ export function ConverterPage({
           <TabsList>
             <TabsTrigger value="preview">
               <Eye className="size-4" />
-              Preview
+              {t('converter.tab.preview')}
             </TabsTrigger>
             <TabsTrigger value="source">
               <FileCode2 className="size-4" />
-              {primary === 'html' ? 'HTML source' : 'Markdown'}
+              {primary === 'html'
+                ? t('converter.tab.html')
+                : t('converter.tab.markdown')}
             </TabsTrigger>
           </TabsList>
 
           {tab === 'preview' && (
-            <Hint content={isFullscreen ? 'Exit fullscreen' : 'Read fullscreen'}>
+            <Hint
+              content={
+                isFullscreen
+                  ? t('converter.fullscreen.exit')
+                  : t('converter.fullscreen.enter')
+              }
+            >
               <IconButton
                 variant="tertiary"
                 size="sm"
-                aria-label={isFullscreen ? 'Exit fullscreen' : 'Read fullscreen'}
+                aria-label={
+                  isFullscreen
+                    ? t('converter.fullscreen.exit')
+                    : t('converter.fullscreen.enter')
+                }
                 onClick={toggleFullscreen}
               >
                 {isFullscreen ? <Minimize2 /> : <Maximize2 />}

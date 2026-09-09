@@ -1,6 +1,7 @@
 import { buildStandaloneHtml, markdownToHtml } from './markdown';
 import { markdownToText } from '@shared/to-text';
 import { type DocFormat, toFileName } from './format';
+import type { Translate } from './i18n/context';
 
 /*
  * Handing a document over.
@@ -64,18 +65,23 @@ export function downloadDoc(
  * the PDF is exactly the document that a download would have produced — and that file carries a
  * print rule that puts it back on a light palette, so a dark theme does not cost somebody a
  * cartridge.
+ *
+ * Two of the strings here are read by a person — the frame's title, which a screen reader says, and
+ * the failure, which the caller shows as the second line of a toast — so `t` comes in from the
+ * component that has one. This is a module; it cannot call a hook.
  */
 export function printDoc(
   name: string,
   html: string,
   createdAt: number,
-  theme: 'dark' | 'light'
+  theme: 'dark' | 'light',
+  t: Translate
 ): Promise<void> {
   return new Promise((resolve, reject) => {
     const frame = document.createElement('iframe');
 
     frame.setAttribute('aria-hidden', 'true');
-    frame.title = `${name} for printing`;
+    frame.title = t('converter.print.frame', { name });
     frame.style.cssText =
       'position:fixed;width:1px;height:1px;left:-9999px;border:0;visibility:hidden';
 
@@ -84,7 +90,7 @@ export function printDoc(
 
       if (!view) {
         frame.remove();
-        reject(new Error('The document could not be prepared for printing.'));
+        reject(new Error(t('converter.print.unprepared')));
         return;
       }
 

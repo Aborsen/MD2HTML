@@ -12,6 +12,7 @@ import {
   CONVERSIONS,
   type ConversionId,
 } from '@shared/conversions';
+import { useI18n, useT } from '@/lib/i18n/context';
 import { STATIC_PAGES, type StaticPageId } from '@/lib/pages';
 import type { AppView } from '@/lib/route';
 import { IconButton } from '@/ui/components/IconButton';
@@ -36,14 +37,15 @@ interface MobileNavProps {
   onOpenPage: (id: StaticPageId) => void;
 }
 
+/* The `label` is a catalogue key: the view and the glyph are the same in every language, the word is not. */
 const DESTINATIONS: Array<{
   id: Extract<AppView, 'history' | 'docs' | 'blog'>;
   label: string;
   icon: LucideIcon;
 }> = [
-  { id: 'history', label: 'History', icon: History },
-  { id: 'docs', label: 'Documentation', icon: BookOpen },
-  { id: 'blog', label: 'Blog', icon: Newspaper },
+  { id: 'history', label: 'header.nav.history', icon: History },
+  { id: 'docs', label: 'header.nav.documentation', icon: BookOpen },
+  { id: 'blog', label: 'header.nav.blog', icon: Newspaper },
 ];
 
 /**
@@ -66,6 +68,8 @@ export function MobileNav({
   onConversionChange,
   onOpenPage,
 }: MobileNavProps) {
+  const t = useT();
+  const { content } = useI18n();
   const [isOpen, setIsOpen] = useState(false);
 
   /* Going somewhere closes the sheet: it is a menu, not a second screen to dismiss. */
@@ -86,7 +90,7 @@ export function MobileNav({
         <IconButton
           variant="tertiary"
           size="sm"
-          aria-label="Menu"
+          aria-label={t('header.menu.open')}
           className="md:hidden"
         >
           <Menu />
@@ -103,9 +107,13 @@ export function MobileNav({
         isCloseButtonVisible={false}
       >
         <SheetHeader className="flex-row items-center justify-between px-4 pt-4 pb-2">
-          <SheetTitle>Menu</SheetTitle>
+          <SheetTitle>{t('header.menu.title')}</SheetTitle>
           <SheetClose asChild>
-            <IconButton variant="tertiary" size="sm" aria-label="Close menu">
+            <IconButton
+              variant="tertiary"
+              size="sm"
+              aria-label={t('header.menu.close')}
+            >
               <X />
             </IconButton>
           </SheetClose>
@@ -119,7 +127,7 @@ export function MobileNav({
               textColor="light"
               className="px-3 text-xxs uppercase tracking-wide"
             >
-              Convert
+              {t('header.menu.convert')}
             </Typography>
 
             {CONVERSIONS.map((one) => {
@@ -146,7 +154,7 @@ export function MobileNav({
                       textColor={isCurrent ? 'accent' : 'primary'}
                       className="text-sm"
                     >
-                      {one.label}
+                      {content.conversions[one.id].label}
                     </Typography>
                     <Typography
                       variant="span"
@@ -168,11 +176,12 @@ export function MobileNav({
               textColor="light"
               className="px-3 text-xxs uppercase tracking-wide"
             >
-              Go to
+              {t('header.menu.goto')}
             </Typography>
 
-            {DESTINATIONS.map(({ id, label, icon: Icon }) => {
+            {DESTINATIONS.map(({ id, label: key, icon: Icon }) => {
               const isActive = view === id;
+              const label = t(key);
 
               return (
                 <button
@@ -220,7 +229,7 @@ export function MobileNav({
                   textColor="secondary"
                   className="text-sm"
                 >
-                  {one.label}
+                  {content.pages[one.id].label}
                 </Typography>
               </button>
             ))}
