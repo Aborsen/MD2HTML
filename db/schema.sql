@@ -216,3 +216,22 @@ alter table m2h_document
 
 create index if not exists m2h_document_user_kind
   on m2h_document (user_id, kind, created_at desc);
+
+-- What we have said to somebody, once.
+--
+-- Registration happens inside Neon Auth, which does not tell this application when an account is
+-- created — there is no webhook to subscribe to and no row of ours written at sign-up. So the
+-- first time a person actually uses their account, this table learns they exist, and the insert
+-- itself is what decides whether the welcome has already gone out.
+--
+-- One row per account and nothing in it but timestamps. It is not a copy of the user: the account,
+-- the address and the name live in neon_auth."user", and a second copy of those would be a second
+-- thing to keep in step.
+
+create table if not exists m2h_user (
+  user_id text primary key,
+  -- When the welcome went out. Set by the same statement that creates the row, so two requests
+  -- arriving together cannot both decide they were first.
+  welcomed_at timestamptz,
+  first_seen_at timestamptz not null default now()
+);

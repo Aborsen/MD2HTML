@@ -82,6 +82,29 @@ export const UNVERIFIED = { documents: 10 } as const;
  * `emailVerified` is Neon Auth's column, and true without asking for anybody who arrived through
  * Google: the provider asserts the address, so there was never anything for us to confirm.
  */
+/**
+ * Records that this account exists, and answers whether that was news.
+ *
+ * True exactly once per account, which is what makes it safe to send an email on. The decision is
+ * the insert: `on conflict do nothing ... returning` gives back a row only when this call created
+ * it, so two requests arriving in the same instant cannot both conclude they were the first — the
+ * database decides, not a read followed by a write.
+ *
+ * Called where somebody uses their account rather than where they sign in. Neon Auth owns
+ * registration and tells this application nothing about it, and a session check fires on every page
+ * load; converting or saving something is both a better moment to say hello and a far colder path.
+ */
+export async function noteFirstUse(userId: string): Promise<boolean> {
+  const rows = (await sql()`
+    insert into m2h_user (user_id, welcomed_at)
+    values (${userId}, now())
+    on conflict (user_id) do nothing
+    returning user_id
+  `) as Array<{ user_id: string }>;
+
+  return rows.length === 1;
+}
+
 export async function isVerified(userId: string): Promise<boolean> {
   const rows = (await sql()`
     select "emailVerified" as verified

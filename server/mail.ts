@@ -110,5 +110,43 @@ export async function sendShareNotice(options: {
   });
 }
 
+/**
+ * The one message a new account gets.
+ *
+ * Short, and it says what the account is for rather than thanking anybody for joining. Somebody who
+ * has just converted a file knows what the product does; what they do not know is that the document
+ * is now theirs on another machine, that a link will publish it, and that a key or an assistant can
+ * reach it. Three sentences and the addresses to find them at.
+ *
+ * Plain text, like the share notice, and for the same reasons: it renders the same everywhere and
+ * carries no tracking pixel to land it in a spam folder.
+ */
+export async function sendWelcome(options: {
+  to: string;
+  origin: string;
+}): Promise<Sent> {
+  const { to, origin } = options;
+
+  return send({
+    to,
+    subject: 'Your transformpipe account',
+    text: [
+      'Your account is ready.',
+      '',
+      'Signed in, the documents you convert are kept and follow you to another machine, and any',
+      'one of them can be shared as a link or addressed to particular people.',
+      '',
+      `Everything the app does, a script can do too: ${origin}/docs has the API, a command-line`,
+      'client and a GitHub Action. An assistant can be connected from the account menu, under MCP',
+      'connector, with no key to paste.',
+      '',
+      `Converting still happens in your browser, signed in or out — no file is uploaded. ${origin}/privacy`,
+      'says what is stored and what is not.',
+      '',
+      'transformpipe.com',
+    ].join('\n'),
+  });
+}
+
 /** Whether this deployment can send at all, for a caller that wants to say so in its response. */
 export const canSendMail = () => Boolean(process.env.RESEND_API_KEY);

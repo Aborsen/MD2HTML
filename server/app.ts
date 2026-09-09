@@ -7,14 +7,15 @@ import {
   buildSharedPage,
   buildStandaloneHtml,
 } from '../shared/markdown.js';
-import { authProxy, currentUser, type SessionUser } from './auth.js';
+import { authProxy, currentUser, selfOrigin, type SessionUser } from './auth.js';
+import { sendWelcome } from './mail.js';
 import { sql, type DocumentRow } from './db.js';
 import { createKey, forgetKey, listKeys, revokeKey } from './keys.js';
 import {
   CONVERSIONS,
   DEFAULT_CONVERSION,
 } from '../shared/conversions.js';
-import { checkQuota, QUOTA, usageOf } from './limits.js';
+import { checkQuota, noteFirstUse, QUOTA, usageOf } from './limits.js';
 import mcp from './mcp.js';
 import oauth from './oauth.js';
 import { authorizationServer, protectedResource } from './wellknown.js';
@@ -220,6 +221,32 @@ api.get('/documents', async (c) => {
 
 api.post('/documents', async (c) => {
   const userId = c.get('user').id;
+
+  /*
+   * Say hello, once, the first time somebody keeps something.
+   *
+   * Not on sign-in: Neon Auth owns registration and tells this application nothing about it, so
+   * there is no moment of creation to hook. Not on the session check either — that fires on every
+   * page load, and a write on it would be a write on every page load. Saving a document is the
+   * first thing an account is actually for, and `noteFirstUse` answers true exactly once because
+   * the insert is what decides, not a read followed by a write.
+   *
+   * Not awaited into the response, and failures only logged: a welcome email that did not send is
+   * not a reason to fail a save that already happened.
+   */
+  void noteFirstUse(userId).then(async (isNew) => {
+    const email = c.get('user').email;
+
+    if (!isNew || !email) {
+      return;
+    }
+
+    const sent = await sendWelcome({ to: email, origin: selfOrigin(c) });
+
+    if (!sent.ok) {
+      console.error(`welcome to ${email} not sent: ${sent.reason}`);
+    }
+  });
 
   type CreateBody = {
     name?: string;
