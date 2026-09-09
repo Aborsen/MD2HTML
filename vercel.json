@@ -108,7 +108,7 @@
   ],
   "headers": [
     {
-      "source": "/((?!embed$|embed/|(de|fr|es|it)/embed).*)",
+      "source": "/((?!embed$|embed/|(?:de|fr|es|it)/embed).*)",
       "headers": [
         {
           "key": "X-Frame-Options",
