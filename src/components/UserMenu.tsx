@@ -1,4 +1,13 @@
-import { KeyRound, LogIn, LogOut, Moon, Plug, Sun, User } from 'lucide-react';
+import {
+  KeyRound,
+  LogIn,
+  LogOut,
+  Moon,
+  Plug,
+  ShieldAlert,
+  Sun,
+  User,
+} from 'lucide-react';
 import { useState } from 'react';
 import { useAuth } from '@/lib/auth';
 import { useT } from '@/lib/i18n/context';
@@ -59,6 +68,7 @@ export function UserMenu() {
   const [isKeysOpen, setIsKeysOpen] = useState(false);
   const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [isMcpOpen, setIsMcpOpen] = useState(false);
+  const [isVerifyOpen, setIsVerifyOpen] = useState(false);
 
   if (isLoading) {
     return <Skeleton className="h-8 w-28 rounded-full" />;
@@ -179,6 +189,25 @@ export function UserMenu() {
 
         <DropdownMenuSeparator className="my-1" />
 
+        {/*
+          * Only while the address is unconfirmed, and then it is the first thing in the menu.
+          *
+          * Somebody who signed up with a password has an account that works and an address nobody
+          * has proved — and the code that proves it arrives in an email with no link in it, so
+          * without an entry here there is nowhere in the product to type it. Google accounts never
+          * see this: the provider asserts the address.
+          */}
+        {user.emailVerified === false && (
+          <>
+            <DropdownMenuItem onSelect={() => setIsVerifyOpen(true)}>
+              <ShieldAlert className="text-ink-highlight" />
+              {t('header.verify')}
+            </DropdownMenuItem>
+
+            <DropdownMenuSeparator className="my-1" />
+          </>
+        )}
+
         <DropdownMenuItem onSelect={() => setIsKeysOpen(true)}>
           <KeyRound />
           {t('header.apikeys')}
@@ -199,6 +228,18 @@ export function UserMenu() {
 
     <ApiKeysDialog open={isKeysOpen} onOpenChange={setIsKeysOpen} />
     <McpDialog open={isMcpOpen} onOpenChange={setIsMcpOpen} />
+
+    {/*
+      * The same dialog the header opens for signing in, on its confirmation view.
+      *
+      * `initial` is read when it opens, and the email it asks about is the one on the account —
+      * which the dialog already has, because it asks `useAuth()` rather than being told.
+      */}
+    <AuthDialog
+      open={isVerifyOpen}
+      onOpenChange={setIsVerifyOpen}
+      initial="verify"
+    />
     </>
   );
 }

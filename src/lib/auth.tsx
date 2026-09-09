@@ -23,6 +23,10 @@ interface AuthState {
   signInWithEmail: (email: string, password: string) => Promise<string | null>;
   signUpWithEmail: (email: string, password: string) => Promise<string | null>;
   requestPasswordReset: (email: string) => Promise<string | null>;
+  /** Asks the auth service for a fresh six-digit code. */
+  sendVerificationCode: (email: string) => Promise<string | null>;
+  /** Confirms the address with that code, and refreshes who is signed in. */
+  verifyEmailCode: (email: string, otp: string) => Promise<string | null>;
   signOut: () => Promise<void>;
 }
 
@@ -263,6 +267,44 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     [t]
   );
 
+  /*
+   * The code, sent and checked.
+   *
+   * Signing up does not send one: the auth service leaves that to the application, which is why an
+   * account created here sat unverified with an empty inbox. So the dialog sends it.
+   *
+   * On success the session is asked again rather than trusted from the response. Confirming an
+   * address changes `emailVerified` on the user, and that flag is what the rest of the app reads —
+   * a stale copy of it in memory is how somebody comes to be told to confirm an address they just
+   * confirmed.
+   */
+  const sendVerificationCode = useCallback(
+    async (email: string): Promise<string | null> => {
+      try {
+        await api.sendVerificationCode(email);
+
+        return null;
+      } catch (cause) {
+        return cause instanceof Error ? cause.message : t('auth.error.start');
+      }
+    },
+    [t]
+  );
+
+  const verifyEmailCode = useCallback(
+    async (email: string, otp: string): Promise<string | null> => {
+      try {
+        await api.verifyEmailCode(email, otp);
+        setUser(await api.me());
+
+        return null;
+      } catch (cause) {
+        return cause instanceof Error ? cause.message : t('auth.error.start');
+      }
+    },
+    [t]
+  );
+
   const signOut = useCallback(async () => {
     try {
       await api.signOut();
@@ -290,6 +332,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       signInWithEmail,
       signUpWithEmail,
       requestPasswordReset,
+      sendVerificationCode,
+      verifyEmailCode,
       signOut,
     }),
     [
@@ -301,6 +345,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       signInWithEmail,
       signUpWithEmail,
       requestPasswordReset,
+      sendVerificationCode,
+      verifyEmailCode,
       signOut,
     ]
   );

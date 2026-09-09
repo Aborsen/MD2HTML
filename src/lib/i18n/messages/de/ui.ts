@@ -83,6 +83,16 @@ export const ui: Content['ui'] = {
   'auth.dialog.terms.link': 'Nutzungsbedingungen',
   'auth.dialog.terms.required':
     'Die Nutzungsbedingungen müssen für ein Konto akzeptiert werden.',
+  'auth.dialog.verify.title': 'E-Mail bestätigen',
+  'auth.dialog.verify.lede':
+    'Ein sechsstelliger Code ist an {email} unterwegs. Er läuft in zehn Minuten ab.',
+  'auth.dialog.verify.code': 'Sechsstelliger Code',
+  'auth.dialog.verify.submit': 'Bestätigen',
+  'auth.dialog.verify.resend': 'Neuen Code senden',
+  'auth.dialog.verify.resent': 'Ein neuer Code ist unterwegs.',
+  'auth.dialog.verify.done': 'Die Adresse ist bestätigt.',
+  'auth.dialog.verify.later': 'Später',
+  'header.verify': 'E-Mail bestätigen',
   'auth.dialog.reset.sent': 'Falls zu dieser Adresse ein Konto gehört, ist ein Link unterwegs.',
   'auth.verify.sent':
     'Das Konto ist angelegt. Der Link zur Bestätigung der Adresse liegt im Postfach.',

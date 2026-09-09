@@ -6,6 +6,14 @@ export interface AuthUser {
   name: string;
   email: string | null;
   image: string | null;
+  /**
+   * Whether the address has been confirmed.
+   *
+   * True without asking for anybody who signed in with Google — the provider asserts the address,
+   * so there is nothing for us to confirm. False for an account made with a password until the
+   * code from the email is entered.
+   */
+  emailVerified?: boolean;
 }
 
 interface ServerDocument {
@@ -185,6 +193,34 @@ export const api = {
           email,
           redirectTo: `${location.origin}/`,
         }),
+      }
+    ),
+
+  /**
+   * Sends a fresh six-digit code to the address.
+   *
+   * Signing up does not send one — the auth service leaves that to the application, which is why
+   * an account created here sat unverified with nothing in the inbox until this was called.
+   */
+  sendVerificationCode: (email: string) =>
+    request<{ success?: boolean }>('/api/auth/email-otp/send-verification-otp', {
+      method: 'POST',
+      body: JSON.stringify({ email, type: 'email-verification' }),
+    }),
+
+  /**
+   * Confirms the address with the code from the email.
+   *
+   * A code and not a link: the message carries six digits that expire in ten minutes, so there is
+   * nothing to click and the product has to ask for them. A wrong one comes back as
+   * `INVALID_OTP`, which `request` lifts into the message shown under the field.
+   */
+  verifyEmailCode: (email: string, otp: string) =>
+    request<{ status?: boolean; user?: AuthUser }>(
+      '/api/auth/email-otp/verify-email',
+      {
+        method: 'POST',
+        body: JSON.stringify({ email, otp }),
       }
     ),
 

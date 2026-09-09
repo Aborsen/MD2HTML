@@ -73,6 +73,16 @@ export const ui: Content['ui'] = {
   'auth.dialog.terms': 'Acepto los {terms}',
   'auth.dialog.terms.link': 'términos de uso',
   'auth.dialog.terms.required': 'Hay que aceptar los términos para crear una cuenta.',
+  'auth.dialog.verify.title': 'Confirma tu correo',
+  'auth.dialog.verify.lede':
+    'Se ha enviado un código de seis dígitos a {email}. Caduca en diez minutos.',
+  'auth.dialog.verify.code': 'Código de seis dígitos',
+  'auth.dialog.verify.submit': 'Confirmar',
+  'auth.dialog.verify.resend': 'Enviar otro código',
+  'auth.dialog.verify.resent': 'Un código nuevo va en camino.',
+  'auth.dialog.verify.done': 'La dirección está confirmada.',
+  'auth.dialog.verify.later': 'Más tarde',
+  'header.verify': 'Confirma tu correo',
   'auth.dialog.reset.sent': 'Si esa dirección tiene una cuenta, el enlace ya va en camino.',
   'auth.verify.sent':
     'La cuenta está creada. En tu correo está el enlace que confirma la dirección.',
