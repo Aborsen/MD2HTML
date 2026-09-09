@@ -48,31 +48,27 @@ interface AppHeaderProps {
  * and which glyph.
  */
 /*
- * `room` is the width the longest of the five translations needs, so the bar does not move when
- * the language does.
- *
- * Measured, not guessed, at 14px DM Sans with the icon, the gaps and the padding counted:
- * Cronologia is the longest History and needs 121px, Guida the longest Docs and needs 89px, and
- * Blog is Blog in all five so it needs nothing. A minimum rather than a width — a translation that
- * grows later gets more room instead of being clipped.
- *
- * Only from `md`, which is where these labels appear at all; below it they are icons.
+ * The order, the ids and the glyphs. Every label is read from the catalogue at render time.
  */
 const NAV_ITEMS = [
-  {
-    id: 'history' as const,
-    label: 'header.nav.history',
-    icon: History,
-    room: 'md:min-w-[7.75rem]',
-  },
-  {
-    id: 'docs' as const,
-    label: 'header.nav.docs',
-    icon: BookOpen,
-    room: 'md:min-w-[5.75rem]',
-  },
-  { id: 'blog' as const, label: 'header.nav.blog', icon: Newspaper, room: '' },
+  { id: 'history' as const, label: 'header.nav.history', icon: History },
+  { id: 'docs' as const, label: 'header.nav.docs', icon: BookOpen },
+  { id: 'blog' as const, label: 'header.nav.blog', icon: Newspaper },
 ];
+
+/*
+ * One width for all three, and it is the widest label in any of the five languages.
+ *
+ * Per-item minimums came first and were not enough. They stopped the bar rearranging itself when
+ * the language changed, but left the three boxes 124, 92 and 76px wide — so the distance from the
+ * word History to the word Docs was 119px and from Docs to Blog 91px, which is what uneven spacing
+ * looks like even when every gap between boxes is the same four.
+ *
+ * 7.75rem is 124px, which is what Italian needs for Cronologia. Content centred, so the room left
+ * over on a short label splits evenly instead of piling up on one side. Only from md, where the
+ * labels exist at all; below it these are icons and a fixed width would be dead space.
+ */
+const NAV_ROOM = 'md:min-w-[7.75rem] md:justify-center';
 
 export function AppHeader({
   view,
@@ -186,7 +182,7 @@ export function AppHeader({
             </DropdownMenuContent>
           </DropdownMenu>
 
-          {NAV_ITEMS.map(({ id, label: key, icon: Icon, room }) => {
+          {NAV_ITEMS.map(({ id, label: key, icon: Icon }) => {
             const isActive = view === id;
             const label = t(key);
 
@@ -200,7 +196,7 @@ export function AppHeader({
                 title={label}
                 className={cn(
                   'flex h-9 cursor-pointer items-center gap-1.5 rounded-md border border-transparent px-2 font-medium text-sm transition-colors md:px-3',
-                  room,
+                  NAV_ROOM,
                   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring-brand focus-visible:ring-offset-2',
                   isActive
                     ? 'bg-surface-accent text-ink-highlight'

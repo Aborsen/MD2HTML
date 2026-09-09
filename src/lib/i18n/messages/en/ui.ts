@@ -368,7 +368,7 @@ export const ui: Content['ui'] = {
   'dialog.share.link.field': 'Share link',
   'dialog.share.link.note': 'Anyone with this link can read the document.',
   'dialog.share.people.note':
-    'Only the people below can open it, after signing in with that address. Send them the link yourself — the app does not email anyone.',
+    'Only the people below can open it, after signing in with that address. Each one is emailed the link when you add them.',
   'dialog.share.people.empty': 'Nobody yet — the link opens for you only.',
   'dialog.share.email.label': 'Recipient email',
   'dialog.share.add': 'Add',

@@ -366,7 +366,7 @@ export const ui: Content['ui'] = {
   'dialog.share.link.note':
     'Toute personne ayant ce lien peut lire le document.',
   'dialog.share.people.note':
-    'Seules les personnes ci-dessous peuvent l’ouvrir, après s’être connectées avec cette adresse. Envoyez-leur le lien vous-même — l’application n’écrit à personne.',
+    'Seules les personnes ci-dessous peuvent l’ouvrir, après connexion avec cette adresse. Chacune reçoit le lien par e-mail dès que vous l’ajoutez.',
   'dialog.share.people.empty':
     'Personne pour l’instant — le lien ne s’ouvre que pour vous.',
   'dialog.share.email.label': 'Adresse du destinataire',
