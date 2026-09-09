@@ -100,7 +100,16 @@ export function UserMenu() {
           aria-label={t('header.signin')}
           isLoading={isSigningIn}
           leftSlot={<LogIn />}
-          className="!px-2 sm:!px-3"
+          /*
+           * A width that does not move when the language does.
+           *
+           * "Sign in" is 91px and "Se connecter" is 136px, and because this button is the last
+           * thing in a right-anchored row, those 45px came off the left — so the theme and
+           * language buttons beside it jumped every time somebody switched language. The minimum
+           * is the widest of the five, measured, so all five render the same bar. Below `sm` the
+           * label is hidden and the button is the mark alone, so the minimum lifts there only.
+           */
+          className="!px-2 sm:!px-3 sm:min-w-[8.5rem] sm:justify-center"
           onClick={() => setIsAuthOpen(true)}
         >
           <span className="hidden sm:inline">{t('header.signin')}</span>
