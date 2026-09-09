@@ -6,7 +6,14 @@ import { selfOrigin } from './auth.js';
 import { type Caller, mayWrite, resolveCaller } from './caller.js';
 import { canSendMail, sendShareNotice } from './mail.js';
 import { sql } from './db.js';
-import { checkQuota, countCall, QUOTA, RATE, usageOf } from './limits.js';
+import {
+  checkQuota,
+  countCall,
+  isVerified,
+  QUOTA,
+  RATE,
+  usageOf,
+} from './limits.js';
 import {
   CONVERSIONS,
   conversion,
@@ -477,6 +484,27 @@ v1.put('/documents/:id/share', async (c) => {
 
   if (!row) {
     return c.json({ error: 'Not found' }, 404);
+  }
+
+  /*
+   * Publishing to the open web waits for a confirmed address.
+   *
+   * `link` puts a page at /s/<token> that anybody holding the URL can read, on our domain, with
+   * somebody else's content on it — which is the one thing an account made with an address nobody
+   * has proved should not be able to do. `people` is not held back: it names addresses and asks
+   * each reader to sign in, so it publishes nothing.
+   *
+   * Checked here rather than on the caller, because confirming should take effect on the next
+   * request and not on the next sign-in.
+   */
+  if (body.mode === 'link' && !(await isVerified(userId))) {
+    return c.json(
+      {
+        error:
+          'Confirm your email address before publishing a document to a public link. Sharing with named addresses works either way.',
+      },
+      403
+    );
   }
 
   if (body.mode === 'private') {

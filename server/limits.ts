@@ -58,6 +58,40 @@ const mb = (bytes: number) => `${(bytes / 1024 / 1024).toFixed(1)} MB`;
  * cap, which quietly destroyed something the owner had chosen to keep. Reaching a limit is a
  * conversation with the owner, and the answer says what to do about it.
  */
+/*
+ * What an account can do before its address has been confirmed.
+ *
+ * Ten documents, and no publishing to the open web. Not a trial and not a paywall: an address
+ * nobody has proved is an address that cannot be recovered, cannot be told anything, and costs
+ * nothing to make a hundred of — so the two things it is held back from are the two that matter,
+ * accumulating storage and putting a page on the public internet under our domain.
+ *
+ * Confirming lifts both, immediately, with nothing to do but enter the code.
+ */
+export const UNVERIFIED = { documents: 10 } as const;
+
+/*
+ * Read at the moment of the decision rather than carried on the caller.
+ *
+ * Three ways of arriving resolve to a caller — a key, an assistant's token, a browser session —
+ * and each reads a different table, so a flag threaded through all three would be three places to
+ * forget. One query here also means somebody who confirms their address is unblocked on their very
+ * next request rather than on their next sign-in, which is the behaviour anybody would expect
+ * after typing a code.
+ *
+ * `emailVerified` is Neon Auth's column, and true without asking for anybody who arrived through
+ * Google: the provider asserts the address, so there was never anything for us to confirm.
+ */
+export async function isVerified(userId: string): Promise<boolean> {
+  const rows = (await sql()`
+    select "emailVerified" as verified
+    from neon_auth."user"
+    where id = ${userId}
+  `) as Array<{ verified: boolean | null }>;
+
+  return rows[0]?.verified === true;
+}
+
 export async function checkQuota(
   userId: string,
   incomingBytes: number
@@ -72,6 +106,22 @@ export async function checkQuota(
   }
 
   const usage = await usageOf(userId);
+
+  /*
+   * The tighter cap first, so the message names the reason a person can act on: being told to
+   * delete documents when the actual fix is to type a code from an email is the wrong advice.
+   */
+  if (
+    usage.documents >= UNVERIFIED.documents &&
+    !(await isVerified(userId))
+  ) {
+    return {
+      ok: false,
+      status: 403,
+      error: `An unconfirmed account can keep ${UNVERIFIED.documents} documents. Confirm your email address from the account menu and this limit goes away.`,
+      usage,
+    };
+  }
 
   if (usage.documents >= QUOTA.documents) {
     return {
