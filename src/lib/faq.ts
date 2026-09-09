@@ -1,4 +1,4 @@
-import { faq } from './i18n/messages/en/faq';
+import { faq } from './i18n/messages/en/faq.js';
 
 /*
  * The questions people arrive with, and which of them each page asks.

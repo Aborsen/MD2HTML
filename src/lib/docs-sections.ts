@@ -1,4 +1,4 @@
-import { docs } from './i18n/messages/en/docs';
+import { docs } from './i18n/messages/en/docs.js';
 
 /*
  * The shape of the documentation page, in one list.
