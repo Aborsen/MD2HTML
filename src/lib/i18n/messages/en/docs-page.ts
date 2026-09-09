@@ -173,7 +173,7 @@ export const docsPage = {
   'docs.assistant.adding':
     'On claude.ai that goes in Settings → Connectors → Add custom connector. From a terminal:',
   'docs.assistant.auth':
-    'There is no key to paste. The first call comes back unauthorised, your assistant follows that to a page here, and you sign in with the same Google account and approve a named client — which is why the page tells you which address it is about to act as. What it gets is a token of ours, good for your documents and nothing else: not your account, not your sign-in, and not your API keys. Disconnect it from the account menu, under API keys, and it stops working on the next call.',
+    'There is no key to paste. The first call comes back unauthorised, your assistant follows that to a page here, and you sign in with the same account you already use and approve a named client — which is why the page tells you which address it is about to act as. What it gets is a token of ours, good for your documents and nothing else: not your account, not your sign-in, and not your API keys. Disconnect it from the account menu, under MCP connector, and it stops working on the next call.',
   'docs.assistant.tools':
     'The tools are the same code as the API above, called in process, so a conversation and a script get the same answer. Two of them are shaped for the trouble they can cause: sharing publishes a page on the public web, and deleting takes an explicit confirmation and removes exactly one document.',
 

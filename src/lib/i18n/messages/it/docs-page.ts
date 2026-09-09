@@ -155,7 +155,7 @@ export const docsPage = {
   'docs.assistant.adding':
     'Su claude.ai va in Impostazioni → Connettori → Aggiungi connettore personalizzato. Da un terminale:',
   'docs.assistant.auth':
-    'Non c’è nessuna chiave da incollare. La prima chiamata torna come non autorizzata, il tuo assistente segue quella risposta fino a una pagina qui, e tu accedi con lo stesso account Google e approvi un client con un nome — ed è per questo che la pagina dice con quale indirizzo sta per agire al posto tuo. Quello che ottiene è un token nostro, valido per i tuoi documenti e per nient’altro: non per l’account, non per l’accesso, non per le chiavi API. Scollegalo dal menu dell’account, sotto Chiavi API, e smette di funzionare alla chiamata successiva.',
+    'Non c’è nessuna chiave da incollare. La prima chiamata torna come non autorizzata, il tuo assistente segue quella risposta fino a una pagina qui, e tu accedi con lo stesso account che usi già e approvi un client con un nome — ed è per questo che la pagina dice con quale indirizzo sta per agire al posto tuo. Quello che ottiene è un token nostro, valido per i tuoi documenti e per nient’altro: non per l’account, non per l’accesso, non per le chiavi API. Scollegalo dal menu dell’account, sotto Connettore MCP, e smette di funzionare alla chiamata successiva.',
   'docs.assistant.tools':
     'Gli strumenti sono lo stesso codice dell’API qui sopra, chiamato nello stesso processo, così una conversazione e uno script ottengono la stessa risposta. Due di essi sono fatti su misura per i guai che possono combinare: la condivisione pubblica una pagina sul web aperto, e l’eliminazione richiede una conferma esplicita e rimuove esattamente un documento.',
 

@@ -162,7 +162,7 @@ export const docsPage = {
   'docs.assistant.adding':
     'En claude.ai eso va en Configuración → Conectores → Añadir conector personalizado. Desde un terminal:',
   'docs.assistant.auth':
-    'No hay ninguna clave que pegar. La primera llamada vuelve sin autorizar, tu asistente sigue ese camino hasta una página de aquí, e inicias sesión con la misma cuenta de Google y apruebas un cliente con nombre — por eso la página te dice en nombre de qué dirección va a actuar. Lo que obtiene es un token nuestro, válido para tus documentos y para nada más: no para tu cuenta, ni para tu inicio de sesión, ni para tus claves API. Desconéctalo desde el menú de la cuenta, en claves API, y deja de funcionar en la llamada siguiente.',
+    'No hay ninguna clave que pegar. La primera llamada vuelve sin autorizar, tu asistente sigue ese camino hasta una página de aquí, e inicias sesión con la misma cuenta que ya usas y apruebas un cliente con nombre — por eso la página te dice en nombre de qué dirección va a actuar. Lo que obtiene es un token nuestro, válido para tus documentos y para nada más: no para tu cuenta, ni para tu inicio de sesión, ni para tus claves API. Desconéctalo desde el menú de la cuenta, en Conector MCP, y deja de funcionar en la llamada siguiente.',
   'docs.assistant.tools':
     'Las herramientas son el mismo código de la API de arriba, llamado en el mismo proceso, así que una conversación y un script obtienen la misma respuesta. Dos de ellas están pensadas por el daño que pueden hacer: compartir publica una página en la web abierta, y eliminar exige una confirmación explícita y quita exactamente un documento.',
 

@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && npm run blog:check && vite build && npm run prerender",
+    "build": "tsc -b && npm run deploy:check && npm run blog:check && vite build && npm run prerender",
     "prerender": "vite build --ssr scripts/prerender.ts --outDir .prerender --emptyOutDir && node .prerender/prerender.js",
     "preview": "vite preview",
     "check-types": "tsc -b",
@@ -18,7 +18,8 @@
     "blob:reconcile": "node scripts/reconcile-blobs.mjs",
     "reports": "node scripts/reports.mjs",
     "docs:shots": "node scripts/screenshots.mjs",
-    "mcp:check": "node scripts/check-mcp.mjs"
+    "mcp:check": "node scripts/check-mcp.mjs",
+    "deploy:check": "node scripts/check-deploy.mjs"
   },
   "dependencies": {
     "@hono/node-server": "^2.1.1",
@@ -64,6 +65,7 @@
     "@vitejs/plugin-react": "^5.1.1",
     "autoprefixer": "^10.4.20",
     "dotenv": "^17.4.2",
+    "path-to-regexp": "^6.3.0",
     "postcss": "^8.4.47",
     "puppeteer-core": "^25.10.0",
     "tailwindcss": "^3.4.7",
