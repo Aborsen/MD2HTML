@@ -1,4 +1,3 @@
-import { resolveMx } from 'node:dns/promises';
 import type { Context } from 'hono';
 
 /**
@@ -276,61 +275,6 @@ export async function authProxy(c: Context): Promise<Response> {
     );
   }
 
-/*
- * Can the domain in this address receive mail at all?
- *
- * The one thing a server can check about an address without sending to it. `sdfsdfsdfg@dsfsdfsdf.com`
- * is a perfectly well-formed address and no amount of pattern matching will say otherwise — but
- * that domain publishes no MX record, so nothing addressed to it can be delivered anywhere, and an
- * account made with it is an account nobody can ever confirm or recover.
- *
- * What this is NOT is proof that a mailbox exists. Only the code in the email establishes that, and
- * that is what the confirmation step is for. This refuses the obviously undeliverable — a typo in
- * the domain, a made-up one — before an account exists to clean up.
- *
- * Failing open on a DNS error is deliberate. A resolver that times out must not stop people
- * signing up; the confirmation step is still there behind it. Only a definite "this domain has no
- * mail exchanger" is a refusal.
- */
-const MX_CACHE = new Map<string, boolean>();
-
-async function canReceiveMail(email: string): Promise<boolean> {
-  const domain = email.split('@')[1]?.toLowerCase();
-
-  if (!domain) {
-    return false;
-  }
-
-  const known = MX_CACHE.get(domain);
-
-  if (known !== undefined) {
-    return known;
-  }
-
-  try {
-    const records = await resolveMx(domain);
-    const ok = records.length > 0 && records.some((one) => one.exchange);
-
-    MX_CACHE.set(domain, ok);
-
-    return ok;
-  } catch (cause) {
-    const code = (cause as { code?: string }).code;
-
-    /*
-     * ENODATA is "this domain exists and has no MX"; ENOTFOUND is "no such domain". Both are
-     * definite. Anything else — a timeout, a broken resolver — is our problem, not the address's.
-     */
-    if (code === 'ENODATA' || code === 'ENOTFOUND') {
-      MX_CACHE.set(domain, false);
-
-      return false;
-    }
-
-    return true;
-  }
-}
-
   const subpath = c.req.path.replace(/^\/api\/auth\/?/, '');
 
   if (!subpath) {
@@ -341,33 +285,6 @@ async function canReceiveMail(email: string): Promise<boolean> {
     return finishSignIn(c);
   }
 
-  /*
-   * Sign-up is the one path that gets looked at rather than only forwarded.
-   *
-   * The body is read here and passed on as text, because `c.req.raw.arrayBuffer()` below would
-   * otherwise be reading a stream this has already consumed.
-   */
-  if (subpath === 'sign-up/email') {
-    const raw = await c.req.raw.clone().text();
-
-    let email = '';
-
-    try {
-      email = String((JSON.parse(raw) as { email?: unknown }).email ?? '');
-    } catch {
-      /* Not JSON. Let the auth service refuse it in its own words. */
-    }
-
-    if (email && !(await canReceiveMail(email))) {
-      return c.json(
-        {
-          code: 'UNDELIVERABLE_DOMAIN',
-          message: `${email.split('@')[1]} does not accept email, so this address could never be confirmed. Check the spelling.`,
-        },
-        400
-      );
-    }
-  }
 
   // Better Auth needs the original query intact — the OAuth callback carries `code` and `state`.
   const query = new URL(c.req.url).searchParams.toString();
