@@ -61,7 +61,14 @@ const NOT_CONFIGURED: Sent = { ok: false, reason: 'no RESEND_API_KEY' };
 /** The Markdown, flattened for a client that shows no markup. */
 function asText(markdown: string): string {
   return markdown
-    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '$1: $2')
+    /*
+     * A label that already is the address does not need it twice: the welcome message links the
+     * words transformpipe.com/docs to https://transformpipe.com/docs, and the plain part read
+     * "transformpipe.com/docs: https://transformpipe.com/docs".
+     */
+    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_match, label: string, url: string) =>
+      url.replace(/^https?:\/\//, '') === label ? url : `${label}: ${url}`
+    )
     .replace(/^(\s*)[*-]\s+/gm, '$1- ')
     .replace(/\*\*([^*]+)\*\*/g, '$1')
     .trim();
