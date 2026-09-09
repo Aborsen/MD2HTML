@@ -13,6 +13,7 @@ import { ConverterPage } from './features/ConverterPage';
 import { ArticlePage } from './features/ArticlePage';
 import { BlogPage } from './features/BlogPage';
 import { DocsPage } from './features/DocsPage';
+import { EmbedPage } from './features/EmbedPage';
 import { HistoryPage } from './features/HistoryPage';
 import { SharedDocumentPage } from './features/SharedDocumentPage';
 import { StaticPage } from './features/StaticPage';
@@ -604,6 +605,24 @@ export default function App() {
     goToPath(path);
     setLocale(readRoute().locale);
   }, []);
+
+  /*
+   * The embed is not the app with the chrome hidden — it is rendered instead of it.
+   *
+   * Above `AuthProvider` on purpose: that provider asks the server who is signed in on mount, and
+   * an embed has no account, so a page on somebody else's domain should not be making a credentialed
+   * request to us the moment it loads. It keeps the theme and the catalogue, because it has words on
+   * it and the host chooses the palette.
+   */
+  if (readRoute().view === 'embed') {
+    return (
+      <ThemeProvider>
+        <I18nProvider locale={locale} onNavigate={navigate}>
+          <EmbedPage />
+        </I18nProvider>
+      </ThemeProvider>
+    );
+  }
 
   return (
     <ThemeProvider>

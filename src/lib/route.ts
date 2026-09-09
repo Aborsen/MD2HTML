@@ -21,7 +21,13 @@ import { localePath, splitLocale, type Locale } from './i18n/locales';
  * dropdown that only changes state is not.
  */
 
-export type AppView = 'converter' | 'history' | 'docs' | 'blog' | 'page';
+export type AppView =
+  | 'converter'
+  | 'history'
+  | 'docs'
+  | 'blog'
+  | 'page'
+  | 'embed';
 
 export interface Route {
   view: AppView;
@@ -62,13 +68,15 @@ export function readRoute(): Route {
     locale,
     view: page
       ? 'page'
-      : /^\/history\/?$/.test(path)
-        ? 'history'
-        : /^\/docs\/?$/.test(path)
-          ? 'docs'
-          : /^\/blog(\/|$)/.test(path)
-            ? 'blog'
-            : 'converter',
+      : /^\/embed\/?$/.test(path)
+        ? 'embed'
+        : /^\/history\/?$/.test(path)
+          ? 'history'
+          : /^\/docs\/?$/.test(path)
+            ? 'docs'
+            : /^\/blog(\/|$)/.test(path)
+              ? 'blog'
+              : 'converter',
     conversionId: (conversionForPath(path)?.id ?? DEFAULT_CONVERSION),
     filter: new URLSearchParams(window.location.search).get('filter'),
     sharedToken: shared ? decodeURIComponent(shared[1]) : null,
@@ -81,6 +89,8 @@ const PATHS: Record<Exclude<AppView, 'converter' | 'page'>, string> = {
   history: '/history',
   docs: '/docs',
   blog: '/blog',
+  /* Reachable only by being framed; nothing in the app navigates to it. */
+  embed: '/embed',
 };
 
 /*

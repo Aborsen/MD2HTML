@@ -610,6 +610,8 @@ writeFileSync(
     'Disallow: /report/',
     'Disallow: /api/',
     'Disallow: /history',
+    /* Framed into other pages, and the same converter as `/`. Not a search result. */
+    'Disallow: /embed',
     'Disallow: /.well-known/',
     '',
     `Sitemap: ${SITE}/sitemap.xml`,
