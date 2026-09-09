@@ -102,10 +102,11 @@ const jsonLd = (data: unknown) =>
  * The same list the app draws, from `src/lib/breadcrumbs.ts`, so the two cannot disagree — a trail
  * that says one thing to a reader and another to a crawler is worse than none, because that is the
  * mismatch that gets a site's structured data ignored altogether. A single entry is not a trail, so
- * it produces nothing.
+ * it produces nothing — and neither does a list where no entry has an address, which is how the
+ * home page shows a trail to a reader without claiming a position in a hierarchy it is the root of.
  */
 const breadcrumbs = (items: CrumbSpec[]) =>
-  items.length > 1
+  items.length > 1 && items.some((crumb) => crumb.path)
     ? jsonLd({
         '@context': 'https://schema.org',
         '@type': 'BreadcrumbList',

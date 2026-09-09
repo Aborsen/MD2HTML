@@ -142,7 +142,7 @@ export function ConverterPage({
   if (!doc) {
     return (
       <div className="flex flex-col gap-6">
-        {/* Nothing on the front page: a trail whose only entry is where you are says nothing. */}
+        {/* On the front page the trail is there but unlinked — see `crumbsForConversion`. */}
         <AppBreadcrumbs
           items={crumbsForConversion(conversion)}
           onNavigate={() => onConversionChange(DEFAULT_CONVERSION)}

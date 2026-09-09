@@ -37,11 +37,19 @@ export function crumbsForArticle(article: Article): CrumbSpec[] {
 /**
  * A conversion's trail.
  *
- * The default conversion *is* the home page, so it gets no trail at all: a breadcrumb whose only
- * entry is the page you are on tells nobody anything.
+ * The default conversion *is* the home page, which used to mean no trail at all — and that left the
+ * front page as the one conversion page with nothing above its heading, so it read as a different
+ * kind of page from its own siblings. It gets the trail now, with "Converter" as plain text rather
+ * than a link, because the link would point at the page you are already on.
+ *
+ * Nothing in that trail carries a path, which is what stops the prerenderer emitting it as
+ * `BreadcrumbList`: two names and no addresses is not a hierarchy, and the root of a site has no
+ * position in one to declare.
  */
 export function crumbsForConversion(one: Conversion): CrumbSpec[] {
-  return one.path === '/' ? [] : [HOME, { label: one.label }];
+  return one.path === '/'
+    ? [{ label: HOME.label }, { label: one.label }]
+    : [HOME, { label: one.label }];
 }
 
 export function crumbsForStaticPage(page: StaticPage): CrumbSpec[] {
