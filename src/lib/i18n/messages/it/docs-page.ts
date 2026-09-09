@@ -160,6 +160,15 @@ export const docsPage = {
     'Gli strumenti sono lo stesso codice dell’API qui sopra, chiamato nello stesso processo, così una conversazione e uno script ottengono la stessa risposta. Due di essi sono fatti su misura per i guai che possono combinare: la condivisione pubblica una pagina sul web aperto, e l’eliminazione richiede una conferma esplicita e rimuove esattamente un documento.',
 
   /* The limits table: each term and the figure beside it. */
+  'docs.embed.intro':
+    'Un iframe. Nessuno script da caricare, niente da installare e nessun account: l’incorporamento è anonimo per scelta, perché una pagina su un altro dominio in grado di raggiungere i documenti di qualcuno sarebbe uno scambio peggiore di quanto valga la comodità.',
+  'docs.embed.params':
+    '{conversion} scegle quale delle cinque, {theme} lascia alla pagina che incorpora la scelta della palette invece di seguire il sistema del visitatore, e il prefisso della lingua funziona come altrove — {locale}.',
+  'docs.embed.messages':
+    'Il risultato esce con {post}: {ready} al caricamento, poi {converted} con nome, Markdown, HTML e conteggi, oppure {error}. Ogni messaggio porta {source}, perché una pagina in ascolto su {window} sente ogni suo frame e i propri script — e verifica {origin} contro questo sito, che è la parte che nessun altro può fare per te.',
+  'docs.embed.frames':
+    'Solo {embed} può essere incorporato. Ogni altra pagina di questo sito risponde {ancestors}, così che nulla qui possa essere spacciato per altro.',
+
   'docs.limits.account.term': 'Per account',
   'docs.limits.account.text': '100 MB di Markdown, 500 documenti',
   'docs.limits.convert.term': 'Per conversione',

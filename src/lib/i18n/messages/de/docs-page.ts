@@ -184,6 +184,15 @@ export const docsPage = {
     'Die Werkzeuge sind derselbe Code wie die API oben, im Prozess aufgerufen, sodass ein Gespräch und ein Skript dieselbe Antwort bekommen. Zwei davon sind nach dem Schaden geformt, den sie anrichten können: Teilen veröffentlicht eine Seite im offenen Netz, und Löschen verlangt eine ausdrückliche Bestätigung und entfernt genau ein Dokument.',
 
   /* Die Tabelle der Grenzen: jeder Begriff und die Zahl daneben. */
+  'docs.embed.intro':
+    'Ein iframe. Kein Skript, keine Installation und kein Konto: die Einbettung ist absichtlich anonym, denn eine Seite auf einer anderen Domain, die an die Dokumente einer Person käme, wäre ein schlechterer Tausch, als die Bequemlichkeit wert ist.',
+  'docs.embed.params':
+    '{conversion} wählt eine der fünf, {theme} lässt die einbettende Seite die Palette bestimmen statt dem Betriebssystem des Besuchers zu folgen, und ein Sprachpräfix funktioniert wie überall sonst — {locale}.',
+  'docs.embed.messages':
+    'Das Ergebnis verlässt den Rahmen per {post}: {ready} beim Laden, dann {converted} mit Name, Markdown, HTML und Zählungen, oder {error}. Jede Nachricht trägt {source}, denn eine Seite, die auf {window} hört, hört von jedem ihrer Rahmen und von ihren eigenen Skripten — und prüfen Sie {origin} gegen diese Site, was der Teil ist, den niemand sonst für Sie tun kann.',
+  'docs.embed.frames':
+    'Nur {embed} darf eingebettet werden. Jede andere Seite dieser Site antwortet mit {ancestors}, damit sich hier nichts als etwas Fremdes ausgeben lässt.',
+
   'docs.limits.account.term': 'Je Konto',
   'docs.limits.account.text': '100 MB Markdown, 500 Dokumente',
   'docs.limits.convert.term': 'Je Umwandlung',

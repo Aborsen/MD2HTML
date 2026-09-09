@@ -178,6 +178,15 @@ export const docsPage = {
     'The tools are the same code as the API above, called in process, so a conversation and a script get the same answer. Two of them are shaped for the trouble they can cause: sharing publishes a page on the public web, and deleting takes an explicit confirmation and removes exactly one document.',
 
   /* The limits table: each term and the figure beside it. */
+  'docs.embed.intro':
+    'One iframe. No script to load, nothing to install, and no account: the embed is deliberately anonymous, because a page on another domain that could reach somebody’s documents would be a worse trade than the convenience is worth.',
+  'docs.embed.params':
+    '{conversion} picks which of the five, {theme} lets the host choose the palette rather than following the visitor’s operating system, and a locale prefix works as everywhere else — {locale}.',
+  'docs.embed.messages':
+    'The result leaves by {post}: {ready} on load, then {converted} with the name, the Markdown, the HTML and the counts, or {error}. Every message carries {source}, because a page listening on {window} hears from every frame it has and from its own scripts — and check {origin} against this site, which is the half nobody else can do for you.',
+  'docs.embed.frames':
+    'Only {embed} may be framed. Every other page of this site answers {ancestors}, so nothing here can be dressed up as somebody else’s.',
+
   'docs.limits.account.term': 'Per account',
   'docs.limits.account.text': '100 MB of Markdown, 500 documents',
   'docs.limits.convert.term': 'Per conversion',

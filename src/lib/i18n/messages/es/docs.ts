@@ -56,6 +56,11 @@ export const docs: Content['docs'] = {
     summary:
       'Añade transformpipe a Claude como conector y podrá convertir, guardar, compartir y eliminar documentos de esta cuenta — en tu nombre y sin ninguna clave que pegar.',
   },
+  embed: {
+    title: 'En otra página',
+    summary:
+      'Incrusta el conversor en tu propia interfaz con /embed. El archivo se convierte en el navegador de quien lo suelta y no llega a ningún servidor, ni al tuyo ni al nuestro; el resultado sale por postMessage.',
+  },
   limits: {
     title: 'Límites',
     summary:

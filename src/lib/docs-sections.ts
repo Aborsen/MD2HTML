@@ -32,6 +32,7 @@ export const DOCS_SECTION_IDS = [
   'cli',
   'action',
   'assistant',
+  'embed',
   'limits',
   'faq',
 ] as const;

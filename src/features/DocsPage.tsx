@@ -2,6 +2,7 @@ import {
   BookOpen,
   Boxes,
   FileCode2,
+  Frame,
   Gauge,
   Plug,
   HelpCircle,
@@ -53,6 +54,7 @@ const ICONS: Record<string, typeof BookOpen> = {
   cli: Terminal,
   action: Terminal,
   assistant: Plug,
+  embed: Frame,
   limits: Gauge,
   faq: HelpCircle,
 };
@@ -576,6 +578,60 @@ node cli/tp.mjs usage                     # 65.8 kB of 100.0 MB · 3 of 500 docu
           />
 
           <p>{t('docs.assistant.tools')}</p>
+        </Section>
+
+        <Section id="embed" title={titles.embed.title}>
+          <p>{t('docs.embed.intro')}</p>
+
+          <CodeBlock>{`<iframe
+  src="${window.location.origin}/embed?conversion=word-to-markdown&theme=light"
+  style="width:100%;height:600px;border:0"
+></iframe>`}</CodeBlock>
+
+          <p>
+            <Rich
+              text={t('docs.embed.params')}
+              parts={{
+                conversion: <InlineCode>?conversion=</InlineCode>,
+                theme: <InlineCode>?theme=dark|light</InlineCode>,
+                locale: <InlineCode>/de/embed</InlineCode>,
+              }}
+            />
+          </p>
+
+          <p>
+            <Rich
+              text={t('docs.embed.messages')}
+              parts={{
+                post: <InlineCode>postMessage</InlineCode>,
+                ready: <InlineCode>ready</InlineCode>,
+                converted: <InlineCode>converted</InlineCode>,
+                error: <InlineCode>error</InlineCode>,
+                source: <InlineCode>source: 'transformpipe'</InlineCode>,
+                window: <InlineCode>window</InlineCode>,
+                origin: <InlineCode>event.origin</InlineCode>,
+              }}
+            />
+          </p>
+
+          <CodeBlock>{`window.addEventListener('message', (event) => {
+  if (event.origin !== '${window.location.origin}') return;
+  if (event.data?.source !== 'transformpipe') return;
+
+  if (event.data.type === 'converted') {
+    console.log(event.data.name, event.data.markdown, event.data.html);
+  }
+});`}</CodeBlock>
+
+          <p>
+            <Rich
+              text={t('docs.embed.frames')}
+              parts={{
+                embed: <InlineCode>/embed</InlineCode>,
+                ancestors: <InlineCode>frame-ancestors 'none'</InlineCode>,
+              }}
+            />
+          </p>
         </Section>
 
         <Section id="limits" title={titles.limits.title}>

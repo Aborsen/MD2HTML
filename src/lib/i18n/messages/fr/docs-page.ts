@@ -168,6 +168,15 @@ export const docsPage = {
     'Les outils sont le même code que l’API ci-dessus, appelé dans le processus, de sorte qu’une conversation et un script obtiennent la même réponse. Deux d’entre eux sont taillés pour les dégâts qu’ils peuvent faire : le partage publie une page sur le web public, et la suppression exige une confirmation explicite et retire exactement un document.',
 
   /* Le tableau des limites : chaque terme et le chiffre à côté. */
+  'docs.embed.intro':
+    'Un iframe. Aucun script à charger, rien à installer et aucun compte : l’intégration est volontairement anonyme, car une page sur un autre domaine capable d’atteindre les documents de quelqu’un serait un mauvais échange.',
+  'docs.embed.params':
+    '{conversion} choisit laquelle des cinq, {theme} laisse la page hôte choisir la palette au lieu de suivre le système du visiteur, et un préfixe de langue fonctionne comme partout ailleurs — {locale}.',
+  'docs.embed.messages':
+    'Le résultat sort par {post} : {ready} au chargement, puis {converted} avec le nom, le Markdown, le HTML et les décomptes, ou {error}. Chaque message porte {source}, car une page à l’écoute de {window} entend chacun de ses cadres et ses propres scripts — et vérifiez {origin} contre ce site, ce que personne ne peut faire à votre place.',
+  'docs.embed.frames':
+    'Seul {embed} peut être placé dans un cadre. Toutes les autres pages de ce site répondent {ancestors}, afin que rien ici ne puisse être déguisé en page d’autrui.',
+
   'docs.limits.account.term': 'Par compte',
   'docs.limits.account.text': '100 MB de Markdown, 500 documents',
   'docs.limits.convert.term': 'Par conversion',

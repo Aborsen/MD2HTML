@@ -57,6 +57,11 @@ export const docs: Content['docs'] = {
     summary:
       'Add transformpipe to Claude as a connector and it can convert, save, share and delete documents in this account — signed in as you, with no key to paste.',
   },
+  embed: {
+    title: 'In another page',
+    summary:
+      'Frame the converter into your own interface with /embed. The file is converted in your visitor’s browser and reaches no server, yours or ours; the result comes out by postMessage.',
+  },
   limits: {
     title: 'Limits',
     summary:
