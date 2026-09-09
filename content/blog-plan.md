@@ -139,6 +139,7 @@ Lower volume, higher intent, and the ones that link to everything else.
 | self-contained-html-explained | single file html |
 | static-site-generator-or-converter | do i need a static site generator |
 | converting-documents-with-an-api | document conversion api |
+| converting-documents-from-an-assistant | mcp document converter |
 
 ## Internal linking
 
