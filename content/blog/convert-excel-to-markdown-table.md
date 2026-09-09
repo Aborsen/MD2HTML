@@ -268,7 +268,7 @@ There is a sixth cost that is not about data. Somebody has to check the result. 
 
 ## Conclusion
 
-The honest summary of Excel to Markdown is that the conversion is easy and the spreadsheet is hard. Save the sheet as CSV UTF-8, convert the CSV, and spend the saved time checking the three things that break: identifiers whose leading zeros went missing when they were typed, dates whose order depends on the reader, and merged cells that Markdown cannot express and will quietly flatten. For a selected range, paste it instead — the clipboard's tab-separated flavour is genuinely easier to parse than any CSV, and transformpipe converts pasted rows the same way it converts a file, in the browser, with nothing uploaded when you are signed out. Either way, read the first and last rows of the result before you publish it. The tool cannot know that `417` used to be `00417`, and you can.
+The honest summary of Excel to Markdown is that the conversion is easy and the spreadsheet is hard. Save the sheet as CSV UTF-8, convert the CSV, and spend the saved time checking the three things that break: identifiers whose leading zeros went missing when they were typed, dates whose order depends on the reader, and merged cells that Markdown cannot express and will quietly flatten. For a selected range, paste it instead — the clipboard's tab-separated flavour is genuinely easier to parse than any CSV, and TransformPipe converts pasted rows the same way it converts a file, in the browser, with nothing uploaded when you are signed out. Either way, read the first and last rows of the result before you publish it. The tool cannot know that `417` used to be `00417`, and you can.
 
 ## FAQ
 

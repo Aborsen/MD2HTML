@@ -266,7 +266,7 @@ Worth naming precisely, because it is the first search result and the wrong tool
 
 ### A browser converter, when the install is the problem
 
-transformpipe converts a Markdown file in the browser and offers the result as a plain text download alongside HTML and Markdown, with nothing uploaded while you are signed out and a 10 MB cap on a conversion. The decisions about headings, links and tables are the tool's rather than yours, which is the trade: no install, no flags, and no control.
+TransformPipe converts a Markdown file in the browser and offers the result as a plain text download alongside HTML and Markdown, with nothing uploaded while you are signed out and a 10 MB cap on a conversion. The decisions about headings, links and tables are the tool's rather than yours, which is the trade: no install, no flags, and no control.
 
 **Price:** free.
 

@@ -64,7 +64,7 @@ The document's own CSS can take some of this back. A stylesheet that declares `@
 | The PDF is produced from a file you can keep and re-print | No table of contents with page numbers, and no cross-references |
 | Two controls away from correct once you know which two | One document at a time |
 
-**Who should use it?** Anybody with one document and a recipient. A converter that hands you self-contained HTML with its styles inline makes this a two-step job, and [what happens to your file on the way through](/blog/markdown-to-html-converter) is worth reading before you trust the output of any of them. transformpipe does the conversion in your browser and prints through the same dialogue, which is why it is on this list rather than in it: the PDF is the browser's work, not the converter's.
+**Who should use it?** Anybody with one document and a recipient. A converter that hands you self-contained HTML with its styles inline makes this a two-step job, and [what happens to your file on the way through](/blog/markdown-to-html-converter) is worth reading before you trust the output of any of them. TransformPipe does the conversion in your browser and prints through the same dialogue, which is why it is on this list rather than in it: the PDF is the browser's work, not the converter's.
 
 ## Pandoc with a LaTeX engine
 
@@ -261,7 +261,7 @@ The multi-file case is the one people hit soonest and least expect. A twelve-cha
 
 ## Conclusion
 
-PDF from Markdown is always a two-step job, and the honest question is which intermediate format you want to argue with. For one document with a recipient, convert the Markdown to a complete, self-contained HTML file and print it from your browser with backgrounds on and headers off - which is what [transformpipe's Markdown to HTML conversion](/) is for, free, in the browser, with nothing uploaded when you are signed out. For a long document with page furniture, install Pandoc and xelatex, write the template once and never think about it again. For a PDF that has to appear without anybody present, put the page rules in CSS and let headless Chrome or WeasyPrint do the printing. All three are free; the difference is entirely in what you are willing to install and maintain.
+PDF from Markdown is always a two-step job, and the honest question is which intermediate format you want to argue with. For one document with a recipient, convert the Markdown to a complete, self-contained HTML file and print it from your browser with backgrounds on and headers off - which is what [TransformPipe's Markdown to HTML conversion](/) is for, free, in the browser, with nothing uploaded when you are signed out. For a long document with page furniture, install Pandoc and xelatex, write the template once and never think about it again. For a PDF that has to appear without anybody present, put the page rules in CSS and let headless Chrome or WeasyPrint do the printing. All three are free; the difference is entirely in what you are willing to install and maintain.
 
 ## FAQ
 

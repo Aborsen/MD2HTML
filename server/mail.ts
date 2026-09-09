@@ -27,13 +27,16 @@
  * a raw address, a Reply-To when there is a person behind the message, and both MIME parts.
  */
 
+import { markdownToHtml } from './render.js';
+
 const ENDPOINT = 'https://api.resend.com/emails';
 
 /** The most a send may add to the request that triggered it. */
 const TIMEOUT_MS = 4000;
 
 /** Resend refuses anything else, and a from address on an unverified domain bounces silently. */
-const FROM = process.env.MAIL_FROM ?? 'transformpipe <no-reply@transformpipe.com>';
+const FROM =
+  process.env.MAIL_FROM ?? 'TransformPipe <no-reply@transformpipe.com>';
 
 export interface Sent {
   ok: boolean;
@@ -43,45 +46,48 @@ export interface Sent {
 
 const NOT_CONFIGURED: Sent = { ok: false, reason: 'no RESEND_API_KEY' };
 
-/**
- * The same message, as HTML.
+/*
+ * A message is written once, in Markdown, and both MIME parts come out of it.
  *
- * Built from the text rather than written twice, so the two parts cannot say different things: a
- * blank line becomes a paragraph and a line that is a URL becomes a link. No images, no tracking,
- * no styling beyond a readable measure — what this exists for is to be a `text/html` alternative
- * at all, not to be a design.
+ * The HTML part is rendered by `markdownToHtml` — the same converter the product sells, the same
+ * one that renders every article on the blog. Anything that breaks an email here breaks a customer
+ * document too, which is a better place for a bug to be found than in somebody's inbox.
+ *
+ * The text part is not the Markdown as written: `[docs](https://…)` reads badly in a plain-text
+ * client, so a link becomes "docs: https://…" and a bullet becomes a dash. Everything else about
+ * Markdown is already plain text, which is the whole reason it is the source.
  */
-function asHtml(text: string): string {
-  const escape = (value: string) =>
-    value
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;');
 
-  const paragraphs = text
-    .split(/\n\s*\n/)
-    .map((block) => block.trim())
-    .filter(Boolean)
-    .map((block) => {
-      const lines = block.split('\n').map((line) => {
-        const bare = line.trim();
+/** The Markdown, flattened for a client that shows no markup. */
+function asText(markdown: string): string {
+  return markdown
+    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '$1: $2')
+    .replace(/^(\s*)[*-]\s+/gm, '$1- ')
+    .replace(/\*\*([^*]+)\*\*/g, '$1')
+    .trim();
+}
 
-        return /^https?:\/\/\S+$/.test(bare)
-          ? `<a href="${escape(bare)}">${escape(bare)}</a>`
-          : escape(line);
-      });
-
-      return `<p>${lines.join('<br>')}</p>`;
-    })
-    .join('\n');
-
-  return `<div style="font:16px/1.5 -apple-system,Segoe UI,Roboto,sans-serif;max-width:34em">${paragraphs}</div>`;
+/**
+ * The Markdown, as HTML, wrapped in enough style to be readable and nothing more.
+ *
+ * No images and no tracking pixel. The reason to send an HTML part at all is that a text-only
+ * message from a domain with no sending history is treated as suspicious — not that a notice with
+ * a handful of links in it needs design.
+ */
+function asHtml(markdown: string): string {
+  return [
+    '<div style="font:16px/1.6 -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif;',
+    'color:#1f2430;max-width:34em">',
+    markdownToHtml(markdown),
+    '</div>',
+  ].join('');
 }
 
 async function send(message: {
   to: string;
   subject: string;
-  text: string;
+  /** The body, in Markdown. Both parts are derived from it — see `asText` and `asHtml`. */
+  markdown: string;
   /**
    * Where a reply goes, when there is a person to reply to.
    *
@@ -116,7 +122,7 @@ async function send(message: {
         from: FROM,
         to: [message.to],
         subject: message.subject,
-        text: message.text,
+        text: asText(message.markdown),
         /*
          * Both parts, not text alone.
          *
@@ -127,7 +133,7 @@ async function send(message: {
          * treats harshly, and the first share notice this product ever sent went to spam. So the
          * HTML part is the same words, marked up and nothing more.
          */
-        html: asHtml(message.text),
+        html: asHtml(message.markdown),
         ...(message.replyTo ? { reply_to: message.replyTo } : {}),
       }),
       signal: controller.signal,
@@ -190,16 +196,15 @@ export async function sendShareNotice(options: {
      * shape spam filters know well. Who shared it is the first line of the body, where it belongs.
      */
     subject: `${documentName} was shared with you`,
-    text: [
-      `${from} shared a document with you on transformpipe.`,
+    markdown: [
+      `${from} shared a document with you on TransformPipe.`,
       '',
-      documentName,
-      url,
+      `**${documentName}** — [open it](${url})`,
       '',
       `It was shared with ${to} specifically rather than published, so opening it means signing in`,
       'with that address. Nobody else can open the link.',
       '',
-      'transformpipe.com — a document converter that runs in your browser',
+      '[TransformPipe](https://transformpipe.com) — a document converter that runs in your browser.',
     ].join('\n'),
   });
 }
@@ -207,37 +212,68 @@ export async function sendShareNotice(options: {
 /**
  * The one message a new account gets.
  *
- * Short, and it says what the account is for rather than thanking anybody for joining. Somebody who
- * has just converted a file knows what the product does; what they do not know is that the document
- * is now theirs on another machine, that a link will publish it, and that a key or an assistant can
- * reach it. Three sentences and the addresses to find them at.
+ * It says what the account makes possible and where to go next — the manual, the blog, and the
+ * issue tracker, which is the only address this product has for hearing back from anybody. The
+ * privacy sentence is in it because that is the claim the whole thing rests on and the moment
+ * somebody signs in is exactly when they might assume it stopped being true.
  *
- * Plain text, like the share notice, and for the same reasons: it renders the same everywhere and
- * carries no tracking pixel to land it in a spam folder.
+ * The links are built from the origin the request came in on, so a preview deployment sends people
+ * to itself rather than to production.
  */
 export async function sendWelcome(options: {
   to: string;
+  /** The account's name, as the auth service has it. May be an email's local part, or empty. */
+  name: string | null;
   origin: string;
 }): Promise<Sent> {
-  const { to, origin } = options;
+  const { to, name, origin } = options;
+
+  /*
+   * A first name, only when there is one.
+   *
+   * Signing up with a password does not ask for a name, so the account gets the local part of the
+   * address — and "Hi admin," is worse than no greeting at all. So a name is used only when it is
+   * not simply what comes before the @, and the sentence works either way.
+   */
+  const local = to.split('@')[0]?.toLowerCase() ?? '';
+  const first = (name ?? '').trim().split(/\s+/)[0] ?? '';
+  const greeting =
+    first && first.toLowerCase() !== local ? `Hi ${first},` : 'Hi,';
 
   return send({
     to,
-    subject: 'Your transformpipe account',
-    text: [
-      'Your account is ready.',
+    subject: 'Welcome to TransformPipe',
+    markdown: [
+      greeting,
       '',
-      'Signed in, the documents you convert are kept and follow you to another machine, and any',
-      'one of them can be shared as a link or addressed to particular people.',
+      'Welcome to the TransformPipe community — we’re glad you’re here.',
       '',
-      `Everything the app does, a script can do too: ${origin}/docs has the API, a command-line`,
-      'client and a GitHub Action. An assistant can be connected from the account menu, under MCP',
-      'connector, with no key to paste.',
+      'Your account is ready. You can now keep your converted documents in one place, access',
+      'them from another device, and share them via a link or directly with specific people.',
       '',
-      `Converting still happens in your browser, signed in or out — no file is uploaded. ${origin}/privacy`,
-      'says what is stored and what is not.',
+      'Here are a few places to start:',
       '',
-      'transformpipe.com',
+      `* **Documentation:** [transformpipe.com/docs](${origin}/docs)`,
+      '  Learn how to get more from TransformPipe with the API, command-line client, GitHub',
+      '  Action, and MCP Connector for AI assistants. You can connect an assistant from the',
+      '  account menu without creating or pasting an API key.',
+      `* **Blog:** [transformpipe.com/blog](${origin}/blog)`,
+      '  Explore product updates, practical workflows, and ideas for automating document',
+      '  conversion.',
+      '* **Feedback and feature requests:**',
+      '  [Open a GitHub issue](https://github.com/Aborsen/MD2HTML/issues/new)',
+      '  Have an idea, found a bug, or want to share a workflow you’d like us to support? We’d',
+      '  genuinely love to hear from you. Early community feedback directly shapes what we build',
+      '  next.',
+      '',
+      'One important note on privacy: document conversion happens locally in your browser,',
+      'whether you are signed in or not. Your files are not uploaded for conversion. You can read',
+      `more in our [Privacy Policy](${origin}/privacy).`,
+      '',
+      'Thanks for joining us.',
+      '',
+      'Best,',
+      'The TransformPipe team',
     ].join('\n'),
   });
 }

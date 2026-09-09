@@ -196,7 +196,7 @@ Render the Markdown once, host it, and pass on the address. Nothing to download,
 - Render server-side or ship the finished HTML, so a reader with scripts blocked still sees the document
 - Let you kill the address on your own, without asking the reader to do anything
 
-transformpipe does both shapes of this. Drop the `.md` file on transformpipe.com and take the download for a self-contained file; sign in and publish it for a read-only page at `/s/<token>`. Revoking drops the token, so a link you already sent stops working. From a terminal it is one command:
+TransformPipe does both shapes of this. Drop the `.md` file on transformpipe.com and take the download for a self-contained file; sign in and publish it for a read-only page at `/s/<token>`. Revoking drops the token, so a link you already sent stops working. From a terminal it is one command:
 
 ```bash
 node cli/tp.mjs login tp_live_…        # once, with an API key
@@ -307,7 +307,7 @@ The mirror-image failure is worth naming too. Always attaching a converted file 
 
 ## Conclusion
 
-Sharing a Markdown file is not a conversion problem, it is a question about the reader. When the answer is "they want to print it", [the PDF routes are here](/blog/markdown-to-pdf). The question: what their machine will do with the thing you send, and what they will do with it afterwards. Short and final, paste it. Meant to be edited, attach the source and say what it is. Part of a project, commit it beside the code. Meant to be read once by somebody who has never heard of Markdown, convert it to a self-contained HTML file and attach it, or publish it as a read-only link and be honest with yourself about what revoking that link can and cannot undo. [transformpipe converts Markdown to a complete HTML document in the browser](/), free, with nothing uploaded when you are signed out — and then, once you have the link or the file, open it in a private window and read it as your reader will.
+Sharing a Markdown file is not a conversion problem, it is a question about the reader. When the answer is "they want to print it", [the PDF routes are here](/blog/markdown-to-pdf). The question: what their machine will do with the thing you send, and what they will do with it afterwards. Short and final, paste it. Meant to be edited, attach the source and say what it is. Part of a project, commit it beside the code. Meant to be read once by somebody who has never heard of Markdown, convert it to a self-contained HTML file and attach it, or publish it as a read-only link and be honest with yourself about what revoking that link can and cannot undo. [TransformPipe converts Markdown to a complete HTML document in the browser](/), free, with nothing uploaded when you are signed out — and then, once you have the link or the file, open it in a private window and read it as your reader will.
 
 ## FAQ
 

@@ -19,13 +19,13 @@ import type { Content } from '../../content';
 export const pages: Content['pages'] = {
   about: {
     label: 'About',
-    title: 'About transformpipe',
+    title: 'About TransformPipe',
     lede: 'A converter that does the work in your browser and stays out of the way.',
     sections: [
       {
         heading: 'What it is',
         body: [
-          'transformpipe turns documents into other documents. Markdown into a finished HTML page, and HTML, Word files, spreadsheets and JSON into Markdown. Drop a file, see what it became, take it away as Markdown, HTML, plain text or a PDF.',
+          'TransformPipe turns documents into other documents. Markdown into a finished HTML page, and HTML, Word files, spreadsheets and JSON into Markdown. Drop a file, see what it became, take it away as Markdown, HTML, plain text or a PDF.',
           'Everything normalises to Markdown, because Markdown is a format you can read, diff, and keep for twenty years without owning the tool that made it.',
         ],
       },
@@ -45,14 +45,14 @@ export const pages: Content['pages'] = {
       {
         heading: 'Who builds it',
         body: [
-          'transformpipe is built by Raudar Labs.',
+          'TransformPipe is built by Raudar Labs.',
         ],
       },
     ],
     seo: {
-      title: 'About transformpipe',
+      title: 'About TransformPipe',
       description:
-        'transformpipe converts Markdown, HTML, Word, CSV and JSON documents in your browser, with an API, a CLI, a GitHub Action and an MCP server. Built by Raudar Labs.',
+        'TransformPipe converts Markdown, HTML, Word, CSV and JSON documents in your browser, with an API, a CLI, a GitHub Action and an MCP server. Built by Raudar Labs.',
     },
   },
   contact: {
@@ -81,7 +81,7 @@ export const pages: Content['pages'] = {
       },
     ],
     seo: {
-      title: 'Contact transformpipe',
+      title: 'Contact TransformPipe',
       description:
         'Report a bug, ask for a format, flag a shared document, or ask what is stored and have it deleted.',
     },
@@ -145,7 +145,7 @@ export const pages: Content['pages'] = {
       },
     ],
     seo: {
-      title: 'Privacy — transformpipe',
+      title: 'Privacy — TransformPipe',
       description:
         'Signed out, no file leaves your browser. Signed in, we store the document, its metadata and your Google identity — no analytics, no tracking, no third-party scripts.',
     },
@@ -158,7 +158,7 @@ export const pages: Content['pages'] = {
       {
         heading: 'Using the service',
         body: [
-          'transformpipe is offered free of charge, as it is. Use it for anything you have the right to convert, from the app, the API, the command line or an assistant.',
+          'TransformPipe is offered free of charge, as it is. Use it for anything you have the right to convert, from the app, the API, the command line or an assistant.',
           'An account is yours to keep or delete. You are responsible for what you do with an API key, so treat one as a password: anyone holding it can read and write your documents.',
         ],
       },
@@ -197,9 +197,9 @@ export const pages: Content['pages'] = {
       },
     ],
     seo: {
-      title: 'Terms of use — transformpipe',
+      title: 'Terms of use — TransformPipe',
       description:
-        'transformpipe is free and provided as it is. Your documents stay yours, limits are published, and there is no warranty.',
+        'TransformPipe is free and provided as it is. Your documents stay yours, limits are published, and there is no warranty.',
     },
   },
   cookies: {
@@ -238,7 +238,7 @@ export const pages: Content['pages'] = {
       },
     ],
     seo: {
-      title: 'Cookies — transformpipe',
+      title: 'Cookies — TransformPipe',
       description:
         'Two first-party session cookies, both needed to sign in. No analytics, no advertising, nothing optional to configure.',
     },

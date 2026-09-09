@@ -26,7 +26,7 @@ The second thing to establish is where the file goes. JSON exports are dispropor
 
 | Tool | Best for | Key capability | Price |
 | --- | --- | --- | --- |
-| transformpipe | Reading a JSON file as a document | Tables, sections and lists chosen by shape, in the browser, nothing uploaded | Free |
+| TransformPipe | Reading a JSON file as a document | Tables, sections and lists chosen by shape, in the browser, nothing uploaded | Free |
 | jq | Deciding the shape yourself | Filters and reshapes JSON; you write the Markdown | Free, MIT |
 | jtbl | A table in a terminal, JSON Lines included | Reads stdin, `-m` prints a Markdown table | Free, MIT |
 | Miller (`mlr`) | Large files and format shuffling | Reads JSON and JSON Lines, `--omd` writes Markdown | Free, BSD 2-clause |
@@ -40,7 +40,7 @@ The second thing to establish is where the file goes. JSON exports are dispropor
 
 ## The best JSON to Markdown converters in 2026
 
-### transformpipe — best for reading a JSON file as a document
+### TransformPipe — best for reading a JSON file as a document
 
 It converts a `.json` file to Markdown in your browser and picks a rendering per shape rather than applying one rule to everything. There is no install and no account required, and signed out the file is never sent anywhere: it is read, parsed and rendered on your own machine.
 
@@ -290,7 +290,7 @@ Every tool above will produce Markdown from JSON. What decides whether the resul
 
 ## Conclusion
 
-There is no correct way to turn JSON into Markdown, which means the best JSON to Markdown converter is the one whose decisions match the file in front of you. When the shape you have is a list of records, [the table route is the one to read](/blog/convert-json-to-markdown-table). For an array of flat records, pick on convenience: a browser tab, a terminal pipe, or three lines of pandas. For a nested document you actually need to read, pick a tool that renders sections and lists rather than forcing everything into a table, and check where it stops turning depth into headings. That is what [transformpipe's JSON to Markdown conversion](/json-to-markdown) does in the browser, free, with the rules fixed and nothing uploaded when you are signed out. For anything recurring, Miller or a jq pipeline in a script will outlive whatever you build by hand.
+There is no correct way to turn JSON into Markdown, which means the best JSON to Markdown converter is the one whose decisions match the file in front of you. When the shape you have is a list of records, [the table route is the one to read](/blog/convert-json-to-markdown-table). For an array of flat records, pick on convenience: a browser tab, a terminal pipe, or three lines of pandas. For a nested document you actually need to read, pick a tool that renders sections and lists rather than forcing everything into a table, and check where it stops turning depth into headings. That is what [TransformPipe's JSON to Markdown conversion](/json-to-markdown) does in the browser, free, with the rules fixed and nothing uploaded when you are signed out. For anything recurring, Miller or a jq pipeline in a script will outlive whatever you build by hand.
 
 ## FAQ
 

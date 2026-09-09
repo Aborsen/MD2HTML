@@ -261,7 +261,7 @@ The counter-argument is that the assistant already has the text, so what does on
 
 The check takes ten seconds and is not a matter of trust. Open the browser's network tab, convert a file, and watch. A converter that runs in the browser makes no request when you drop the file in — you can see the absence. A converter that uploads shows you the request, with the file in it. That is a fact about the tool rather than a claim in its marketing, and [the wider question of what an online converter does with your file](/blog/is-an-online-converter-safe) is worth reading once and then knowing forever.
 
-Browser-side conversion is the reason transformpipe can say that nothing is uploaded when you are signed out: there is no upload to describe. Signing in changes that deliberately, because storing a document and publishing a link both require a server to hold it — which is a trade you make knowingly, per document, rather than by default.
+Browser-side conversion is the reason TransformPipe can say that nothing is uploaded when you are signed out: there is no upload to describe. Signing in changes that deliberately, because storing a document and publishing a link both require a server to hold it — which is a trade you make knowingly, per document, rather than by default.
 
 ### Skipping the copy altogether
 

@@ -61,7 +61,7 @@ This is the largest group and the one the lists serve worst. You have a `.md` fi
 
 A converter has a different shape. You give it a file, it gives you a file back, and there is no document to manage in between. Nothing is saved, nothing is synced, and there is no state to lose.
 
-### transformpipe — for a finished HTML document you can send
+### TransformPipe — for a finished HTML document you can send
 
 A browser-side converter takes the Markdown file and returns a complete HTML document, styles inline, in one file. There is no install and no account, and signed out nothing is uploaded — the file is read, converted and rendered on the machine in front of you, which you can confirm by watching the network tab while it works.
 
@@ -275,7 +275,7 @@ The costs of switching are worth stating too, because "switch" is not free.
 
 ## Conclusion
 
-Dillinger is a free, MIT-licensed, browser-based Markdown editor that keeps your document in your browser and asks for nothing until you ask it to sync — and if the job was writing, it remains a reasonable place to do that. The reason the search exists is that most people arrive at it holding a finished file, and an editor is the wrong tool for a finished file. For that case, [transformpipe's Markdown to HTML conversion](/) returns a complete, self-contained document in the browser with nothing uploaded and no account, which is the errand rather than a new home for your writing. If you want the software on your own disk, StackEdit, Typora, Obsidian and Zettlr are the real alternatives, with their licences above. And if the conversion is going to happen more than a handful of times, stop evaluating editors entirely and install Pandoc.
+Dillinger is a free, MIT-licensed, browser-based Markdown editor that keeps your document in your browser and asks for nothing until you ask it to sync — and if the job was writing, it remains a reasonable place to do that. The reason the search exists is that most people arrive at it holding a finished file, and an editor is the wrong tool for a finished file. For that case, [TransformPipe's Markdown to HTML conversion](/) returns a complete, self-contained document in the browser with nothing uploaded and no account, which is the errand rather than a new home for your writing. If you want the software on your own disk, StackEdit, Typora, Obsidian and Zettlr are the real alternatives, with their licences above. And if the conversion is going to happen more than a handful of times, stop evaluating editors entirely and install Pandoc.
 
 ## FAQ
 

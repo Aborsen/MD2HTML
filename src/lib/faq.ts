@@ -50,7 +50,7 @@ export const FAQ_FLAGS: FaqFlags[] = [
 
 /*
  * English, and deliberately so. The same list is read by the server — the MCP tool that answers
- * "how does transformpipe work" hands these to an assistant — and the connector answers in
+ * "how does TransformPipe work" hands these to an assistant — and the connector answers in
  * English, so it imports the English slice directly rather than asking for a locale it does not
  * have. Plain strings, not nodes, for the same reason: there is no React in the server.
  *

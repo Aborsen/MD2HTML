@@ -6,7 +6,7 @@ import { sql } from './db.js';
 import { countCall } from './limits.js';
 
 /*
- * transformpipe as an OAuth 2.1 authorization server, for one resource: the MCP endpoint.
+ * TransformPipe as an OAuth 2.1 authorization server, for one resource: the MCP endpoint.
  *
  * It has to be its own server. The MCP authorization spec forbids a resource accepting a token
  * issued by anybody else, so the Neon Auth session cannot be handed to a client — the person signs
@@ -253,7 +253,7 @@ export function consentPage(options: {
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex">
-<title>Connect ${escapeHtml(client.name)} to transformpipe</title>
+<title>Connect ${escapeHtml(client.name)} to TransformPipe</title>
 <style>
   :root { color-scheme: dark; --ink: #f4f4f5; --dim: #a1a1aa; --line: #2a2a35; --card: #17171e;
           --page: #0f0e14; --brand: #14a8af; }
@@ -329,7 +329,7 @@ export function noticePage(options: {
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex">
-<title>${escapeHtml(options.title)} — transformpipe</title>
+<title>${escapeHtml(options.title)} — TransformPipe</title>
 <style>
   :root { color-scheme: dark; --ink: #f4f4f5; --dim: #a1a1aa; --line: #2a2a35; --card: #17171e;
           --page: #0f0e14; --brand: #14a8af; }
@@ -603,7 +603,7 @@ oauth.get('/authorize', async (c) => {
       return c.html(
         noticePage({
           title: 'Already approved',
-          body: 'transformpipe has given your assistant what it asked for. Go back to it and finish there.',
+          body: 'TransformPipe has given your assistant what it asked for. Go back to it and finish there.',
           origin,
         }),
         200,
@@ -763,7 +763,7 @@ oauth.post('/approve', async (c) => {
   if ((from && from !== origin) || (site && site !== 'same-origin')) {
     return notice(
       'That did not come from here',
-      'This form only works from the page transformpipe showed you. Start the connection again from your assistant.',
+      'This form only works from the page TransformPipe showed you. Start the connection again from your assistant.',
       403
     );
   }
@@ -778,7 +778,7 @@ oauth.post('/approve', async (c) => {
   if (!who) {
     return notice(
       'Sign in first',
-      'The connection has to be approved by the account it will act as. Start it again from your assistant and sign in when transformpipe asks.',
+      'The connection has to be approved by the account it will act as. Start it again from your assistant and sign in when TransformPipe asks.',
       401
     );
   }
@@ -812,7 +812,7 @@ oauth.post('/approve', async (c) => {
   if (row.approved_at) {
     return notice(
       'Already approved',
-      'transformpipe has given your assistant what it asked for. Go back to it and finish there — there is nothing left to do on this page.',
+      'TransformPipe has given your assistant what it asked for. Go back to it and finish there — there is nothing left to do on this page.',
       200
     );
   }
@@ -833,7 +833,7 @@ oauth.post('/approve', async (c) => {
   if (!row.shown_to || row.shown_to !== who.id) {
     return notice(
       'Approve it from the page you were shown',
-      'This request was not the one transformpipe showed this account. Start the connection again from your assistant.',
+      'This request was not the one TransformPipe showed this account. Start the connection again from your assistant.',
       403
     );
   }

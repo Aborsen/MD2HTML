@@ -97,7 +97,7 @@ Those limits are worth naming, because they are where the trade stops being theo
 | --- | --- |
 | Email attachment | The strictest attachment ceiling in the chain, which is not yours |
 | Corporate mail gateway | Scanners that quarantine or rewrite large HTML attachments |
-| A converter or an API | A request-size cap — transformpipe caps a conversion at 10 MB, and a document kept in an account at 4 MB, because a Vercel Function refuses a request or a response body over 4.5 MB |
+| A converter or an API | A request-size cap — TransformPipe caps a conversion at 10 MB, and a document kept in an account at 4 MB, because a Vercel Function refuses a request or a response body over 4.5 MB |
 | A phone browser | Memory, and the time spent decoding several megabytes of base64 before first paint |
 | A code review | Nothing at all, and that is the problem: the diff is unreadable |
 

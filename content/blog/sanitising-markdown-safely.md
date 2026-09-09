@@ -133,7 +133,7 @@ Server-side sanitising has a structural gap here: without a browser it brings it
 | Loofah | Ruby | Nokogiri scrubbers; Rails' sanitiser builds on it | Free, MIT |
 | Content Security Policy | The sanitiser bug you have not found | Blocks execution regardless of the markup | Free, a web standard |
 | Sandboxed iframe | Documents you cannot make safe | `sandbox` drops origin, scripts and forms | Free, part of HTML |
-| transformpipe | Converting a `.md` file you did not write | Sanitises in the browser and on the server, one allow-list | Free |
+| TransformPipe | Converting a `.md` file you did not write | Sanitises in the browser and on the server, one allow-list | Free |
 
 ## The options, one at a time
 
@@ -371,7 +371,7 @@ A CSP is not a sanitiser and does not compete with one. It answers a different q
 - `img-src` and `connect-src` limit where a surviving element can send a request
 - Delivered as a response header or a `<meta http-equiv>` tag, the meta form ignoring `frame-ancestors`, `report-uri` and `sandbox`
 
-**Who should use it?** Every page that renders somebody else's document. The trade-off is real: a page running its own JavaScript cannot use `script-src 'none'`, which argues for rendering untrusted documents on a route of their own. A document [shared as a link](/blog/share-a-markdown-document-as-a-link) from transformpipe is served that way, and the file you download has no scripts at all.
+**Who should use it?** Every page that renders somebody else's document. The trade-off is real: a page running its own JavaScript cannot use `script-src 'none'`, which argues for rendering untrusted documents on a route of their own. A document [shared as a link](/blog/share-a-markdown-document-as-a-link) from TransformPipe is served that way, and the file you download has no scripts at all.
 
 ### A sandboxed iframe — isolation when filtering is not enough
 
@@ -387,9 +387,9 @@ Sometimes the document has to keep markup you cannot safely allow — an interna
 
 **Who should use it?** Anybody displaying documents whose markup must survive intact. Use it *with* a sanitiser, not instead of one — a sandbox stops a script reaching your page, and does nothing about a document that phishes the reader inside the frame.
 
-### transformpipe — a converter that has already made these decisions
+### TransformPipe — a converter that has already made these decisions
 
-transformpipe converts Markdown to a complete, self-contained HTML document in your browser. The relevant part here is that sanitising is not an option you can forget to turn on: raw HTML in the source passes an allow-list on the way to the page and on the way into the exported file.
+TransformPipe converts Markdown to a complete, self-contained HTML document in your browser. The relevant part here is that sanitising is not an option you can forget to turn on: raw HTML in the source passes an allow-list on the way to the page and on the way into the exported file.
 
 | Pros | Cons |
 | --- | --- |

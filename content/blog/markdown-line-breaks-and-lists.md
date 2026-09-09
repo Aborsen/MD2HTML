@@ -426,7 +426,7 @@ A checkbox is a list item whose text begins with brackets:
 - [ ] The brackets come first — text before them and it is an ordinary item
 - [ ] `x` or `X` ticks it, a single space leaves it empty, and that space is required
 
-A task list is a GitHub Flavored Markdown extension, not plain CommonMark, so a strict CommonMark converter hands you literal square brackets. transformpipe speaks GFM, so task lists, tables, strikethrough and autolinks come through as themselves. The checkbox in the output is a picture of the state in your file, not a control: GFM renders it as a disabled input, so there is nothing to click.
+A task list is a GitHub Flavored Markdown extension, not plain CommonMark, so a strict CommonMark converter hands you literal square brackets. TransformPipe speaks GFM, so task lists, tables, strikethrough and autolinks come through as themselves. The checkbox in the output is a picture of the state in your file, not a control: GFM renders it as a disabled input, so there is nothing to click.
 
 The GFM specification is precise about what counts. A task list item is a list item whose first block is
 a paragraph beginning with a task list item marker followed by at least one whitespace character before
@@ -594,7 +594,7 @@ in the document rather than in the tool that renders it.
 None of this needs a tool to enforce. It needs the source file to say what you meant, so that the file
 still means it after a formatter, a reviewer and somebody else's converter have all had a turn. When a
 document still renders wrong and you cannot see why, convert it and read the HTML beside the preview —
-[transformpipe does that in the browser](/), with the source and the output side by side — because the
+[TransformPipe does that in the browser](/), with the source and the output side by side — because the
 tags answer the question the source cannot: a `<p>` means the break never happened, a `<pre>` means you
 indented too far, and a list that grew paragraphs means a blank line crept in somewhere you were not
 looking. Every symptom on this page resolves to one of those three, and each one is a rule doing exactly

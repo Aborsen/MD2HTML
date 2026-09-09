@@ -53,7 +53,7 @@ export const ui: Content['ui'] = {
    * und einen Link kann jeder schreiben. `auth.incomplete` ist der Toast, der den jeweiligen trägt.
    */
   'dialog.mcp.lede':
-    'transformpipe in einem Assistenten hinzufügen: er kann dann Dokumente in diesem Konto umwandeln, speichern und teilen.',
+    'TransformPipe in einem Assistenten hinzufügen: er kann dann Dokumente in diesem Konto umwandeln, speichern und teilen.',
   'dialog.mcp.address': 'Konnektor-Adresse',
   'dialog.mcp.nokey':
     'Auf claude.ai: Einstellungen → Konnektoren → Eigenen Konnektor hinzufügen. Kein Schlüssel zum Einfügen — die Anmeldung läuft über Ihr Konto, und die Verbindung lässt sich hier trennen.',

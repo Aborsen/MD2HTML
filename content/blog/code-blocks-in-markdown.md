@@ -425,7 +425,7 @@ The fourth option is to skip the second program. The converter's `<pre><code>` w
 font, a background, some padding and a border is perfectly legible, and the difference between that
 and a coloured block is aesthetic rather than functional.
 
-This is the trade a portable file makes. transformpipe converts fenced code as part of GitHub
+This is the trade a portable file makes. TransformPipe converts fenced code as part of GitHub
 Flavored Markdown, and the `.html` it hands back is self-contained: inline styles, no scripts, no
 network requests. Code arrives as styled monospaced text in a `<pre>` rather than coloured tokens,
 because [nothing is left in the file to do the colouring](/blog/self-contained-html-explained). If
@@ -618,7 +618,7 @@ backticks are a fence, a class name the converter writes and nothing more, and a
 you either chose or did not. Keep the three apart in your head and every symptom becomes
 diagnosable — plain text means no highlighter, literal backticks mean indentation, `&lt;` on screen
 means two escaping steps where there should be one. When you want to see which layer failed, convert
-the file and read the source: [transformpipe's Markdown to HTML conversion](/) runs in the browser,
+the file and read the source: [TransformPipe's Markdown to HTML conversion](/) runs in the browser,
 shows you the HTML it produced, and hands back a self-contained file with the block styled rather
 than coloured. The API, the CLI and the GitHub Action run the same conversion, and
 [the docs](/docs) cover all three.

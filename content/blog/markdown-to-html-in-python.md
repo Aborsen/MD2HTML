@@ -268,7 +268,7 @@ Now the order, because this is the part that gets done backwards. Sanitise after
 
 There is one legitimate exception, and it is not really an exception: refusing raw HTML at parse time. `mistune.create_markdown(escape=True)` and `MarkdownIt("commonmark")` with HTML disabled both mean the parser never emits a raw tag in the first place. That is a stronger guarantee than sanitising, and it is available only because it happens inside the parser rather than in front of it. Use it when the source is untrusted and you do not need any HTML through. Use nh3 when you need some.
 
-transformpipe is built the same way: marked renders, then DOMPurify in the browser and the `xss` package on the server clean the result against one shared allow-list, so both sides produce the same document. Its heading ids carry a `doc-` prefix, which keeps them out of DOM-clobbering territory — the same job `id_prefix` does above.
+TransformPipe is built the same way: marked renders, then DOMPurify in the browser and the `xss` package on the server clean the result against one shared allow-list, so both sides produce the same document. Its heading ids carry a `doc-` prefix, which keeps them out of DOM-clobbering territory — the same job `id_prefix` does above.
 
 ## Turning a fragment into a page
 

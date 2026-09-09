@@ -52,7 +52,7 @@ export const docs: Content['docs'] = {
   assistant: {
     title: 'MCP',
     summary:
-      'Aggiungi transformpipe a Claude come connettore e potrà convertire, salvare, condividere ed eliminare documenti in questo account — autenticato come te, senza nessuna chiave da incollare.',
+      'Aggiungi TransformPipe a Claude come connettore e potrà convertire, salvare, condividere ed eliminare documenti in questo account — autenticato come te, senza nessuna chiave da incollare.',
   },
   embed: {
     title: 'Soluzione integrata',

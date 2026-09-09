@@ -21,13 +21,13 @@ import type { Content } from '../../content';
 export const pages: Content['pages'] = {
   about: {
     label: 'Über',
-    title: 'Über transformpipe',
+    title: 'Über TransformPipe',
     lede: 'Ein Konverter, der die Arbeit im Browser tut und sonst nicht im Weg steht.',
     sections: [
       {
         heading: 'Was es ist',
         body: [
-          'transformpipe macht aus Dokumenten andere Dokumente. Markdown zu einer fertigen HTML-Seite, und HTML, Word-Dateien, Tabellen und JSON zu Markdown. Eine Datei ablegen, sehen, was daraus wurde, und sie als Markdown, HTML, reinen Text oder PDF mitnehmen.',
+          'TransformPipe macht aus Dokumenten andere Dokumente. Markdown zu einer fertigen HTML-Seite, und HTML, Word-Dateien, Tabellen und JSON zu Markdown. Eine Datei ablegen, sehen, was daraus wurde, und sie als Markdown, HTML, reinen Text oder PDF mitnehmen.',
           'Alles wird auf Markdown normalisiert, denn Markdown ist ein Format, das man lesen, im Diff vergleichen und zwanzig Jahre aufbewahren kann, ohne das Werkzeug zu besitzen, das es gemacht hat.',
         ],
       },
@@ -47,14 +47,14 @@ export const pages: Content['pages'] = {
       {
         heading: 'Wer es baut',
         body: [
-          'transformpipe wird von Raudar Labs gebaut.',
+          'TransformPipe wird von Raudar Labs gebaut.',
         ],
       },
     ],
     seo: {
-      title: 'Über transformpipe',
+      title: 'Über TransformPipe',
       description:
-        'transformpipe wandelt Markdown-, HTML-, Word-, CSV- und JSON-Dokumente im Browser um — mit API, CLI, GitHub Action und MCP-Server. Gebaut von Raudar Labs.',
+        'TransformPipe wandelt Markdown-, HTML-, Word-, CSV- und JSON-Dokumente im Browser um — mit API, CLI, GitHub Action und MCP-Server. Gebaut von Raudar Labs.',
     },
   },
   contact: {
@@ -83,7 +83,7 @@ export const pages: Content['pages'] = {
       },
     ],
     seo: {
-      title: 'transformpipe kontaktieren',
+      title: 'TransformPipe kontaktieren',
       description:
         'Einen Fehler melden, ein Format wünschen, ein geteiltes Dokument melden oder fragen, was gespeichert wird — und es löschen lassen.',
     },
@@ -147,7 +147,7 @@ export const pages: Content['pages'] = {
       },
     ],
     seo: {
-      title: 'Datenschutz — transformpipe',
+      title: 'Datenschutz — TransformPipe',
       description:
         'Abgemeldet verlässt keine Datei den Browser. Angemeldet speichern wir Dokument, Metadaten und Google-Identität — keine Analyse, kein Tracking, keine Fremdskripte.',
     },
@@ -160,7 +160,7 @@ export const pages: Content['pages'] = {
       {
         heading: 'Den Dienst nutzen',
         body: [
-          'transformpipe wird kostenlos angeboten, so wie es ist. Nutzen Sie es für alles, was Sie umzuwandeln berechtigt sind, aus der App, der API, der Kommandozeile oder einem Assistenten.',
+          'TransformPipe wird kostenlos angeboten, so wie es ist. Nutzen Sie es für alles, was Sie umzuwandeln berechtigt sind, aus der App, der API, der Kommandozeile oder einem Assistenten.',
           'Ein Konto gehört Ihnen, zum Behalten oder Löschen. Sie sind verantwortlich für das, was Sie mit einem API-Schlüssel tun, behandeln Sie einen also wie ein Passwort: wer ihn hat, kann Ihre Dokumente lesen und schreiben.',
         ],
       },
@@ -199,9 +199,9 @@ export const pages: Content['pages'] = {
       },
     ],
     seo: {
-      title: 'Nutzungsbedingungen — transformpipe',
+      title: 'Nutzungsbedingungen — TransformPipe',
       description:
-        'transformpipe ist kostenlos und wird so bereitgestellt, wie es ist. Die Dokumente bleiben Ihre, die Grenzen sind veröffentlicht, eine Garantie gibt es nicht.',
+        'TransformPipe ist kostenlos und wird so bereitgestellt, wie es ist. Die Dokumente bleiben Ihre, die Grenzen sind veröffentlicht, eine Garantie gibt es nicht.',
     },
   },
   cookies: {
@@ -240,7 +240,7 @@ export const pages: Content['pages'] = {
       },
     ],
     seo: {
-      title: 'Cookies — transformpipe',
+      title: 'Cookies — TransformPipe',
       description:
         'Zwei First-Party-Sitzungscookies, beide zum Anmelden nötig. Keine Analyse, keine Werbung, nichts Optionales zum Einstellen.',
     },

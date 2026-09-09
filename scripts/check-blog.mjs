@@ -142,7 +142,14 @@ for (const file of files) {
   // fences are counted with everything else — this is a smoke alarm, not a judge.
   const words = body.split(/\s+/).filter(Boolean).length;
   const headings = (prose.match(/^## /gm) ?? []).length;
-  const mentions = (prose.match(/\btransformpipe\b/g) ?? []).length;
+  /*
+   * Case-insensitive, because the brand is written TransformPipe.
+   *
+   * It was `/g` against a lowercase pattern, and when the name was capitalised across the articles
+   * this quietly started counting zero — so the rule that stops a piece reading as an advertisement
+   * was switched off by a rename, without anything failing.
+   */
+  const mentions = (prose.match(/\btransformpipe\b/gi) ?? []).length;
 
   if (words < 750) {
     problems.push(`${slug}: ${words} words — too thin to rank or to help`);
@@ -153,7 +160,7 @@ for (const file of files) {
   }
 
   if (mentions > 4) {
-    problems.push(`${slug}: transformpipe named ${mentions} times — it reads as an advertisement`);
+    problems.push(`${slug}: TransformPipe named ${mentions} times — it reads as an advertisement`);
   }
 
   if (links.length === 0) {

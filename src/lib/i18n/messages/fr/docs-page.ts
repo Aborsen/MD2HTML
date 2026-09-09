@@ -19,7 +19,7 @@ export const docsPage = {
   /* The contents column beside the manual. Not 'In this article' — this is not one. */
   'docs.toc': 'Sur cette page',
 
-  'docs.title': 'Tout ce que fait transformpipe',
+  'docs.title': 'Tout ce que fait TransformPipe',
   'docs.lede':
     'Markdown, HTML, Word, CSV ou JSON en entrée — un document en sortie, en HTML, en Markdown, en texte brut ou à l’impression. Depuis cette page, depuis un terminal, depuis une pull request ou depuis un assistant. C’est tout ce qu’il y a ; rien ici n’est derrière un abonnement.',
 
@@ -44,7 +44,7 @@ export const docsPage = {
   'docs.converting.oneShape':
     'Tout finit en Markdown, et c’est délibéré : c’est la forme sous laquelle un document est conservé, prévisualisé, partagé et atteint par un script, si bien que toute l’application tient sur une seule forme au lieu de quatre.',
   'docs.converting.shot.converter.alt':
-    'Le convertisseur transformpipe avec une zone de dépôt vide',
+    'Le convertisseur TransformPipe avec une zone de dépôt vide',
   'docs.converting.shot.converter.caption':
     'Le convertisseur. Le logo sert aussi de « tout reprendre ».',
   'docs.converting.flavour':
@@ -159,7 +159,7 @@ export const docsPage = {
 
   /** `{path}` est l’adresse du connecteur, qui vient de `mcp-facts.ts`. */
   'docs.assistant.intro':
-    'transformpipe est un serveur MCP, il peut donc être ajouté à Claude comme connecteur. L’adresse est ce déploiement suivi de {path} :',
+    'TransformPipe est un serveur MCP, il peut donc être ajouté à Claude comme connecteur. L’adresse est ce déploiement suivi de {path} :',
   'docs.assistant.adding':
     'Sur claude.ai, cela se met dans Réglages → Connecteurs → Ajouter un connecteur personnalisé. Depuis un terminal :',
   'docs.assistant.auth':

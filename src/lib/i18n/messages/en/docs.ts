@@ -55,7 +55,7 @@ export const docs: Content['docs'] = {
   assistant: {
     title: 'MCP',
     summary:
-      'Add transformpipe to Claude as a connector and it can convert, save, share and delete documents in this account — signed in as you, with no key to paste.',
+      'Add TransformPipe to Claude as a connector and it can convert, save, share and delete documents in this account — signed in as you, with no key to paste.',
   },
   embed: {
     title: 'Embedded solution',

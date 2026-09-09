@@ -329,7 +329,7 @@ Sometimes the output is not a file on disk at all. It is a page a colleague can 
 
 **Price:** free, including the API on a free account.
 
-transformpipe exposes an API at `/api/v1` with revocable keys. Post the Markdown as the body:
+TransformPipe exposes an API at `/api/v1` with revocable keys. Post the Markdown as the body:
 
 ```bash
 curl -fsS \
@@ -354,7 +354,7 @@ Forty files clear 60 requests a minute easily. Thousands need a sleep between ca
 
 ### A dependency-free CLI — best for a CI step that must stay small
 
-The other shape of the same idea is a CLI that wraps the API, written so that installing it does not install anything else. transformpipe's `tp` is one file of Node with no dependencies, on purpose: a tool people run in CI should not drag a tree of packages behind it.
+The other shape of the same idea is a CLI that wraps the API, written so that installing it does not install anything else. TransformPipe's `tp` is one file of Node with no dependencies, on purpose: a tool people run in CI should not drag a tree of packages behind it.
 
 | Pros | Cons |
 | --- | --- |
@@ -509,7 +509,7 @@ The checklist, then, for a conversion step that runs unattended:
 
 ## Conclusion
 
-Pick the smallest shape that answers the problem, then spend your care on the shell rather than on the parser. For HTML on disk that has to look finished, Pandoc with `-f gfm -s --embed-resources` is one line and the right line; for HTML on disk in a repository that already has Node, write the five-line script with its own template and own the wrapper. For a folder, quote your expansions, keep the tree, and set `-euo pipefail` so the job tells the truth about what happened. And for a link somebody can open with no toolchain of their own — nothing to install, nothing to pin, nothing to cache — a single request does it — once you have settled [what that request should look like, and what a conversion API owes a script when the file is broken](/blog/converting-documents-with-an-api) — and the same conversion runs [in the browser at transformpipe](/) free, with the file never leaving your machine when you are signed out.
+Pick the smallest shape that answers the problem, then spend your care on the shell rather than on the parser. For HTML on disk that has to look finished, Pandoc with `-f gfm -s --embed-resources` is one line and the right line; for HTML on disk in a repository that already has Node, write the five-line script with its own template and own the wrapper. For a folder, quote your expansions, keep the tree, and set `-euo pipefail` so the job tells the truth about what happened. And for a link somebody can open with no toolchain of their own — nothing to install, nothing to pin, nothing to cache — a single request does it — once you have settled [what that request should look like, and what a conversion API owes a script when the file is broken](/blog/converting-documents-with-an-api) — and the same conversion runs [in the browser at TransformPipe](/) free, with the file never leaving your machine when you are signed out.
 
 ## FAQ
 

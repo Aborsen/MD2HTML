@@ -187,7 +187,7 @@ The property you want is a self-contained file: one document, styles inline, no 
 
 ### A converter, with no workspace attached
 
-For the one-document case, a browser-side converter is the shortest path. Copy the Markdown out of the editor, or download the `.md` file, and [convert it to a self-contained HTML file](/) — transformpipe does that in the browser, and signed out nothing is uploaded anywhere, which for a document you have not published yet is the whole point. There is no account, no workspace, and nothing to synchronise, because the tool is not trying to keep anything.
+For the one-document case, a browser-side converter is the shortest path. Copy the Markdown out of the editor, or download the `.md` file, and [convert it to a self-contained HTML file](/) — TransformPipe does that in the browser, and signed out nothing is uploaded anywhere, which for a document you have not published yet is the whole point. There is no account, no workspace, and nothing to synchronise, because the tool is not trying to keep anything.
 
 The same shape covers the awkward jobs around the edges of leaving a workspace: a document that needs to become a page for a colleague today, an export you want to check before you trust the rest, a file from somebody else you need to read and render without adopting their tooling.
 

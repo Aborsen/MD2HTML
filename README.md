@@ -1,4 +1,4 @@
-# transformpipe — document converter
+# TransformPipe — document converter
 
 Live at **[transformpipe.com](https://transformpipe.com)**. The old `md-2-html.vercel.app` still
 answers, so links already shared keep working; the canonical URLs, the sitemap and every default in
@@ -69,7 +69,7 @@ npm run auth:origin -- https://transformpipe.com   # the live site
 npm run auth:origin -- http://127.0.0.1:5180       # for local work
 ```
 
-**Neon** — transformpipe has its **own** Neon project (`tp`): its own database and its own Neon Auth, with
+**Neon** — TransformPipe has its **own** Neon project (`tp`): its own database and its own Neon Auth, with
 no accounts or tables shared with any other app. It was provisioned through the Vercel Marketplace,
 which also connects it and writes `DATABASE_URL` / `NEON_AUTH_BASE_URL` into the project:
 
@@ -201,7 +201,7 @@ said. `share: none` publishes privately if the links should not be public.
 
 ## In an assistant
 
-transformpipe is an MCP server at `/api/mcp`, so it can be added to Claude as a connector and convert, save,
+TransformPipe is an MCP server at `/api/mcp`, so it can be added to Claude as a connector and convert, save,
 share and delete documents in one account. There is no key to paste:
 
 ```bash

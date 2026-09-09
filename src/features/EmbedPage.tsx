@@ -17,7 +17,7 @@ import { Button } from '@/ui/components/Button';
 import { Typography } from '@/ui/components/Typography';
 
 /*
- * transformpipe inside somebody else's page.
+ * TransformPipe inside somebody else's page.
  *
  * The whole product minus everything that belongs to this site: no header, no footer, no blog, no
  * account, no history. A dropzone, the document it produced, a download, and a copy button — which
@@ -67,7 +67,7 @@ function tell(message: Record<string, unknown>): void {
    * `parent.postMessage` delivers to the parent window and nowhere else. The host verifies
    * `event.origin` against transformpipe.com at their end, which is documented.
    */
-  window.parent.postMessage({ source: 'transformpipe', ...message }, '*');
+  window.parent.postMessage({ source: 'TransformPipe', ...message }, '*');
 }
 
 export function EmbedPage() {

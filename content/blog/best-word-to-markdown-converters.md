@@ -32,7 +32,7 @@ The fourth step decides flavour, and the same rules apply as for [Markdown to HT
 
 | Tool | Best for | Key capability | Price |
 | --- | --- | --- | --- |
-| transformpipe | One document, now, without uploading it | Reads the `.docx` in the browser; headings, lists, links and tables out as Markdown | Free |
+| TransformPipe | One document, now, without uploading it | Reads the `.docx` in the browser; headings, lists, links and tables out as Markdown | Free |
 | Pandoc | Batches, pipelines and tracked changes | `--track-changes`, `--extract-media`, ~40 formats | Free, GPL |
 | mammoth | Conversion inside your own code | Node and browser builds; style map from Word styles to elements | Free, BSD-2-Clause |
 | MarkItDown | Feeding many file types to a text pipeline | Python CLI and library, many formats in, Markdown out | Free, MIT |
@@ -46,9 +46,9 @@ The fourth step decides flavour, and the same rules apply as for [Markdown to HT
 
 ## The best ways to convert Word to Markdown in 2026
 
-### transformpipe — best for one document you do not want to upload
+### TransformPipe — best for one document you do not want to upload
 
-transformpipe reads the `.docx` in your browser and hands back Markdown. Signed out, the file is never sent anywhere: it is read by the page, converted on your machine, and the result is yours. There is no install and no account required.
+TransformPipe reads the `.docx` in your browser and hands back Markdown. Signed out, the file is never sent anywhere: it is read by the page, converted on your machine, and the result is yours. There is no install and no account required.
 
 Under the bonnet it does exactly what mammoth's own documentation recommends — mammoth turns the archive into HTML, and a separate HTML to Markdown step turns that into Markdown. That is two conversions rather than one, and it is the arrangement the library's authors suggest, because HTML has an element for most things a `.docx` contains and Markdown does not.
 
@@ -303,7 +303,7 @@ That is why the same tool converts one document's lists perfectly and reduces an
 
 ## Conclusion
 
-There is no lossless way to convert Word to Markdown, and the good tools are the ones that are specific about their losses rather than quiet about them. [The how-to covers the steps and the checklist](/blog/convert-docx-to-markdown) for what to look at in the result. For a single document, the shortest honest path is a converter that runs in your browser, which is what [transformpipe's Word to Markdown conversion](/word-to-markdown) does — free, no install, and signed out the `.docx` never leaves your machine. For a directory of files, images that need extracting or a document that has been through review, install Pandoc and learn `--track-changes` and `--extract-media`; nothing else on this page comes close. For conversion inside your own application, use mammoth, read its `messages` array, and follow its advice about generating HTML first — [how mammoth's style maps work, and where docx4js, docxtemplater and Pandoc fit around it](/blog/mammoth-js-and-docx-parsers) is the next thing to read if that is the route you are taking. And whichever you choose, keep the original, because the fonts, the page breaks, the comments and the text box you did not notice are not coming back.
+There is no lossless way to convert Word to Markdown, and the good tools are the ones that are specific about their losses rather than quiet about them. [The how-to covers the steps and the checklist](/blog/convert-docx-to-markdown) for what to look at in the result. For a single document, the shortest honest path is a converter that runs in your browser, which is what [TransformPipe's Word to Markdown conversion](/word-to-markdown) does — free, no install, and signed out the `.docx` never leaves your machine. For a directory of files, images that need extracting or a document that has been through review, install Pandoc and learn `--track-changes` and `--extract-media`; nothing else on this page comes close. For conversion inside your own application, use mammoth, read its `messages` array, and follow its advice about generating HTML first — [how mammoth's style maps work, and where docx4js, docxtemplater and Pandoc fit around it](/blog/mammoth-js-and-docx-parsers) is the next thing to read if that is the route you are taking. And whichever you choose, keep the original, because the fonts, the page breaks, the comments and the text box you did not notice are not coming back.
 
 ## FAQ
 

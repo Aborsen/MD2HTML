@@ -12,13 +12,13 @@ import type { Content } from '../../content';
 export const pages: Content['pages'] = {
   about: {
     label: 'Informazioni',
-    title: 'Informazioni su transformpipe',
+    title: 'Informazioni su TransformPipe',
     lede: 'Un convertitore che fa il lavoro nel browser e non si mette in mezzo.',
     sections: [
       {
         heading: 'Che cos’è',
         body: [
-          'transformpipe trasforma documenti in altri documenti. Markdown in una pagina HTML finita, e HTML, file Word, fogli di calcolo e JSON in Markdown. Trascina un file, guarda cosa è diventato, portalo via come Markdown, HTML, testo semplice o PDF.',
+          'TransformPipe trasforma documenti in altri documenti. Markdown in una pagina HTML finita, e HTML, file Word, fogli di calcolo e JSON in Markdown. Trascina un file, guarda cosa è diventato, portalo via come Markdown, HTML, testo semplice o PDF.',
           'Tutto si normalizza in Markdown, perché il Markdown è un formato che si può leggere, confrontare e conservare per vent’anni senza possedere lo strumento che l’ha prodotto.',
         ],
       },
@@ -38,14 +38,14 @@ export const pages: Content['pages'] = {
       {
         heading: 'Chi lo realizza',
         body: [
-          'transformpipe è realizzato da Raudar Labs.',
+          'TransformPipe è realizzato da Raudar Labs.',
         ],
       },
     ],
     seo: {
-      title: 'Informazioni su transformpipe',
+      title: 'Informazioni su TransformPipe',
       description:
-        'transformpipe converte documenti Markdown, HTML, Word, CSV e JSON nel browser, con API, CLI, GitHub Action e server MCP. Realizzato da Raudar Labs.',
+        'TransformPipe converte documenti Markdown, HTML, Word, CSV e JSON nel browser, con API, CLI, GitHub Action e server MCP. Realizzato da Raudar Labs.',
     },
   },
   contact: {
@@ -74,7 +74,7 @@ export const pages: Content['pages'] = {
       },
     ],
     seo: {
-      title: 'Contattare transformpipe',
+      title: 'Contattare TransformPipe',
       description:
         'Segnala un bug, chiedi un formato, segnala un documento condiviso, o chiedi cosa viene conservato e fallo eliminare.',
     },
@@ -138,7 +138,7 @@ export const pages: Content['pages'] = {
       },
     ],
     seo: {
-      title: 'Privacy — transformpipe',
+      title: 'Privacy — TransformPipe',
       description:
         'Senza accesso nessun file lascia il browser. Con l’accesso: documento, metadati e identità Google. Nessuna analisi, nessun tracciamento, né script di terze parti.',
     },
@@ -151,7 +151,7 @@ export const pages: Content['pages'] = {
       {
         heading: 'Uso del servizio',
         body: [
-          'transformpipe è offerto gratuitamente, così com’è. Si può usare per qualunque cosa si abbia il diritto di convertire, dall’app, dall’API, dalla riga di comando o da un assistente.',
+          'TransformPipe è offerto gratuitamente, così com’è. Si può usare per qualunque cosa si abbia il diritto di convertire, dall’app, dall’API, dalla riga di comando o da un assistente.',
           'Un account è tuo da conservare o da eliminare. Sei responsabile di quello che fai con una chiave API, quindi trattala come una password: chiunque la abbia può leggere e scrivere i tuoi documenti.',
         ],
       },
@@ -190,9 +190,9 @@ export const pages: Content['pages'] = {
       },
     ],
     seo: {
-      title: 'Termini di utilizzo — transformpipe',
+      title: 'Termini di utilizzo — TransformPipe',
       description:
-        'transformpipe è gratuito e fornito così com’è. I tuoi documenti restano tuoi, i limiti sono pubblicati, e non c’è nessuna garanzia.',
+        'TransformPipe è gratuito e fornito così com’è. I tuoi documenti restano tuoi, i limiti sono pubblicati, e non c’è nessuna garanzia.',
     },
   },
   cookies: {
@@ -231,7 +231,7 @@ export const pages: Content['pages'] = {
       },
     ],
     seo: {
-      title: 'Cookie — transformpipe',
+      title: 'Cookie — TransformPipe',
       description:
         'Due cookie di sessione di prima parte, entrambi necessari per accedere. Nessuna analisi, nessuna pubblicità, niente di opzionale da configurare.',
     },

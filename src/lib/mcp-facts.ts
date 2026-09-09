@@ -24,7 +24,7 @@ export type McpToolName = (typeof MCP_TOOL_NAMES)[number];
 
 /** One line each, for the page. The server holds the long descriptions the model reads. */
 export const MCP_TOOLS: Record<McpToolName, string> = {
-  tp_help: 'Answers questions about transformpipe from the documentation rather than from memory.',
+  tp_help: 'Answers questions about TransformPipe from the documentation rather than from memory.',
   tp_convert_markdown:
     'Markdown in, sanitised HTML out. Optionally the whole self-contained document.',
   tp_save_document:

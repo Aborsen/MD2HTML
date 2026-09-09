@@ -26,7 +26,7 @@ The fourth stage decides whether the file opens. A converter that returns a frag
 
 | Tool | Best for | Key capability | Price |
 | --- | --- | --- | --- |
-| transformpipe | Sending somebody a finished document | Self-contained HTML, styles inline, converted in the browser | Free |
+| TransformPipe | Sending somebody a finished document | Self-contained HTML, styles inline, converted in the browser | Free |
 | Pandoc | Converting between many formats at once | ~40 formats, templates, `--standalone` and asset embedding | Free, GPL |
 | marked | Fast conversion inside a JS app | Small, quick, GFM out of the box | Free, MIT |
 | markdown-it | Correctness and plugins | CommonMark-compliant, escapes raw HTML by default | Free, MIT |
@@ -44,9 +44,9 @@ The fourth stage decides whether the file opens. A converter that returns a frag
 
 ## The best Markdown to HTML converters in 2026
 
-### transformpipe — best for a document you are going to send somebody
+### TransformPipe — best for a document you are going to send somebody
 
-transformpipe converts a Markdown file to a complete HTML document in your browser and hands it back as one file with its styles inline. There is no install, no account required, and signed out the file is never sent anywhere — it is read, converted and rendered on your own machine.
+TransformPipe converts a Markdown file to a complete HTML document in your browser and hands it back as one file with its styles inline. There is no install, no account required, and signed out the file is never sent anywhere — it is read, converted and rendered on your own machine.
 
 | Pros | Cons |
 | --- | --- |
@@ -310,7 +310,7 @@ The criteria below are the short version; [the requirements worth writing down b
 
 ## Conclusion
 
-The best Markdown to HTML converter is the one whose output survives the trip. If you have a file and want it converted in the next minute, [the steps are here](/blog/convert-markdown-to-html-online). For a document with a recipient, that means a complete file with its styles inline, sanitised, produced without uploading the source anywhere — which is what [transformpipe's Markdown to HTML conversion](/) does in your browser, free, with no install and nothing to sign up for. For a build, use the library your generator already depends on. For anything involving formats beyond HTML, install Pandoc and learn its templates; it will outlast every other tool on this page.
+The best Markdown to HTML converter is the one whose output survives the trip. If you have a file and want it converted in the next minute, [the steps are here](/blog/convert-markdown-to-html-online). For a document with a recipient, that means a complete file with its styles inline, sanitised, produced without uploading the source anywhere — which is what [TransformPipe's Markdown to HTML conversion](/) does in your browser, free, with no install and nothing to sign up for. For a build, use the library your generator already depends on. For anything involving formats beyond HTML, install Pandoc and learn its templates; it will outlast every other tool on this page.
 
 ## FAQ
 

@@ -607,7 +607,7 @@ node cli/tp.mjs usage                     # 65.8 kB of 100.0 MB · 3 of 500 docu
                 ready: <InlineCode>ready</InlineCode>,
                 converted: <InlineCode>converted</InlineCode>,
                 error: <InlineCode>error</InlineCode>,
-                source: <InlineCode>source: 'transformpipe'</InlineCode>,
+                source: <InlineCode>source: 'TransformPipe'</InlineCode>,
                 window: <InlineCode>window</InlineCode>,
                 origin: <InlineCode>event.origin</InlineCode>,
               }}
@@ -616,7 +616,7 @@ node cli/tp.mjs usage                     # 65.8 kB of 100.0 MB · 3 of 500 docu
 
           <CodeBlock>{`window.addEventListener('message', (event) => {
   if (event.origin !== '${window.location.origin}') return;
-  if (event.data?.source !== 'transformpipe') return;
+  if (event.data?.source !== 'TransformPipe') return;
 
   if (event.data.type === 'converted') {
     console.log(event.data.name, event.data.markdown, event.data.html);

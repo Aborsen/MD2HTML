@@ -33,7 +33,7 @@ export const docsPage = {
   /* The contents column beside the manual. Not 'In this article' — this is not one. */
   'docs.toc': 'Auf dieser Seite',
 
-  'docs.title': 'Alles, was transformpipe tut',
+  'docs.title': 'Alles, was TransformPipe tut',
   'docs.lede':
     'Markdown, HTML, Word, CSV oder JSON hinein — ein Dokument heraus, als HTML, Markdown, reiner Text oder Druck. Von dieser Seite aus, aus einem Terminal, aus einem Pull Request oder aus einem Assistenten. Das ist alles; nichts davon steckt hinter einem Tarif.',
 
@@ -175,7 +175,7 @@ export const docsPage = {
 
   /** `{path}` ist die Adresse des Connectors, die aus `mcp-facts.ts` kommt. */
   'docs.assistant.intro':
-    'transformpipe ist ein MCP-Server und lässt sich darum als Connector zu Claude hinzufügen. Die Adresse ist dieses Deployment plus {path}:',
+    'TransformPipe ist ein MCP-Server und lässt sich darum als Connector zu Claude hinzufügen. Die Adresse ist dieses Deployment plus {path}:',
   'docs.assistant.adding':
     'Auf claude.ai gehört das unter Einstellungen → Connectors → Eigenen Connector hinzufügen. Aus einem Terminal:',
   'docs.assistant.auth':

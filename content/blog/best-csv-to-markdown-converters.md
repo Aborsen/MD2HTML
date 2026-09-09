@@ -26,7 +26,7 @@ Third, there is where the file goes. Spreadsheets are the most sensitive documen
 
 | Tool | Best for | Key capability | Price |
 | --- | --- | --- | --- |
-| transformpipe | A file you have and a table you need now | RFC 4180 parse in the browser, nothing uploaded, `<br>` for in-cell breaks | Free |
+| TransformPipe | A file you have and a table you need now | RFC 4180 parse in the browser, nothing uploaded, `<br>` for in-cell breaks | Free |
 | Pandoc | A CSV that is one step in a longer document build | `csv` and `tsv` readers into any output format it writes | Free, GPL |
 | Miller | Filtering or reshaping the data on the way through | `--c2m` converts CSV to Markdown in one flag | Free, BSD 2-clause |
 | csvkit (`csvlook`) | Reading a CSV in the terminal before converting it | Renders a CSV as a Markdown-compatible fixed-width table | Free, MIT |
@@ -41,9 +41,9 @@ Third, there is where the file goes. Spreadsheets are the most sensitive documen
 
 ## The CSV and TSV to Markdown options, one at a time
 
-### transformpipe — best for a file you have and a table you need now
+### TransformPipe — best for a file you have and a table you need now
 
-transformpipe reads a `.csv` or `.tsv` file in your browser and hands back a Markdown table, with the first row as its header. There is no install and no account needed, and signed out the file is not sent anywhere — it is read off your disk by the page, parsed, and written back out as text.
+TransformPipe reads a `.csv` or `.tsv` file in your browser and hands back a Markdown table, with the first row as its header. There is no install and no account needed, and signed out the file is not sent anywhere — it is read off your disk by the page, parsed, and written back out as text.
 
 | Pros | Cons |
 | --- | --- |
@@ -296,7 +296,7 @@ This is the section a tool's own page leaves out, because every item on it is a 
 
 **A doubled quote is one quote.** Inside a quoted field, `""` means a literal `"`. So `"She said ""no""."` is one field reading: She said "no". A tool that strips quotes with a regex leaves the doubles in, and you get `She said ""no""` in your table. It is cosmetic until the value is a code sample or a measurement in inches, at which point it is wrong.
 
-**A line break inside a cell.** This is the one with no clean answer. RFC 4180 allows a newline inside a quoted field, and spreadsheets produce them constantly — address blocks, notes columns, anything a person typed Alt+Enter into. A Markdown table has no way to represent it: the table is one row per line, and a newline inside a cell ends the row. Every tool has to pick a lie. Dropping the break runs two sentences together. Splitting the row makes a second, malformed row. Replacing the break with `<br>` keeps the visual line break when the Markdown is rendered as HTML, and leaves an HTML tag in a file that might not be rendered as HTML. transformpipe replaces with `<br>`, on the grounds that a visible tag beats a silently broken table — but it is a trade, and [what Markdown does with line breaks generally](/blog/markdown-line-breaks-and-lists) explains why there is no better option available inside a table.
+**A line break inside a cell.** This is the one with no clean answer. RFC 4180 allows a newline inside a quoted field, and spreadsheets produce them constantly — address blocks, notes columns, anything a person typed Alt+Enter into. A Markdown table has no way to represent it: the table is one row per line, and a newline inside a cell ends the row. Every tool has to pick a lie. Dropping the break runs two sentences together. Splitting the row makes a second, malformed row. Replacing the break with `<br>` keeps the visual line break when the Markdown is rendered as HTML, and leaves an HTML tag in a file that might not be rendered as HTML. TransformPipe replaces with `<br>`, on the grounds that a visible tag beats a silently broken table — but it is a trade, and [what Markdown does with line breaks generally](/blog/markdown-line-breaks-and-lists) explains why there is no better option available inside a table.
 
 **A pipe inside a value.** CSV does not care about pipes; Markdown cares a great deal. An unescaped `|` ends the cell wherever it appears, including inside backticks, so one value containing `a|b` adds a phantom column to that row. It has to be escaped as `\|` on the way out. This is the failure that trips up converters written by people who tested with names and numbers: it shows up in file paths, regular expressions, shell commands and any column holding a list of options. If you convert data like that, put a pipe in a test cell deliberately and see what comes out. [The tables article](/blog/markdown-tables-that-survive-conversion) covers what the escape does on the far side.
 

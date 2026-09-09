@@ -17,13 +17,13 @@ import type { Content } from '../../content';
 export const pages: Content['pages'] = {
   about: {
     label: 'Acerca de',
-    title: 'Acerca de transformpipe',
+    title: 'Acerca de TransformPipe',
     lede: 'Un conversor que hace el trabajo en tu navegador y no se pone en medio.',
     sections: [
       {
         heading: 'Qué es',
         body: [
-          'transformpipe convierte documentos en otros documentos. Markdown en una página HTML terminada, y HTML, archivos de Word, hojas de cálculo y JSON en Markdown. Suelta un archivo, mira en qué se ha convertido y llévatelo como Markdown, HTML, texto plano o PDF.',
+          'TransformPipe convierte documentos en otros documentos. Markdown en una página HTML terminada, y HTML, archivos de Word, hojas de cálculo y JSON en Markdown. Suelta un archivo, mira en qué se ha convertido y llévatelo como Markdown, HTML, texto plano o PDF.',
           'Todo se normaliza a Markdown, porque Markdown es un formato que se puede leer, comparar y conservar veinte años sin tener el programa que lo hizo.',
         ],
       },
@@ -43,14 +43,14 @@ export const pages: Content['pages'] = {
       {
         heading: 'Quién lo hace',
         body: [
-          'transformpipe está hecho por Raudar Labs.',
+          'TransformPipe está hecho por Raudar Labs.',
         ],
       },
     ],
     seo: {
-      title: 'Acerca de transformpipe',
+      title: 'Acerca de TransformPipe',
       description:
-        'transformpipe convierte documentos Markdown, HTML, Word, CSV y JSON en tu navegador, con API, CLI, GitHub Action y servidor MCP. Hecho por Raudar Labs.',
+        'TransformPipe convierte documentos Markdown, HTML, Word, CSV y JSON en tu navegador, con API, CLI, GitHub Action y servidor MCP. Hecho por Raudar Labs.',
     },
   },
   contact: {
@@ -79,7 +79,7 @@ export const pages: Content['pages'] = {
       },
     ],
     seo: {
-      title: 'Contacto — transformpipe',
+      title: 'Contacto — TransformPipe',
       description:
         'Informa de un fallo, pide un formato, denuncia un documento compartido o pregunta qué se guarda y pide que se elimine.',
     },
@@ -143,7 +143,7 @@ export const pages: Content['pages'] = {
       },
     ],
     seo: {
-      title: 'Privacidad — transformpipe',
+      title: 'Privacidad — TransformPipe',
       description:
         'Sin sesión iniciada, ningún archivo sale de tu navegador. Con sesión guardamos el documento, sus metadatos y tu identidad de Google: sin analítica ni seguimiento.',
     },
@@ -156,7 +156,7 @@ export const pages: Content['pages'] = {
       {
         heading: 'Usar el servicio',
         body: [
-          'transformpipe se ofrece gratis, tal cual está. Úsalo para cualquier cosa que tengas derecho a convertir, desde la aplicación, la API, la línea de comandos o un asistente.',
+          'TransformPipe se ofrece gratis, tal cual está. Úsalo para cualquier cosa que tengas derecho a convertir, desde la aplicación, la API, la línea de comandos o un asistente.',
           'Una cuenta es tuya para conservarla o eliminarla. Eres responsable de lo que hagas con una clave API, así que trátala como una contraseña: cualquiera que la tenga puede leer y escribir tus documentos.',
         ],
       },
@@ -195,9 +195,9 @@ export const pages: Content['pages'] = {
       },
     ],
     seo: {
-      title: 'Términos de uso — transformpipe',
+      title: 'Términos de uso — TransformPipe',
       description:
-        'transformpipe es gratis y se ofrece tal cual está. Tus documentos siguen siendo tuyos, los límites están publicados y no hay ninguna garantía.',
+        'TransformPipe es gratis y se ofrece tal cual está. Tus documentos siguen siendo tuyos, los límites están publicados y no hay ninguna garantía.',
     },
   },
   cookies: {
@@ -236,7 +236,7 @@ export const pages: Content['pages'] = {
       },
     ],
     seo: {
-      title: 'Cookies — transformpipe',
+      title: 'Cookies — TransformPipe',
       description:
         'Dos cookies de sesión propias, las dos necesarias para iniciar sesión. Sin analítica, sin publicidad y sin nada opcional que configurar.',
     },

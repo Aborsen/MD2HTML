@@ -26,7 +26,7 @@ Last, there is what happens to everything Markdown has no words for. A converter
 
 | Tool | Best for | Key capability | Price |
 | --- | --- | --- | --- |
-| transformpipe | One file or one saved page, converted now | Browser-side conversion, strips page furniture, keeps tables and task lists | Free |
+| TransformPipe | One file or one saved page, converted now | Browser-side conversion, strips page furniture, keeps tables and task lists | Free |
 | Turndown | JavaScript apps and browser extensions | The default JS converter; rules you can override; GFM plugin for tables | Free, MIT |
 | Pandoc | HTML that must become several formats | Reads HTML, writes ~40 formats, keeps or refuses raw HTML on request | Free, GPL |
 | html2text | Python scripts wanting readable plain text | CLI plus library, reference-style links, link stripping | Free, GPLv3 |
@@ -43,9 +43,9 @@ Last, there is what happens to everything Markdown has no words for. A converter
 
 ## The best HTML to Markdown converters in 2026
 
-### transformpipe — best for a file or a saved page you want converted now
+### TransformPipe — best for a file or a saved page you want converted now
 
-transformpipe takes an `.html`, `.htm` or `.xhtml` file and returns Markdown in your browser. There is no install and no account required, and signed out the file is never sent anywhere: it is read, converted and rendered on your own machine.
+TransformPipe takes an `.html`, `.htm` or `.xhtml` file and returns Markdown in your browser. There is no install and no account required, and signed out the file is never sent anywhere: it is read, converted and rendered on your own machine.
 
 | Pros | Cons |
 | --- | --- |
@@ -344,7 +344,7 @@ The costs of getting that wrong are specific. If you are converting for a human 
 
 ## Conclusion
 
-The best HTML to Markdown converter is the one that gets the extraction right — [the how-to walks each starting point](/blog/convert-html-to-markdown) — because the translation is nearly a commodity and the extraction is where every disappointing result comes from. For a page you are looking at, clip it with an extension that runs an extractor first. For a file you already have, [transformpipe's HTML to Markdown conversion](/html-to-markdown) strips the page furniture, keeps the tables, code blocks and task lists, and does it in your browser with nothing uploaded and nothing to install. For a build or a script, take the library for your language — Turndown, markdownify, node-html-markdown, the Go CLI, [compared side by side on rules, tables, code blocks and whitespace](/blog/turndown-and-html-to-markdown-libraries) — and accept that layout, styling and nested tables are not coming with you. That loss is not a bug in the tool. It is the definition of Markdown, and the reason the file is readable at the other end.
+The best HTML to Markdown converter is the one that gets the extraction right — [the how-to walks each starting point](/blog/convert-html-to-markdown) — because the translation is nearly a commodity and the extraction is where every disappointing result comes from. For a page you are looking at, clip it with an extension that runs an extractor first. For a file you already have, [TransformPipe's HTML to Markdown conversion](/html-to-markdown) strips the page furniture, keeps the tables, code blocks and task lists, and does it in your browser with nothing uploaded and nothing to install. For a build or a script, take the library for your language — Turndown, markdownify, node-html-markdown, the Go CLI, [compared side by side on rules, tables, code blocks and whitespace](/blog/turndown-and-html-to-markdown-libraries) — and accept that layout, styling and nested tables are not coming with you. That loss is not a bug in the tool. It is the definition of Markdown, and the reason the file is readable at the other end.
 
 ## FAQ
 

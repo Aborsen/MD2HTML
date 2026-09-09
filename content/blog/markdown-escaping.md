@@ -243,7 +243,7 @@ So there is no single answer, only a short ranking. Inside a code span if the te
 
 ## Conclusion
 
-Escaping in Markdown is one rule with a long tail: a backslash disarms any ASCII punctuation character, does nothing before anything else, and does nothing at all inside a code span, a code block, an autolink or raw HTML. Almost every problem is the second half of that sentence meeting a character that was only ever special in one position. Character references cover what the backslash cannot reach, code spans cover what you would rather not think about, and a rewritten sentence covers the rest. If you want to see what a given file actually produces — which escapes survived, which characters were interpreted, and what the HTML says — [converting it in transformpipe and reading the output](/) is faster than reasoning about it, and it is the only way to find the escape that disappeared without leaving a mark.
+Escaping in Markdown is one rule with a long tail: a backslash disarms any ASCII punctuation character, does nothing before anything else, and does nothing at all inside a code span, a code block, an autolink or raw HTML. Almost every problem is the second half of that sentence meeting a character that was only ever special in one position. Character references cover what the backslash cannot reach, code spans cover what you would rather not think about, and a rewritten sentence covers the rest. If you want to see what a given file actually produces — which escapes survived, which characters were interpreted, and what the HTML says — [converting it in TransformPipe and reading the output](/) is faster than reasoning about it, and it is the only way to find the escape that disappeared without leaving a mark.
 
 ## FAQ
 

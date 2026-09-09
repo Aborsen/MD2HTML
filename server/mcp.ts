@@ -11,7 +11,7 @@ import { markdownToHtml } from './render.js';
 import v1 from './v1.js';
 
 /*
- * transformpipe as an MCP server, so a person can add it to an assistant and convert, save and share
+ * TransformPipe as an MCP server, so a person can add it to an assistant and convert, save and share
  * documents from a conversation.
  *
  * Two decisions worth stating before the code.
@@ -30,16 +30,16 @@ import v1 from './v1.js';
 /** Versions this server will speak if a client asks for one of them. */
 const SPOKEN = new Set(['2024-11-05', '2025-03-26', '2025-06-18', '2025-11-25']);
 const NEWEST = '2025-11-25';
-const SERVER = { name: 'transformpipe', version: '1.0.0' };
+const SERVER = { name: 'TransformPipe', version: '1.0.0' };
 
 /** Long enough to be useful, short enough that a document does not eat a conversation. */
 const MAX_TEXT = 40_000;
 
-const INSTRUCTIONS = `These tools act on one person's transformpipe account — the one that authorised this connector — and see nothing else.
+const INSTRUCTIONS = `These tools act on one person's TransformPipe account — the one that authorised this connector — and see nothing else.
 
 Three things worth holding on to. tp_save_document with a share mode publishes a page on the public web, so share a document only when the person asked for it. tp_delete_document is permanent and has no undo. tp_convert_markdown returns the whole document through this conversation, so for anything long, save it and share the link instead.
 
-tp_help answers questions about how transformpipe works; use it rather than answering from memory.`;
+tp_help answers questions about how TransformPipe works; use it rather than answering from memory.`;
 
 interface Rpc {
   jsonrpc?: string;
@@ -123,7 +123,7 @@ function unauthorised(c: Context, why: string) {
       error: 'invalid_token',
       error_description: why,
       resource: `${origin}/api/mcp`,
-      hint: `Add ${origin}/api/mcp to your assistant and sign in with your transformpipe account.`,
+      hint: `Add ${origin}/api/mcp to your assistant and sign in with your TransformPipe account.`,
     },
     401
   );
@@ -142,7 +142,7 @@ const notPost = (c: Context) =>
       name: SERVER.name,
       version: SERVER.version,
       protocol: 'MCP over HTTP POST, JSON-RPC 2.0',
-      auth: 'Add this URL to your assistant as a connector and sign in with your transformpipe account.',
+      auth: 'Add this URL to your assistant as a connector and sign in with your TransformPipe account.',
       documentation: `${selfOrigin(c)}/docs`,
     },
     405,
@@ -243,7 +243,7 @@ const describe = (document: {
 const TOOLS: Record<McpToolName, Tool> = {
   tp_help: {
     description:
-      'The transformpipe documentation itself: what Markdown it understands, what happens to a file, what is stored and what is not, how sharing works, the limits, and the HTTP API. Use this to answer any question about how transformpipe works INSTEAD of answering from memory. Ask a question to get the sections that answer it, or call it with nothing for all of them.',
+      'The TransformPipe documentation itself: what Markdown it understands, what happens to a file, what is stored and what is not, how sharing works, the limits, and the HTTP API. Use this to answer any question about how TransformPipe works INSTEAD of answering from memory. Ask a question to get the sections that answer it, or call it with nothing for all of them.',
     inputSchema: {
       type: 'object',
       additionalProperties: false,
@@ -284,7 +284,7 @@ const TOOLS: Record<McpToolName, Tool> = {
       return say(
         clip(
           [
-            `transformpipe — ${selfOrigin(c)} · full documentation at ${selfOrigin(c)}/docs`,
+            `TransformPipe — ${selfOrigin(c)} · full documentation at ${selfOrigin(c)}/docs`,
             '',
             ...shown.map((entry) => `## ${entry.title}\n${entry.text}`),
           ].join('\n')
@@ -353,7 +353,7 @@ const TOOLS: Record<McpToolName, Tool> = {
 
   tp_save_document: {
     description:
-      'Save Markdown to this transformpipe account as a document, and optionally publish it in the same call. Returns the id, the size and — when shared — the URL. `share: "link"` is anyone holding the URL, `"people"` narrows it to the addresses in `emails`, `"private"` is nobody but the owner. Publishing makes a page on the public web: share a document the person actually asked to share.',
+      'Save Markdown to this TransformPipe account as a document, and optionally publish it in the same call. Returns the id, the size and — when shared — the URL. `share: "link"` is anyone holding the URL, `"people"` narrows it to the addresses in `emails`, `"private"` is nobody but the owner. Publishing makes a page on the public web: share a document the person actually asked to share.',
     writes: true,
     inputSchema: {
       type: 'object',
@@ -453,7 +453,7 @@ const TOOLS: Record<McpToolName, Tool> = {
 
   tp_list_documents: {
     description:
-      'What is on this transformpipe account: documents with their names, sizes, dates and whether each is shared. Start here when the question is "what have I got". Prints the id of each, which is what the other tools take.',
+      'What is on this TransformPipe account: documents with their names, sizes, dates and whether each is shared. Start here when the question is "what have I got". Prints the id of each, which is what the other tools take.',
     inputSchema: {
       type: 'object',
       additionalProperties: false,
@@ -710,7 +710,7 @@ mcp.post('/', async (c) => {
   const caller = await resolveCaller(c);
 
   if (!caller) {
-    return unauthorised(c, 'Sign in to transformpipe');
+    return unauthorised(c, 'Sign in to TransformPipe');
   }
 
   for (const [key, value] of Object.entries(CORS)) {

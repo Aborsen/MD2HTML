@@ -42,7 +42,7 @@ export const ui: Content['ui'] = {
    * celle qui est arrivée.
    */
   'dialog.mcp.lede':
-    'Ajoutez transformpipe dans un assistant : il pourra convertir, enregistrer et partager des documents de ce compte.',
+    'Ajoutez TransformPipe dans un assistant : il pourra convertir, enregistrer et partager des documents de ce compte.',
   'dialog.mcp.address': 'Adresse du connecteur',
   'dialog.mcp.nokey':
     'Sur claude.ai : Paramètres → Connecteurs → Ajouter un connecteur personnalisé. Aucune clé à coller : la connexion se fait sous votre compte et peut être coupée ici.',

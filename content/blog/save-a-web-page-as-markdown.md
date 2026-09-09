@@ -115,7 +115,7 @@ Notion's clipper is the outlier and the one that catches people. It does not sav
 
 ### The browser-side option, if you would rather not install anything
 
-Between "paste into a website" and "install an extension" there is a third position: a converter that runs in the browser tab but is not part of the browser. Drop the saved `.html` file onto the page, or paste the HTML you copied from developer tools, and the conversion happens on your own machine. Signed out, transformpipe's [HTML to Markdown conversion](/html-to-markdown) uploads nothing at all — the file is read, parsed and converted locally, which you can verify by opening the network tab and watching nothing happen. Conversion is capped at 10 MB, and a document you choose to keep in an account is capped at 4 MB, because the function that stores it refuses a larger request body.
+Between "paste into a website" and "install an extension" there is a third position: a converter that runs in the browser tab but is not part of the browser. Drop the saved `.html` file onto the page, or paste the HTML you copied from developer tools, and the conversion happens on your own machine. Signed out, TransformPipe's [HTML to Markdown conversion](/html-to-markdown) uploads nothing at all — the file is read, parsed and converted locally, which you can verify by opening the network tab and watching nothing happen. Conversion is capped at 10 MB, and a document you choose to keep in an account is capped at 4 MB, because the function that stores it refuses a larger request body.
 
 | Pros | Cons |
 | --- | --- |

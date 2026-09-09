@@ -208,7 +208,7 @@ The workaround is inline HTML:
 
 - Put the tag inline, with no space before it, exactly where the break belongs.
 - Whether it survives depends on the next step, not the parser. A converter that escapes raw HTML by default shows you a literal `<br>`; one that strips unknown tags drops it and joins the text.
-- transformpipe sanitises the preview and the downloaded file against one shared allow-list, so the break you see in the preview is the break in the file you send.
+- TransformPipe sanitises the preview and the downloaded file against one shared allow-list, so the break you see in the preview is the break in the file you send.
 - If a cell needs two breaks, or a break plus a bullet, you are writing a paragraph inside a grid. Move it out.
 
 **Who should use it?** Anybody with a "notes" column, sparingly. A table where every cell carries a `<br>` is a table fighting its own shape.
@@ -353,7 +353,7 @@ The blank lines inside the wrapper are mandatory. Without them the table sits in
 
 ## Conclusion
 
-Markdown tables are fragile in one specific way: they fail completely rather than partly, and they fail without saying so, which makes them look unpredictable when they are not. The separator row must match the header's cell count, the block needs a blank line on each side, a literal pipe needs a backslash, a line break needs `<br>`, and the whole feature needs a parser that implements GFM. Get those five right and a table survives every conversion you will put it through. Take the widest, most escaped table you have, run it through [transformpipe](https://transformpipe.com), and read the HTML source beside the preview: a missing column means the dashes are miscounted, and a cell split in two means a pipe you did not escape.
+Markdown tables are fragile in one specific way: they fail completely rather than partly, and they fail without saying so, which makes them look unpredictable when they are not. The separator row must match the header's cell count, the block needs a blank line on each side, a literal pipe needs a backslash, a line break needs `<br>`, and the whole feature needs a parser that implements GFM. Get those five right and a table survives every conversion you will put it through. Take the widest, most escaped table you have, run it through [TransformPipe](https://transformpipe.com), and read the HTML source beside the preview: a missing column means the dashes are miscounted, and a cell split in two means a pipe you did not escape.
 
 ## FAQ
 

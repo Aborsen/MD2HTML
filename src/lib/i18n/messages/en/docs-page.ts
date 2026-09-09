@@ -31,7 +31,7 @@ export const docsPage = {
   /* The contents column beside the manual. Not 'In this article' — this is not one. */
   'docs.toc': 'On this page',
 
-  'docs.title': 'Everything transformpipe does',
+  'docs.title': 'Everything TransformPipe does',
   'docs.lede':
     'Markdown, HTML, Word, CSV or JSON in — a document out as HTML, Markdown, plain text or print. From this page, from a terminal, from a pull request or from an assistant. This is the whole of it; nothing here sits behind a plan.',
 
@@ -56,7 +56,7 @@ export const docsPage = {
   'docs.converting.oneShape':
     'Everything ends as Markdown, and that is deliberate: it is what a document is stored, previewed, shared and reached by a script as, so the whole of the app stands on one shape rather than four.',
   'docs.converting.shot.converter.alt':
-    'The transformpipe converter with an empty dropzone',
+    'The TransformPipe converter with an empty dropzone',
   'docs.converting.shot.converter.caption':
     'The converter. The logo doubles as “start over”.',
   'docs.converting.flavour':
@@ -169,7 +169,7 @@ export const docsPage = {
 
   /** `{path}` is the connector's address, which comes from `mcp-facts.ts`. */
   'docs.assistant.intro':
-    'transformpipe is an MCP server, so it can be added to Claude as a connector. The address is this deployment plus {path}:',
+    'TransformPipe is an MCP server, so it can be added to Claude as a connector. The address is this deployment plus {path}:',
   'docs.assistant.adding':
     'On claude.ai that goes in Settings → Connectors → Add custom connector. From a terminal:',
   'docs.assistant.auth':

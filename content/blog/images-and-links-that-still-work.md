@@ -213,7 +213,7 @@ The JavaScript libraries are stranger, because two of the most widely used ones 
 
 The row that costs people the most is the numbered one. Documentation is full of `## 1. Prerequisites` and `## 2. Installing`, and a contents list built for GitHub aims at `#1-prerequisites` while a Pandoc build produces `#prerequisites`. Every link in the list misses. Nothing errors: a fragment that matches no id is not a failure in HTML, it is a request to scroll to nothing, and the browser obliges by staying exactly where it is. The reader clicks, nothing moves, and concludes the page is broken in some vague way they cannot describe.
 
-The other quiet divergence is the prefix. transformpipe prefixes every heading id with `doc-`, so `## Installing the CLI` becomes `id="doc-installing-the-cli"` and the link has to be `#doc-installing-the-cli`. The prefix exists to keep ids out of DOM-clobbering territory, which is the same reasoning behind [sanitising the output at all](/blog/sanitising-markdown-safely). Other tools prefix for their own reasons, and a prefix defeats every hand-written anchor at once.
+The other quiet divergence is the prefix. TransformPipe prefixes every heading id with `doc-`, so `## Installing the CLI` becomes `id="doc-installing-the-cli"` and the link has to be `#doc-installing-the-cli`. The prefix exists to keep ids out of DOM-clobbering territory, which is the same reasoning behind [sanitising the output at all](/blog/sanitising-markdown-safely). Other tools prefix for their own reasons, and a prefix defeats every hand-written anchor at once.
 
 So convert first and read the ids the converter produced instead of guessing. Open the output, search it for `id="`, search it for `href="#`, and compare the two lists — anything in the second that is missing from the first is a dead link, and the check takes less time than writing the contents list did. There is a structural fix too: give the heading an explicit id where the renderer supports it, or link to a stable heading rather than a numbered one. Renaming a heading silently breaks every anchor aimed at it, which is a reason to keep the contents list short in [documentation that lives in the repository](/blog/documentation-that-lives-in-the-repo).
 
@@ -266,7 +266,7 @@ There is a middle road that trades one failure for the other. Attach the convert
 
 ## What to check before you send the file
 
-Self-contained HTML is a claim about presentation, rarely about content. In a single-file HTML document the styles are inline, there are no scripts and nothing is fetched to make the page look right — the transformpipe download works that way. What that never covers is a picture you pointed somewhere else. `<img src="diagram.png">` still means `diagram.png`, next to wherever the reader put the file.
+Self-contained HTML is a claim about presentation, rarely about content. In a single-file HTML document the styles are inline, there are no scripts and nothing is fetched to make the page look right — the TransformPipe download works that way. What that never covers is a picture you pointed somewhere else. `<img src="diagram.png">` still means `diagram.png`, next to wherever the reader put the file.
 
 The criteria below are what to decide, in order, before the file leaves your machine.
 

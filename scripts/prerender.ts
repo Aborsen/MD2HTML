@@ -207,7 +207,7 @@ function render(page: Page): string {
     `<link rel="canonical" href="${url}" />`,
     alternates(splitLocale(page.path).rest),
     `<meta property="og:type" content="${page.path.startsWith('/blog/') ? 'article' : 'website'}" />`,
-    `<meta property="og:site_name" content="transformpipe" />`,
+    `<meta property="og:site_name" content="TransformPipe" />`,
     `<meta property="og:title" content="${escapeHtml(page.title)}" />`,
     `<meta property="og:description" content="${escapeHtml(page.description)}" />`,
     `<meta property="og:url" content="${url}" />`,
@@ -275,7 +275,7 @@ const pages: Page[] = [];
 for (const article of ARTICLES) {
   pages.push({
     path: articlePath(article.slug),
-    title: `${article.title} — transformpipe`,
+    title: `${article.title} — TransformPipe`,
     description: article.description,
     image: articleCover(article.slug),
     lastmod: article.updated ?? article.date,
@@ -298,8 +298,8 @@ for (const article of ARTICLES) {
         articleSection: article.tag,
         inLanguage: 'en',
         mainEntityOfPage: `${SITE}${articlePath(article.slug)}`,
-        publisher: { '@type': 'Organization', name: 'transformpipe', url: SITE },
-        author: { '@type': 'Organization', name: 'transformpipe', url: SITE },
+        publisher: { '@type': 'Organization', name: 'TransformPipe', url: SITE },
+        author: { '@type': 'Organization', name: 'TransformPipe', url: SITE },
       }),
       DOC_STYLE,
     ].join('\n    '),
@@ -318,7 +318,7 @@ for (const article of ARTICLES) {
 // ---------------------------------------------------------------- the blog index
 pages.push({
   path: '/blog',
-  title: 'Blog — Markdown, and what to do with it — transformpipe',
+  title: 'Blog — Markdown, and what to do with it — TransformPipe',
   description:
     'Converting Markdown, the syntax that breaks on the way to HTML, publishing documents for people who do not use Markdown, and automating the whole thing.',
   listed: true,
@@ -334,7 +334,7 @@ pages.push({
   head: breadcrumbs(blogCrumbs(CATALOGUES.en, DEFAULT_LOCALE)) + jsonLd({
     '@context': 'https://schema.org',
     '@type': 'Blog',
-    name: 'transformpipe Blog',
+    name: 'TransformPipe Blog',
     url: `${SITE}/blog`,
     blogPost: ARTICLES.map((article) => ({
       '@type': 'BlogPosting',
@@ -436,7 +436,7 @@ for (const locale of LOCALES) {
           '@type': 'WebSite',
           '@id': `${SITE}/#website`,
           url: SITE,
-          name: 'transformpipe',
+          name: 'TransformPipe',
           description: home.seo.description,
           inLanguage: locale,
           publisher: { '@id': `${SITE}/#organization` },
@@ -446,7 +446,7 @@ for (const locale of LOCALES) {
           '@id': `${SITE}/#organization`,
           name: 'Raudar Labs',
           url: SITE,
-          brand: { '@type': 'Brand', name: 'transformpipe' },
+          brand: { '@type': 'Brand', name: 'TransformPipe' },
         },
       ],
         })
@@ -552,7 +552,7 @@ for (const locale of LOCALES) {
   pages.push({
   locale,
   path: localePath(locale, '/docs'),
-  title: `${catalogue.ui['header.nav.documentation']} — transformpipe`,
+  title: `${catalogue.ui['header.nav.documentation']} — TransformPipe`,
   /*
    * The lede's first sentence, not the whole of it: the full paragraph is over two hundred
    * characters and a search result shows about a hundred and sixty, so the rest is spent on an

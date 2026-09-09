@@ -256,7 +256,7 @@ Five criteria, each with the consequence attached.
 
 ## Conclusion
 
-Write Markdown by default, convert it, and keep the HTML as a build product you never edit — that arrangement gives you reviewable prose, editors who are not afraid of the file, and output that opens anywhere, which is most of what people want from a document workflow. Switch to HTML deliberately and completely when the destination demands it: email templates that must survive a mail client's own rendering engine, documents whose page layout is part of the specification, and anything the reader interacts with rather than reads. When the step you need is the ordinary one — Markdown in, a complete self-contained page out, nothing uploaded — [transformpipe does it in the browser](/), free and with no install; when it is one of the exceptions, spend the time in HTML and stop apologising for it.
+Write Markdown by default, convert it, and keep the HTML as a build product you never edit — that arrangement gives you reviewable prose, editors who are not afraid of the file, and output that opens anywhere, which is most of what people want from a document workflow. Switch to HTML deliberately and completely when the destination demands it: email templates that must survive a mail client's own rendering engine, documents whose page layout is part of the specification, and anything the reader interacts with rather than reads. When the step you need is the ordinary one — Markdown in, a complete self-contained page out, nothing uploaded — [TransformPipe does it in the browser](/), free and with no install; when it is one of the exceptions, spend the time in HTML and stop apologising for it.
 
 ## FAQ
 

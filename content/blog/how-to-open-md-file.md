@@ -88,7 +88,7 @@ There is a third thing that gets confused with both, and it is the one people ac
 | Option | Best for | What you see | Price |
 | --- | --- | --- | --- |
 | Notepad, TextEdit, any text editor | Checking what the file actually contains | The source, punctuation and all | Free, already installed |
-| transformpipe in a browser | Reading it rendered and getting a file out | A formatted document, converted on your own machine | Free |
+| TransformPipe in a browser | Reading it rendered and getting a file out | A formatted document, converted on your own machine | Free |
 | Markdown browser extension | Opening local `.md` files in a browser often | A rendered page at a `file://` URL | Free, MIT |
 | VS Code | Developers with the file already in the editor | Source and preview side by side | Free |
 | Obsidian | Reading a whole folder of Markdown regularly | Rendered notes; files stay plain text on disk | Free for personal, commercial and non-profit use |
@@ -195,7 +195,7 @@ Notepad, TextEdit, GNOME Text Editor, Kate, `less`, `nano`. Every one of them op
 
 **Who should use it?** Everyone, first. Open the file in a text editor before you decide you need a tool. Half the time the file is forty lines long and you have your answer in ten seconds.
 
-### transformpipe in a browser — best for reading it rendered with nothing installed
+### TransformPipe in a browser — best for reading it rendered with nothing installed
 
 Drop the `.md` file onto the page and read it as a document. It runs in the browser: signed out, the file is not uploaded anywhere, which matters when the document is a draft contract or an internal runbook rather than a public README.
 
@@ -443,7 +443,7 @@ The obvious advice is "install VS Code" or "just open it in Notepad", and both a
 
 ## Conclusion
 
-Open the file in Notepad, TextEdit or `less` first: it is plain text, it will open, and it tells you exactly what you have. If the source answers your question, stop there. If the document is long enough that the punctuation is in the way, read it rendered — a browser tab for one file, an extension or an editor if this is a weekly habit, Markor or Obsidian on a phone. And if the real problem is that the file has to reach somebody who should never have to see a hash sign, convert it once with [transformpipe's Markdown to HTML conversion](/): it runs in your browser, nothing is uploaded when you are signed out, and what you get back is one self-contained HTML file that opens by double-click on every device anybody is likely to hand it to.
+Open the file in Notepad, TextEdit or `less` first: it is plain text, it will open, and it tells you exactly what you have. If the source answers your question, stop there. If the document is long enough that the punctuation is in the way, read it rendered — a browser tab for one file, an extension or an editor if this is a weekly habit, Markor or Obsidian on a phone. And if the real problem is that the file has to reach somebody who should never have to see a hash sign, convert it once with [TransformPipe's Markdown to HTML conversion](/): it runs in your browser, nothing is uploaded when you are signed out, and what you get back is one self-contained HTML file that opens by double-click on every device anybody is likely to hand it to.
 
 ## FAQ
 

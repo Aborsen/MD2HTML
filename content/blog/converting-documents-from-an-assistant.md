@@ -44,7 +44,7 @@ The case for connecting a document converter is not that conversion is difficult
 
 Five verbs cover almost all of it. Convert, so the Markdown becomes a page. Save, so it has an address instead of living in a scroll-back buffer. Share, so somebody else can open it. List, so the assistant can answer "what have I got". Fetch back, so a document written three weeks ago can be edited rather than rewritten from memory. With those five, the model finishes the job in the conversation rather than handing the reader a wall of asterisks and wishing them luck.
 
-transformpipe's connector exposes eight tools, and the split is deliberate: two do work, four answer questions, and two change what other people can see or whether a document exists at all.
+TransformPipe's connector exposes eight tools, and the split is deliberate: two do work, four answer questions, and two change what other people can see or whether a document exists at all.
 
 | Tool | What it is for | What it can cause |
 | --- | --- | --- |

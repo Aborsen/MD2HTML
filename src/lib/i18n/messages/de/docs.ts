@@ -55,7 +55,7 @@ export const docs: Content['docs'] = {
   assistant: {
     title: 'MCP',
     summary:
-      'transformpipe als Connector zu Claude hinzufügen, und er kann Dokumente in diesem Konto umwandeln, speichern, teilen und löschen — angemeldet als Sie, ohne einen Schlüssel zum Einfügen.',
+      'TransformPipe als Connector zu Claude hinzufügen, und er kann Dokumente in diesem Konto umwandeln, speichern, teilen und löschen — angemeldet als Sie, ohne einen Schlüssel zum Einfügen.',
   },
   embed: {
     title: 'Eingebettete Lösung',

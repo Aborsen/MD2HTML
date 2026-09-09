@@ -53,7 +53,7 @@ export const ui: Content['ui'] = {
    * something anybody can write. `auth.incomplete` is the toast that carries whichever it was.
    */
   'dialog.mcp.lede':
-    'Add transformpipe to an assistant and it can convert, save and share documents in this account.',
+    'Add TransformPipe to an assistant and it can convert, save and share documents in this account.',
   'dialog.mcp.address': 'Connector address',
   'dialog.mcp.nokey':
     'On claude.ai: Settings → Connectors → Add custom connector. There is no key to paste — it signs in as you and can be disconnected here.',

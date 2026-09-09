@@ -20,7 +20,7 @@ export const docsPage = {
   /* The contents column beside the manual. Not 'In this article' — this is not one. */
   'docs.toc': 'En esta página',
 
-  'docs.title': 'Todo lo que hace transformpipe',
+  'docs.title': 'Todo lo que hace TransformPipe',
   'docs.lede':
     'Entra Markdown, HTML, Word, CSV o JSON — sale un documento en HTML, Markdown, texto plano o impreso. Desde esta página, desde un terminal, desde un pull request o desde un asistente. Esto es todo; nada de lo que hay aquí depende de un plan de pago.',
 
@@ -45,7 +45,7 @@ export const docsPage = {
   'docs.converting.oneShape':
     'Todo acaba siendo Markdown, y es deliberado: es la forma en que un documento se guarda, se previsualiza, se comparte y se alcanza desde un script, así que toda la aplicación se sostiene sobre una sola forma en vez de cuatro.',
   'docs.converting.shot.converter.alt':
-    'El conversor de transformpipe con la zona de arrastre vacía',
+    'El conversor de TransformPipe con la zona de arrastre vacía',
   'docs.converting.shot.converter.caption':
     'El conversor. El logotipo sirve también de «empezar de nuevo».',
   'docs.converting.flavour':
@@ -158,7 +158,7 @@ export const docsPage = {
 
   /** `{path}` es la dirección del conector, que viene de `mcp-facts.ts`. */
   'docs.assistant.intro':
-    'transformpipe es un servidor MCP, así que se puede añadir a Claude como conector. La dirección es este despliegue más {path}:',
+    'TransformPipe es un servidor MCP, así que se puede añadir a Claude como conector. La dirección es este despliegue más {path}:',
   'docs.assistant.adding':
     'En claude.ai eso va en Configuración → Conectores → Añadir conector personalizado. Desde un terminal:',
   'docs.assistant.auth':

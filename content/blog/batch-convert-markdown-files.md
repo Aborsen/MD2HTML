@@ -262,7 +262,7 @@ if (failures.length) {
 
 ### One API or CLI call per file — best when nothing is installed
 
-If the runner has no converter and you are not going to give it one, the loop is the same shape and the body is a network call. transformpipe's dependency-free CLI is one example; a `curl` post to any conversion API is the same idea with more flags.
+If the runner has no converter and you are not going to give it one, the loop is the same shape and the body is a network call. TransformPipe's dependency-free CLI is one example; a `curl` post to any conversion API is the same idea with more flags.
 
 ```bash
 find docs -type f -name '*.md' -print0 \

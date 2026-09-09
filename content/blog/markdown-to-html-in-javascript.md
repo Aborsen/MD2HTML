@@ -544,7 +544,7 @@ export const render = (markdown) =>
 which is what makes it usable in a function with no jsdom in it (`FilterXSS`, `whiteList`,
 `stripIgnoreTag` and `stripIgnoreTagBody` checked on github.com, 9 September 2026).
 
-This is how transformpipe is built: marked for the parse, DOMPurify in the browser, the `xss` package on the
+This is how TransformPipe is built: marked for the parse, DOMPurify in the browser, the `xss` package on the
 server, one allow-list imported by both, so a document reads the same in the app and on a shared
 page. One detail worth stealing: heading ids get a `doc-` prefix. An id becomes a named property on
 `window`, and DOMPurify strips ids that look like clobbering risks while a parser-based sanitiser

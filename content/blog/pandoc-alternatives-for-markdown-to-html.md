@@ -50,7 +50,7 @@ The third line carries a caveat worth knowing before you type it. Markdown to PD
 | --- | --- | --- | --- |
 | Pandoc | Any output other than HTML | Dozens of formats, templates, Lua filters, `--citeproc` | Free, GPL |
 | Pandoc in Docker | Keeping the matrix without installing it | The official image, run against a mounted directory | Free, GPL |
-| transformpipe | One finished file, no install, nothing uploaded | Self-contained HTML with styles inline, converted in the browser | Free |
+| TransformPipe | One finished file, no install, nothing uploaded | Self-contained HTML with styles inline, converted in the browser | Free |
 | Dillinger | Drafting where there is nothing installed | Browser editor, HTML and PDF export, syncs to Drive and Dropbox | Free, MIT |
 | StackEdit | Writing in a browser without a connection | In-browser editor, works offline once loaded, syncs and publishes | Free, Apache 2.0 |
 | Typora | A desktop app instead of a command | WYSIWYG editing, export to HTML, PDF and Word | $14.99 one-time |
@@ -94,7 +94,7 @@ Worth one section of its own, because half the people looking for an alternative
 
 **Who should use it?** Anybody whose document has to become something other than a web page, now or within the next few months. The template language is a fair price for the format matrix. It is a poor price for one README.
 
-### transformpipe — no install, and one file that opens anywhere
+### TransformPipe — no install, and one file that opens anywhere
 
 A browser converter suits a document that is not part of a build at all. You open a page, drop the `.md` file on it, and download HTML. It is worth knowing [which online converters upload your file and which do not](/blog/best-online-document-converters) before you pick one. Signed out, nothing is uploaded: the file is read, parsed and rendered on your own machine, which you can confirm by watching the network tab do nothing while it works.
 
@@ -389,7 +389,7 @@ There is one thing Pandoc deliberately does not do, and it cuts the other way: i
 
 ## Conclusion
 
-The reason "Pandoc alternative" is such a common search is that Pandoc answers a bigger question than most people are asking, and answering a bigger question always costs more. If the document has to become a Word file, an EPUB or a typeset PDF, install Pandoc and learn its templates — it will outlast every other tool named here. If HTML is the only output, pick by the reason you came: a library where the build already lives, a workflow step where CI already runs, a generator when the answer is a site, and a browser converter when what you want is one finished file with nobody's install standing in the way — which is what [transformpipe's Markdown to HTML conversion](/) does, free, in your own browser, with nothing uploaded when you are signed out.
+The reason "Pandoc alternative" is such a common search is that Pandoc answers a bigger question than most people are asking, and answering a bigger question always costs more. If the document has to become a Word file, an EPUB or a typeset PDF, install Pandoc and learn its templates — it will outlast every other tool named here. If HTML is the only output, pick by the reason you came: a library where the build already lives, a workflow step where CI already runs, a generator when the answer is a site, and a browser converter when what you want is one finished file with nobody's install standing in the way — which is what [TransformPipe's Markdown to HTML conversion](/) does, free, in your own browser, with nothing uploaded when you are signed out.
 
 ## FAQ
 

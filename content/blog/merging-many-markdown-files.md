@@ -327,7 +327,7 @@ Three fixes, best first.
 
 That trailing brace is an extension, not CommonMark: Pandoc supports it, and in the JavaScript world it takes a plugin. If your converter does not, prefix the heading text instead, or accept the tool's own de-duplication and generate the contents list from the output so the two agree.
 
-**Read the ids the converter produced.** Do not guess the slug rule. Convert once, look at the HTML, and take the ids from there. transformpipe prefixes every heading id with `doc-`, and its HTML source tab shows the exact file — which is a specific example of the general point, that the only reliable slug rule is the one you can read in the output.
+**Read the ids the converter produced.** Do not guess the slug rule. Convert once, look at the HTML, and take the ids from there. TransformPipe prefixes every heading id with `doc-`, and its HTML source tab shows the exact file — which is a specific example of the general point, that the only reliable slug rule is the one you can read in the output.
 
 The same collision hits footnotes, which people notice much later. Every part that has footnotes starts them at `[^1]`, so a merged document has four `[^1]` definitions and four references that all resolve to whichever the parser kept. Either parse each file separately, which is exactly what Pandoc's `--file-scope` is for, or prefix the labels as you read each part.
 
@@ -460,7 +460,7 @@ The dividing line is not the number of files. It is whether the document is read
 6. **Open the merged file somewhere else before you send it.** A different machine, a different browser, the network off, the images folder left behind — that one test catches broken relative paths, missing anchors and CDN-linked styles at once, and it takes a minute.
 7. **Write down the size at which you stop merging.** Twenty parts, or the day a second output format is needed, or the first request for search: pick the trigger in advance, because the alternative is discovering it as a maintenance problem eighteen months in.
 
-Start with the filenames, before there are twenty of them: ordering is the only one of these problems that gets worse with time, and the only one whose fix — renaming — gets more expensive every month you leave it. For the HTML itself, drop the parts onto [transformpipe](/) together: several files at once are chained into one document, in order, separated by a rule, with the heading ids visible in the source tab so the contents list can be checked against them rather than guessed. From a terminal, `tp push handbook/*.md --merge --share link` prints a link to pass on. Either way, the merge is the easy part; the three passes over links, images and anchors are the work, and they are what separates a document that renders from a document that reads.
+Start with the filenames, before there are twenty of them: ordering is the only one of these problems that gets worse with time, and the only one whose fix — renaming — gets more expensive every month you leave it. For the HTML itself, drop the parts onto [TransformPipe](/) together: several files at once are chained into one document, in order, separated by a rule, with the heading ids visible in the source tab so the contents list can be checked against them rather than guessed. From a terminal, `tp push handbook/*.md --merge --share link` prints a link to pass on. Either way, the merge is the easy part; the three passes over links, images and anchors are the work, and they are what separates a document that renders from a document that reads.
 
 ## FAQ
 

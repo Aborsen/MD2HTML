@@ -109,7 +109,7 @@ The Dataview row is the one people misread. A Dataview query is a fenced code bl
 
 The properties block at the top is YAML frontmatter: a converter that does not recognise it renders the opening `---` as a horizontal rule and turns the closing one into a heading made from your last metadata line.
 
-Once a note is ordinary Markdown the conversion is dull work: drop it on [transformpipe](https://transformpipe.com) for a preview, an HTML source tab and one self-contained `.html` with inline styles. Several dropped together chain into one document.
+Once a note is ordinary Markdown the conversion is dull work: drop it on [TransformPipe](https://transformpipe.com) for a preview, an HTML source tab and one self-contained `.html` with inline styles. Several dropped together chain into one document.
 
 ### Making a vault portable before you need it to be
 
@@ -247,7 +247,7 @@ Run the script into a fresh output directory every time, so a bad run is deleted
 
 ## Conclusion
 
-Every one of these applications will give you something. The skill is knowing which something, and checking it before the source is gone: a Notion zip whose links all point at ids, a vault whose wikilinks nothing else reads, a Confluence space where the macros were the useful part, a Google Doc whose images were never in the file. Take one real document through the whole path first, repair what breaks, and only then decide whether the rest is an afternoon of hands or a script with four rewrites in it. When the Markdown is finally clean, [transformpipe](https://transformpipe.com) turns it into a page you can share, and its CLI takes a batch of files in one command, `--merge` chaining them into one.
+Every one of these applications will give you something. The skill is knowing which something, and checking it before the source is gone: a Notion zip whose links all point at ids, a vault whose wikilinks nothing else reads, a Confluence space where the macros were the useful part, a Google Doc whose images were never in the file. Take one real document through the whole path first, repair what breaks, and only then decide whether the rest is an afternoon of hands or a script with four rewrites in it. When the Markdown is finally clean, [TransformPipe](https://transformpipe.com) turns it into a page you can share, and its CLI takes a batch of files in one command, `--merge` chaining them into one.
 
 ## FAQ
 

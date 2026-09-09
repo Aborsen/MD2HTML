@@ -247,7 +247,11 @@ api.post('/documents', async (c) => {
     const email = c.get('user').email;
 
     if (email && (await claimWelcome(userId))) {
-      const sent = await sendWelcome({ to: email, origin: selfOrigin(c) });
+      const sent = await sendWelcome({
+        to: email,
+        name: c.get('user').name ?? null,
+        origin: selfOrigin(c),
+      });
 
       if (!sent.ok) {
         console.error(`welcome to ${email} not sent: ${sent.reason}`);

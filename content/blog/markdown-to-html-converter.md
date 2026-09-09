@@ -157,7 +157,7 @@ Two details decide whether a sanitiser holds up in practice.
 
 **Where it runs.** A sanitiser in the browser leans on the browser's own parser, which is the same parser that will later render the document — a real advantage, because it sees the markup as the browser will see it. One on a server has to parse the HTML itself, with its own idea of how malformed tags nest. If a tool converts in both places, the two must agree, or the same document renders differently depending on who asked for it. This is also where mutation problems live: if the sanitiser's parse and the browser's parse disagree about a nesting edge case, cleaning the markup can produce something that re-parses in the browser as different markup than was approved.
 
-**Heading ids again.** A bare `id="title"` shadows a DOM property, so a browser sanitiser strips it while a server-side parser keeps it: one document, two shapes, and anchor links that work in one and not the other. Prefixing the ids answers both problems at once. transformpipe sanitises with DOMPurify in the browser and the `xss` package on the server against one shared allow-list, and its heading ids carry a `doc-` prefix. There is [more to sanitising Markdown safely](/blog/sanitising-markdown-safely) than fits in one stage of a pipeline.
+**Heading ids again.** A bare `id="title"` shadows a DOM property, so a browser sanitiser strips it while a server-side parser keeps it: one document, two shapes, and anchor links that work in one and not the other. Prefixing the ids answers both problems at once. TransformPipe sanitises with DOMPurify in the browser and the `xss` package on the server against one shared allow-list, and its heading ids carry a `doc-` prefix. There is [more to sanitising Markdown safely](/blog/sanitising-markdown-safely) than fits in one stage of a pipeline.
 
 One last thing about this stage: sanitising is visible. It removes things. Checkboxes disappear if `input` is not on the list, a `<details>` block flattens into its contents, an embedded diagram becomes nothing at all. That is not a bug — it is the allow-list doing its job — but it means the output has to be read, not assumed.
 
@@ -217,7 +217,7 @@ The four stages happen wherever you put them. What changes is which of the four 
 | A library in your own code | Rendering inside an application you are building | Parse and render; sanitise and wrap are yours | Free, MIT or BSD depending on the library |
 | Command line converter | Scripted and repeatable conversion of files on disk | Parse, render and optionally wrap; sanitising rarely | Free, open source; Pandoc is GPL |
 | Static site generator | A set of documents that link to each other | All four, plus navigation, across a whole directory | Free, open source |
-| API, CLI or CI action | Conversion inside a build with no browser present | All four, if the service does; the point is no install on the runner | Free with transformpipe; varies elsewhere |
+| API, CLI or CI action | Conversion inside a build with no browser present | All four, if the service does; the point is no install on the runner | Free with TransformPipe; varies elsewhere |
 | An editor's export | The file you happen to have open | Parse and render, wrapping depends entirely on the extension | Free for VS Code; desktop editors vary, check the vendor |
 
 ## Where to run the conversion
@@ -320,7 +320,7 @@ When the conversion has to happen inside a pull request, a nightly build or an a
 | The same allow-list and wrapper as the interactive tool, so output matches | You are depending on a service being up |
 | Fits a pull request check or a release job | Not interactive: you read the output after the fact, in an artefact |
 
-**Price:** free with transformpipe's API, CLI, GitHub Action and MCP server; varies elsewhere.
+**Price:** free with TransformPipe's API, CLI, GitHub Action and MCP server; varies elsewhere.
 
 **Technical details and features**
 
@@ -383,7 +383,7 @@ The obvious choice for one file is a browser converter, and it is the right one 
 
 ## Conclusion
 
-A Markdown to HTML converter is a four-stage pipeline, and every disappointing conversion is one identifiable stage doing something reasonable that you did not want: a parser running a smaller flavour, a renderer inventing ids that do not match your links, a sanitiser removing an embed, or a wrapper that was never written because a library correctly declined to guess. Read the output rather than the feature list, and read it in the HTML source view where the doctype, the charset and the surviving raw HTML are all visible at once. If you want all four stages done in one pass, on your own machine, with a self-contained file at the end of it, [transformpipe's Markdown to HTML conversion](/) is free, needs no install, and uploads nothing while you are signed out.
+A Markdown to HTML converter is a four-stage pipeline, and every disappointing conversion is one identifiable stage doing something reasonable that you did not want: a parser running a smaller flavour, a renderer inventing ids that do not match your links, a sanitiser removing an embed, or a wrapper that was never written because a library correctly declined to guess. Read the output rather than the feature list, and read it in the HTML source view where the doctype, the charset and the surviving raw HTML are all visible at once. If you want all four stages done in one pass, on your own machine, with a self-contained file at the end of it, [TransformPipe's Markdown to HTML conversion](/) is free, needs no install, and uploads nothing while you are signed out.
 
 ## FAQ
 

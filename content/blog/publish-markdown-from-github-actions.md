@@ -60,7 +60,7 @@ jobs:
         run: echo "${{ steps.publish.outputs.urls }}"
 ```
 
-That is the whole thing. The key is a transformpipe API key, stored as a repository secret; the action ships with the converter, and `action.yml` lists its inputs. Given no file list, it asks git which Markdown files the pull request touched, publishes each one, and comments a table of file name, word count and link. Files the branch deleted are skipped, so a removed document does not fail the run.
+That is the whole thing. The key is a TransformPipe API key, stored as a repository secret; the action ships with the converter, and `action.yml` lists its inputs. Given no file list, it asks git which Markdown files the pull request touched, publishes each one, and comments a table of file name, word count and link. Files the branch deleted are skipped, so a removed document does not fail the run.
 
 Most of that file is not the conversion. It is the handful of lines that keep the job cheap, scoped, ordered and quiet, and each of them is answering a failure somebody has already had.
 
@@ -385,7 +385,7 @@ On a runner that belongs to you — Jenkins, Buildkite, a cron job on a box in a
 6. **Count the requests before you fan out.** Twenty files in one job is twenty calls; twenty jobs is twenty runners, twenty checkouts and two rate limits, and a limit refuses rather than queues.
 7. **Check what the reviewer sees, not what the run says.** Open the link from the comment, signed out, on a phone, and see whether it is the document. A workflow can be green all the way through and still be publishing an empty page.
 
-Reviewing prose in a diff is guesswork, and the whole fix is one file: a trigger with a `paths` filter, a concurrency group, two permissions, one secret, and a step that publishes what the branch changed and leaves a link where a reviewer will actually see it. Start with the repository whose Markdown is read by somebody who does not write code, open a pull request against a file that needs a real edit, and see whether the first comment that comes back is about the text rather than the formatting. To see what the output looks like before minting a key for it, convert the file by hand first — [transformpipe's Markdown to HTML conversion](/) runs in your browser, free, and signed out the file is not uploaded anywhere.
+Reviewing prose in a diff is guesswork, and the whole fix is one file: a trigger with a `paths` filter, a concurrency group, two permissions, one secret, and a step that publishes what the branch changed and leaves a link where a reviewer will actually see it. Start with the repository whose Markdown is read by somebody who does not write code, open a pull request against a file that needs a real edit, and see whether the first comment that comes back is about the text rather than the formatting. To see what the output looks like before minting a key for it, convert the file by hand first — [TransformPipe's Markdown to HTML conversion](/) runs in your browser, free, and signed out the file is not uploaded anywhere.
 
 ## FAQ
 

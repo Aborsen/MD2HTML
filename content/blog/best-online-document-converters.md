@@ -26,7 +26,7 @@ And the third is subtler: a converter can produce output that looks right on the
 
 | Tool | Best for | Key capability | Price |
 | --- | --- | --- | --- |
-| transformpipe | Converting a document without uploading it | Browser-side conversion, self-contained HTML export, API and CLI | Free |
+| TransformPipe | Converting a document without uploading it | Browser-side conversion, self-contained HTML export, API and CLI | Free |
 | Pandoc | Repeatable conversion between many formats | Markup, HTML, office, TeX and ebook formats, templates, `--standalone`, `--embed-resources` | Free, GPL |
 | LibreOffice (headless) | Office formats offline, in bulk | `--convert-to` for Word, Excel, PowerPoint, ODF, PDF | Free, MPL 2.0 |
 | CloudConvert | An API you can build on | Format breadth, region selection, files deleted after processing | Free tier: 10 conversions/day |
@@ -41,9 +41,9 @@ And the third is subtler: a converter can produce output that looks right on the
 
 ## The best online document converters in 2026
 
-### transformpipe — best for converting a document without uploading it
+### TransformPipe — best for converting a document without uploading it
 
-transformpipe converts Markdown to HTML, and HTML, Word `.docx`, CSV, TSV and JSON to Markdown, in the browser. Signed out, the file is read, parsed and rendered on your own machine and never sent anywhere. The HTML export is one complete file with its styles inline, which means it opens the same way on a laptop with no connection as it does on yours.
+TransformPipe converts Markdown to HTML, and HTML, Word `.docx`, CSV, TSV and JSON to Markdown, in the browser. Signed out, the file is read, parsed and rendered on your own machine and never sent anywhere. The HTML export is one complete file with its styles inline, which means it opens the same way on a laptop with no connection as it does on yours.
 
 | Pros | Cons |
 | --- | --- |
@@ -329,7 +329,7 @@ Comparison tables are built from the fields vendors agree to publish. The things
 
 ## Conclusion
 
-The best online document converter is the one whose answer to "where did my file go?" is "nowhere". For documents that are not already public, that means browser-side conversion. That is what [transformpipe does](/): Markdown to a self-contained HTML file, and HTML, Word, CSV, TSV and JSON back to Markdown, on your own machine, free. Nothing is uploaded when you are signed out, and the network tab shows it. When the format is beyond what a browser can parse, a server-side service is the right tool and the retention policy is what you are actually choosing between: CloudConvert, Convertio, Zamzar and FreeConvert all state theirs, and the differences are real. And when the conversion has to repeat, install Pandoc or host Gotenberg, and stop thinking about it.
+The best online document converter is the one whose answer to "where did my file go?" is "nowhere". For documents that are not already public, that means browser-side conversion. That is what [TransformPipe does](/): Markdown to a self-contained HTML file, and HTML, Word, CSV, TSV and JSON back to Markdown, on your own machine, free. Nothing is uploaded when you are signed out, and the network tab shows it. When the format is beyond what a browser can parse, a server-side service is the right tool and the retention policy is what you are actually choosing between: CloudConvert, Convertio, Zamzar and FreeConvert all state theirs, and the differences are real. And when the conversion has to repeat, install Pandoc or host Gotenberg, and stop thinking about it.
 
 ## FAQ
 
