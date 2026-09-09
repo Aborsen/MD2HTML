@@ -57,18 +57,24 @@ const NAV_ITEMS = [
 ];
 
 /*
- * One width for all three, and it is the widest label in any of the five languages.
+ * Nothing here has a fixed width, and that is the point.
  *
- * Per-item minimums came first and were not enough. They stopped the bar rearranging itself when
- * the language changed, but left the three boxes 124, 92 and 76px wide — so the distance from the
- * word History to the word Docs was 119px and from Docs to Blog 91px, which is what uneven spacing
- * looks like even when every gap between boxes is the same four.
+ * Two attempts went the other way. Per-item minimums sized to the longest translation, then one
+ * width for all three — and both made the spacing worse, because what a reader sees is the gap
+ * between words, not between invisible boxes. Equal boxes with unequal labels put the leftover room
+ * beside the short ones: "Docs" ended up with more air around it than "History", and the Converter
+ * trigger beside them had no minimum at all, so the first gap was a different kind from the rest.
  *
- * 7.75rem is 124px, which is what Italian needs for Cronologia. Content centred, so the room left
- * over on a short label splits evenly instead of piling up on one side. Only from md, where the
- * labels exist at all; below it these are icons and a fixed width would be dead space.
+ * Content-width with one gap is even by construction. Every one of these controls, the Converter
+ * dropdown included, carries the same `md:px-3`, and the nav sets `md:gap-1` — so the distance from
+ * any word to the next is 12 + 4 + 12 in every language.
+ *
+ * The reason a fixed width seemed necessary was the bar moving on a language switch, and it was
+ * never this bar: `nav` is pushed right by `ml-auto` and the controls sit after it with `md:ml-0`,
+ * so the nav grows leftwards into empty space and the buttons on the right do not move. Measured:
+ * the nav went 399px to 446px between English and French while the language button stayed at the
+ * same x. What did move was the Sign in button, which is the one thing that still has a minimum.
  */
-const NAV_ROOM = 'md:min-w-[7.75rem] md:justify-center';
 
 export function AppHeader({
   view,
@@ -196,7 +202,6 @@ export function AppHeader({
                 title={label}
                 className={cn(
                   'flex h-9 cursor-pointer items-center gap-1.5 rounded-md border border-transparent px-2 font-medium text-sm transition-colors md:px-3',
-                  NAV_ROOM,
                   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring-brand focus-visible:ring-offset-2',
                   isActive
                     ? 'bg-surface-accent text-ink-highlight'
