@@ -47,10 +47,31 @@ interface AppHeaderProps {
  * catalogue at render time. What is here is what does not change with the language — which view,
  * and which glyph.
  */
+/*
+ * `room` is the width the longest of the five translations needs, so the bar does not move when
+ * the language does.
+ *
+ * Measured, not guessed, at 14px DM Sans with the icon, the gaps and the padding counted:
+ * Cronologia is the longest History and needs 121px, Guida the longest Docs and needs 89px, and
+ * Blog is Blog in all five so it needs nothing. A minimum rather than a width — a translation that
+ * grows later gets more room instead of being clipped.
+ *
+ * Only from `md`, which is where these labels appear at all; below it they are icons.
+ */
 const NAV_ITEMS = [
-  { id: 'history' as const, label: 'header.nav.history', icon: History },
-  { id: 'docs' as const, label: 'header.nav.docs', icon: BookOpen },
-  { id: 'blog' as const, label: 'header.nav.blog', icon: Newspaper },
+  {
+    id: 'history' as const,
+    label: 'header.nav.history',
+    icon: History,
+    room: 'md:min-w-[7.75rem]',
+  },
+  {
+    id: 'docs' as const,
+    label: 'header.nav.docs',
+    icon: BookOpen,
+    room: 'md:min-w-[5.75rem]',
+  },
+  { id: 'blog' as const, label: 'header.nav.blog', icon: Newspaper, room: '' },
 ];
 
 export function AppHeader({
@@ -165,7 +186,7 @@ export function AppHeader({
             </DropdownMenuContent>
           </DropdownMenu>
 
-          {NAV_ITEMS.map(({ id, label: key, icon: Icon }) => {
+          {NAV_ITEMS.map(({ id, label: key, icon: Icon, room }) => {
             const isActive = view === id;
             const label = t(key);
 
@@ -179,6 +200,7 @@ export function AppHeader({
                 title={label}
                 className={cn(
                   'flex h-9 cursor-pointer items-center gap-1.5 rounded-md border border-transparent px-2 font-medium text-sm transition-colors md:px-3',
+                  room,
                   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring-brand focus-visible:ring-offset-2',
                   isActive
                     ? 'bg-surface-accent text-ink-highlight'
