@@ -235,3 +235,25 @@ create table if not exists m2h_user (
   welcomed_at timestamptz,
   first_seen_at timestamptz not null default now()
 );
+
+-- `user_id` as uuid, like every other table.
+--
+-- It was declared text, which worked for the one thing it is used for — an insert with the caller's
+-- id — and made it impossible to join against neon_auth."user" without a cast. Nothing else in this
+-- schema does that.
+
+alter table m2h_user
+  alter column user_id type uuid using user_id::uuid;
+
+-- A welcome that was recorded but never sent.
+--
+-- `welcomed_at` was stamped by the insert that created the row, which meant it recorded the
+-- attempt rather than the send — and the attempts made before the mail key reached the deployment
+-- went nowhere. Those accounts would never be greeted, because the row already said they had been.
+--
+-- Cleared here, and the code now stamps it only after the provider accepts the message. A row with
+-- a null welcome is an account that is still owed one.
+
+update m2h_user
+  set welcomed_at = null
+  where welcomed_at < timestamptz '2026-09-09 16:11:00+00';

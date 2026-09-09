@@ -15,7 +15,13 @@ import {
   CONVERSIONS,
   DEFAULT_CONVERSION,
 } from '../shared/conversions.js';
-import { checkQuota, noteFirstUse, QUOTA, usageOf } from './limits.js';
+import {
+  checkQuota,
+  claimWelcome,
+  QUOTA,
+  releaseWelcome,
+  usageOf,
+} from './limits.js';
 import mcp from './mcp.js';
 import oauth from './oauth.js';
 import { authorizationServer, protectedResource } from './wellknown.js';
@@ -228,8 +234,9 @@ api.post('/documents', async (c) => {
    * Not on sign-in: Neon Auth owns registration and tells this application nothing about it, so
    * there is no moment of creation to hook. Not on the session check either — that fires on every
    * page load, and a write on it would be a write on every page load. Saving a document is the
-   * first thing an account is actually for, and `noteFirstUse` answers true exactly once because
-   * the insert is what decides, not a read followed by a write.
+   * first thing an account is actually for, and `claimWelcome` hands the job to exactly one
+   * request — putting it back if the send fails, so a bad minute at the mail provider costs a
+   * retry rather than the only greeting that account will ever get.
    *
    * Awaited — a send started after the response may never leave a serverless function (see
    * mail.ts) — but only logged on failure: a welcome that did not send is not a reason to fail a
@@ -237,14 +244,15 @@ api.post('/documents', async (c) => {
    * once.
    */
   {
-    const isNew = await noteFirstUse(userId);
     const email = c.get('user').email;
 
-    if (isNew && email) {
+    if (email && (await claimWelcome(userId))) {
       const sent = await sendWelcome({ to: email, origin: selfOrigin(c) });
 
       if (!sent.ok) {
         console.error(`welcome to ${email} not sent: ${sent.reason}`);
+        /* Hand the claim back: an account that was not greeted is still owed one. */
+        await releaseWelcome(userId);
       }
     }
   }

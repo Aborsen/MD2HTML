@@ -83,26 +83,47 @@ export const UNVERIFIED = { documents: 10 } as const;
  * Google: the provider asserts the address, so there was never anything for us to confirm.
  */
 /**
- * Records that this account exists, and answers whether that was news.
+ * Claims the right to greet this account, once.
  *
- * True exactly once per account, which is what makes it safe to send an email on. The decision is
- * the insert: `on conflict do nothing ... returning` gives back a row only when this call created
- * it, so two requests arriving in the same instant cannot both conclude they were the first — the
- * database decides, not a read followed by a write.
+ * Two statements and both are deliberate. The insert records that the account exists; the update is
+ * the claim, and it is atomic — `where welcomed_at is null ... returning` hands the row to exactly
+ * one caller, so two requests in the same instant cannot both decide to send.
+ *
+ * The stamp goes on before the send rather than after, because the alternative is worse: a window
+ * where two requests both see a null and both write. What makes that safe is `releaseWelcome`,
+ * which puts it back when the send fails — so a failure is a retry on the next save, and a success
+ * is permanent.
+ *
+ * The first version stamped `welcomed_at` in the insert, which recorded the attempt rather than the
+ * send. The accounts whose attempt happened before the mail key reached the deployment were marked
+ * greeted and never were; the migration in db/schema.sql clears them.
  *
  * Called where somebody uses their account rather than where they sign in. Neon Auth owns
  * registration and tells this application nothing about it, and a session check fires on every page
- * load; converting or saving something is both a better moment to say hello and a far colder path.
+ * load; saving a document is both a better moment to say hello and a far colder path.
  */
-export async function noteFirstUse(userId: string): Promise<boolean> {
-  const rows = (await sql()`
-    insert into m2h_user (user_id, welcomed_at)
-    values (${userId}, now())
+export async function claimWelcome(userId: string): Promise<boolean> {
+  await sql()`
+    insert into m2h_user (user_id)
+    values (${userId})
     on conflict (user_id) do nothing
+  `;
+
+  const rows = (await sql()`
+    update m2h_user
+    set welcomed_at = now()
+    where user_id = ${userId} and welcomed_at is null
     returning user_id
   `) as Array<{ user_id: string }>;
 
   return rows.length === 1;
+}
+
+/** Puts the claim back, so a send that failed is tried again rather than lost. */
+export async function releaseWelcome(userId: string): Promise<void> {
+  await sql()`
+    update m2h_user set welcomed_at = null where user_id = ${userId}
+  `;
 }
 
 export async function isVerified(userId: string): Promise<boolean> {
