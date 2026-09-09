@@ -180,7 +180,7 @@ StackEdit is a Markdown editor that runs in a browser tab and keeps working when
 - Output as Markdown, as HTML, or formatted through the Handlebars template engine
 - Handles long documents with a table of contents and a scrollable outline
 
-**Who should use it?** People on a machine where they cannot install software, and people whose next step after writing is a blog platform rather than a file.
+**Who should use it?** People on a machine where they cannot install software, and people whose next step after writing is a blog platform rather than a file — and if the browser storage or the synchronisation has turned into the problem rather than the convenience, [the alternatives sort by which part of StackEdit you are actually replacing](/blog/stackedit-alternatives).
 
 ### Dillinger — best for one document, right now
 

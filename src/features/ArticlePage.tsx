@@ -228,7 +228,12 @@ export function ArticlePage({
             {article.tag}
           </Badge>
           <Typography variant="span" textColor="light" className="text-xs">
-            {formatArticleDate(article.date)} · {article.readingMinutes} min read
+            {formatArticleDate(article.date)}
+            {/* Only where it is true: a revision date on an unrevised piece is noise. */}
+            {article.updated
+              ? ` · updated ${formatArticleDate(article.updated)}`
+              : ''}{' '}
+            · {article.readingMinutes} min read
           </Typography>
         </div>
 

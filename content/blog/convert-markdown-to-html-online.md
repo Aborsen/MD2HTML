@@ -41,7 +41,7 @@ The second thing "online" hides is what you get back. Some tools hand you a frag
 | An editor's export | Editor install | Nowhere | Complete document, styled its way | People who are writing the file right now |
 | Print to PDF from the browser | None | Nowhere | PDF, not HTML | A recipient who wants pagination |
 
-The table is the cheat sheet for the rest of the piece. Two rows deserve saying out loud: the free routes that need no install are the first three, and the only difference between the first and the second is whether a request leaves your machine.
+The table is the cheat sheet for the rest of the piece. Two rows deserve saying out loud: the free routes that need no install are the first three, and the only difference between the first and the second is whether a request leaves your machine — while the editor's-export row is the one people land on by accident, opening a writing tool for a file they had already finished, which is [the mistake behind most searches for a Dillinger alternative](/blog/dillinger-alternatives).
 
 ## How to convert Markdown to HTML in a browser, step by step
 

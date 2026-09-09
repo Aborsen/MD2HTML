@@ -1,6 +1,7 @@
 ---
 title: "Code blocks in Markdown: fences, language hints and syntax highlighting"
 description: Fenced versus indented code, what the language hint really does, where syntax highlighting actually happens, and how to print a backtick
+updated: 2026-09-09
 date: 2026-08-18
 tag: Syntax
 keywords: markdown code block, fenced code block, markdown syntax highlighting, markdown code block language, markdown inline code, triple backticks, markdown escape backtick, markdown syntax highlighting html, markdown code fence info string, highlight.js vs prism, markdown code block line numbers

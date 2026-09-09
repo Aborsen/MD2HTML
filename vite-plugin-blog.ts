@@ -27,6 +27,8 @@ interface Entry {
   title: string;
   description: string;
   date: string;
+  /** Only present when the file carries it — see `Article` in `src/lib/blog.ts`. */
+  updated?: string;
   tag: string;
   keywords: string[];
   readingMinutes: number;
@@ -69,6 +71,8 @@ function read(dir: string): Entry[] {
         title: data.title ?? 'Untitled',
         description: data.description ?? '',
         date: data.date ?? '',
+        /* Omitted rather than empty, so `updated ?? date` works everywhere downstream. */
+        ...(data.updated ? { updated: data.updated } : {}),
         tag: data.tag ?? 'Markdown',
         keywords: data.keywords
           ? data.keywords.split(',').map((one) => one.trim())

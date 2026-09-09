@@ -1,6 +1,7 @@
 ---
 title: Documentation that lives next to the code
 description: Why documentation in the repository stays closer to true - the four kinds of docs, a directory that scales, review that catches drift, and where it fails
+updated: 2026-09-09
 date: 2026-07-29
 tag: Workflow
 keywords: documentation in markdown, docs as code, readme template, readme best practices, write a good readme, internal documentation tool, docs in git, diataxis, architecture decision record, docs directory structure, contributing file, markdownlint, vale prose linter
@@ -151,7 +152,7 @@ Checked on mkdocs.org and github.com/mkdocs/mkdocs, squidfunk.github.io/mkdocs-m
 
 **Docsify** is the odd one: it builds nothing. It loads from a CDN, renders your Markdown in the browser at request time, and produces no statically built HTML at all, under the MIT licence (checked on github.com/docsifyjs/docsify, 9 September 2026). That removes the build step entirely, at the price of a site whose content is invisible to anything that does not run JavaScript.
 
-**And no generator at all** remains a real answer, more often than the list above suggests. If what you have is eleven Markdown files and an occasional need to hand one to a person who does not use git, a converter and a link beat a build pipeline you have to keep green. The threshold is navigation: the moment a reader needs to move between documents without knowing their filenames, you want a generator.
+**And no generator at all** remains a real answer, more often than the list above suggests. If what you have is eleven Markdown files and an occasional need to hand one to a person who does not use git, a converter and a link beat a build pipeline you have to keep green. The threshold is navigation: the moment a reader needs to move between documents without knowing their filenames, you want a generator, and [the three questions that decide whether you have crossed it](/blog/static-site-generator-or-converter) are worth answering before you install one.
 
 ## Review is what keeps a document true
 

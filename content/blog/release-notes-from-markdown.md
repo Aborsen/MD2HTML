@@ -1,6 +1,7 @@
 ---
 title: Release notes people actually read
 description: Write release notes instead of a commit log: the six Keep a Changelog types, what a breaking change means, which generators help, and what they cannot write.
+updated: 2026-09-09
 date: 2026-08-14
 tag: Workflow
 keywords: release notes markdown, changelog markdown, keep a changelog, changelog format, release notes template, semantic versioning breaking change, conventional commits changelog, changelog generator

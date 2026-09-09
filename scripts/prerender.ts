@@ -217,10 +217,13 @@ for (const article of ARTICLES) {
     title: `${article.title} — transformpipe`,
     description: article.description,
     image: articleCover(article.slug),
-    lastmod: article.date,
+    lastmod: article.updated ?? article.date,
     listed: true,
     head: [
       `<meta property="article:published_time" content="${article.date}" />`,
+      ...(article.updated
+        ? [`<meta property="article:modified_time" content="${article.updated}" />`]
+        : []),
       `<meta property="article:tag" content="${escapeHtml(article.tag)}" />`,
       breadcrumbs(crumbsForArticle(article)),
       jsonLd({
@@ -229,7 +232,7 @@ for (const article of ARTICLES) {
         headline: article.title,
         description: article.description,
         datePublished: article.date,
-        dateModified: article.date,
+        dateModified: article.updated ?? article.date,
         keywords: article.keywords.join(', '),
         articleSection: article.tag,
         inLanguage: 'en',
@@ -241,7 +244,11 @@ for (const article of ARTICLES) {
     ].join('\n    '),
     body: `<article class="md-doc"><h1>${escapeHtml(article.title)}</h1><p>${escapeHtml(
       formatArticleDate(article.date)
-    )} · ${article.readingMinutes} min read</p>${markdownToHtml(
+    )}${
+      article.updated
+        ? ` · updated ${escapeHtml(formatArticleDate(article.updated))}`
+        : ''
+    } · ${article.readingMinutes} min read</p>${markdownToHtml(
       articleMarkdown(article.slug)
     )}</article>`,
   });
@@ -254,7 +261,15 @@ pages.push({
   description:
     'Converting Markdown, the syntax that breaks on the way to HTML, publishing documents for people who do not use Markdown, and automating the whole thing.',
   listed: true,
-  lastmod: ARTICLES[0]?.date,
+  /*
+   * The newest thing on the index, published or revised.
+   *
+   * Not `ARTICLES[0].date`: the list is sorted by publication, so an old article rewritten today
+   * sits far down it, and the index did change on the day that happened.
+   */
+  lastmod: ARTICLES.map((article) => article.updated ?? article.date)
+    .sort()
+    .at(-1),
   head: breadcrumbs(BLOG_CRUMBS) + jsonLd({
     '@context': 'https://schema.org',
     '@type': 'Blog',

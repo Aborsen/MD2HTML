@@ -1,6 +1,7 @@
 ---
 title: Rendering Markdown in JavaScript without shipping a hole
 description: marked, markdown-it, unified, micromark and snarkdown compared, with the render-then-sanitise pattern that keeps XSS out of the HTML you ship
+updated: 2026-09-09
 date: 2026-07-24
 tag: Code
 keywords: markdown to html javascript, marked js, markdown it, remark, rehype, unified markdown, react markdown, markdown parser comparison, micromark, snarkdown, markdown-it plugins, rehype-sanitize, dompurify markdown, streaming markdown rendering

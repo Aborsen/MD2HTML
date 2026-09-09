@@ -1,6 +1,7 @@
 ---
 title: Publishing Markdown from a pull request with GitHub Actions
 description: Render the Markdown a pull request changed and comment one link: the workflow line by line, why a fork gets no secrets, and what each alternative costs
+updated: 2026-09-09
 date: 2026-08-26
 tag: Automation
 keywords: github action markdown, github actions render markdown, markdown preview pull request, pull request documentation preview, ci markdown, convert markdown in ci, pull_request_target security, sticky pull request comment, github actions concurrency, publish markdown from ci

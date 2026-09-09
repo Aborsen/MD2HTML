@@ -1,6 +1,7 @@
 ---
 title: Images and links that still work after you send the file
 description: Relative paths, GitHub raw URLs, data URIs, alt text, SVG and heading anchors: why a Markdown image or link breaks when the file moves, and how to fix each one
+updated: 2026-09-09
 date: 2026-08-01
 tag: Syntax
 keywords: markdown image, markdown image not showing, markdown relative link, markdown anchor link, markdown link to heading, markdown base64 image, self contained html, single file html, markdown image size, markdown alt text, github raw image url, markdown svg image, markdown broken link checker

@@ -1,6 +1,7 @@
 ---
 title: Rendering Markdown to HTML in Python
 description: Python-Markdown, markdown2, mistune and markdown-it-py compared: the extensions each leaves off, sanitising with nh3, and a directory script that fails a build
+updated: 2026-09-09
 date: 2026-07-07
 tag: Code
 keywords: markdown to html python, python markdown, markdown2 python, mistune, markdown parser, convert markdown programmatically, python markdown extensions, markdown-it-py, pymdown-extensions, nh3 sanitise html, pypandoc

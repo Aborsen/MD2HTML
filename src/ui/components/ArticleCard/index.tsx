@@ -1,4 +1,3 @@
-import { ArrowRight } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { Badge } from '../Badge';
 import { Typography } from '../Typography';
@@ -73,16 +72,11 @@ export function ArticleCard({
       )}
     >
       {/*
-        * The card image is drawn 1200 by 420, so this is its own ratio rather than a crop.
+        * The cover is drawn at 1.905:1 and shown at 1.905:1, so nothing is cropped.
         *
-        * At the share image's 1200 by 630 the picture was taller than the words under it, and
-        * cropping into a shorter box threw away the top and bottom of a composition that had been
-        * laid out for the full frame. `npm run og` draws this variant at the shape it is shown in.
-        *
-        * The lead keeps the same ratio rather than filling its column. Covering a 2.86:1 picture
-        * into the 1.9:1 box beside the headline cropped the sides off — "CONVERTING" arrived as
-        * "TING" and the right-hand stack lost its grid. Centred in its column it is inset, which
-        * is a decision; cropped, it is a mistake.
+        * It carries the headline now, which is why the ratio matters more than it did: a crop that
+        * takes the sides off takes the words with it. An earlier version covered a 2.86:1 picture
+        * into a 1.9:1 box beside the lead's headline and "CONVERTING" arrived as "TING".
         */}
       {image && (
         <img
@@ -91,7 +85,7 @@ export function ArticleCard({
           loading="lazy"
           className={cn(
             'w-full object-cover',
-            'aspect-[1200/420]',
+            'aspect-[1200/630]',
             featured
               ? 'border-stroke border-b sm:w-[44%] sm:shrink-0 sm:self-center sm:border-r-0 sm:border-b-0'
               : 'border-stroke border-b'
@@ -106,25 +100,25 @@ export function ArticleCard({
           featured && image && 'sm:justify-center sm:p-6'
         )}
       >
-      {(tag || meta) && (
-        <div className="flex items-center gap-2">
-          {tag && (
-            <Badge variant="secondary" size="sm">
-              {tag}
-            </Badge>
-          )}
-          {meta && (
-            <Typography variant="span" textColor="light" className="text-xs">
-              {meta}
-            </Typography>
-          )}
+      {tag && (
+        <div>
+          <Badge variant="secondary" size="sm">
+            {tag}
+          </Badge>
         </div>
       )}
 
+      {/*
+        * Two lines, clamped.
+        *
+        * Unclamped, one nine-word headline in a row of three made every card in that row as tall as
+        * itself, and a grid of cards whose height is set by the longest title in each row reads as
+        * a broken layout rather than a list.
+        */}
       <Typography
         variant="h3"
         className={cn(
-          'text-ink-primary',
+          'line-clamp-2 text-ink-primary',
           featured ? 'text-lg md:text-xl' : 'text-base md:text-base'
         )}
       >
@@ -139,10 +133,21 @@ export function ArticleCard({
         {description}
       </Typography>
 
-      <span className="mt-auto flex items-center gap-1 pt-2 font-medium text-brand-tertiary text-sm">
-        Read
-        <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-0.5" />
-      </span>
+      {/*
+        * The date and the reading time, at the bottom, in the mono face.
+        *
+        * This replaced a "Read →" affordance. The whole card is already a link, so the row said
+        * nothing the cursor did not, and it sat where a reader looks for the date.
+        */}
+      {meta && (
+        <Typography
+          variant="span"
+          textColor="light"
+          className="mt-auto pt-2 font-mono text-[11px]"
+        >
+          {meta}
+        </Typography>
+      )}
       </div>
     </a>
   );

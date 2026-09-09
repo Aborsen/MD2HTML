@@ -15,6 +15,14 @@ const DIR = 'content/blog';
 const KEYS = ['title', 'description', 'date', 'tag', 'keywords'];
 
 /*
+ * `updated` is allowed and not required: it belongs only on an article that has been revised since
+ * it was published, and it is what the sitemap's `lastmod` and the page's `dateModified` are built
+ * from. An article that carries it and has not changed is a false claim to a crawler, so it is not
+ * a field to add by default.
+ */
+const OPTIONAL_KEYS = ['updated'];
+
+/*
  * Everything inside a fence is a sample, not prose: a shell comment is not a heading.
  *
  * Anchored to the start of a line, because samples contain backticks of their own — an awk script
@@ -76,7 +84,7 @@ for (const file of files) {
   }
 
   for (const key of Object.keys(data)) {
-    if (!KEYS.includes(key)) {
+    if (!KEYS.includes(key) && !OPTIONAL_KEYS.includes(key)) {
       problems.push(`${slug}: unexpected frontmatter key "${key}"`);
     }
   }
@@ -88,6 +96,17 @@ for (const file of files) {
 
   if (!/^\d{4}-\d{2}-\d{2}$/.test(data.date ?? '')) {
     problems.push(`${slug}: date "${data.date}" is not YYYY-MM-DD`);
+  }
+
+  if (data.updated) {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(data.updated)) {
+      problems.push(`${slug}: updated "${data.updated}" is not YYYY-MM-DD`);
+    } else if (data.updated < data.date) {
+      // Revised before it was published is either a typo or a date somebody moved by hand.
+      problems.push(
+        `${slug}: updated ${data.updated} is before date ${data.date}`
+      );
+    }
   }
 
   if (/^# /m.test(prose)) {
@@ -160,8 +179,8 @@ for (const slug of slugs) {
  */
 for (const slug of slugs) {
   for (const [kind, path] of [
-    ['share image', `public/og/blog/${slug}.png`],
-    ['card image', `public/og/card/${slug}.png`],
+    ['share image', `public/og/blog/${slug}.jpg`],
+    ['card image', `public/og/card/${slug}.webp`],
   ]) {
     if (!existsSync(path)) {
       problems.push(`${slug}: no ${kind} — run \`npm run og\``);

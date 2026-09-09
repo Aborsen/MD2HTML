@@ -286,4 +286,4 @@ Structure survives; anything the flavour does not support does not. Tables, task
 
 ### Which format should documentation use if the team is not technical?
 
-Markdown, but only with a preview in front of it — a Markdown editor, a wiki that renders as you type, or a pull request preview. Asking non-technical authors to write syntax they cannot see rendered is the reason some teams conclude Markdown does not work for them, when the real problem was the missing preview.
+Markdown, but only with a preview in front of it — a Markdown editor, a wiki that renders as you type, or a pull request preview. Asking non-technical authors to write syntax they cannot see rendered is the reason some teams conclude Markdown does not work for them, when the real problem was the missing preview — and if the answer is that the team would rather stay in Word altogether, [which of the two formats should own the source](/blog/markdown-vs-docx-for-documentation) is the decision to settle before any tooling.

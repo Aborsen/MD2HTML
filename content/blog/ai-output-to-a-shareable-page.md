@@ -1,7 +1,8 @@
 ---
 title: Your AI assistant writes Markdown. Your colleagues do not read it.
 description: Why chat assistants answer in Markdown, what survives the paste into email, Slack, Word, Notion or a ticket, and the duller route that holds: save, convert, send
-date: 2026-09-09
+updated: 2026-09-09
+date: 2026-07-21
 tag: Workflow
 keywords: chatgpt markdown, chatgpt output to html, claude markdown export, llm markdown output, ai generated documentation, copy markdown from chat, paste markdown into word, ai output asterisks, markdown dollar signs latex
 ---

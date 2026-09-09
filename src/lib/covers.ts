@@ -8,28 +8,32 @@
  */
 
 /**
- * A blog article's share image — the one with the headline in it.
+ * A blog article's share image: 1200 by 630, JPEG.
  *
  * This is what `og:image` points at, because a share with no headline is a coloured rectangle.
+ * JPEG rather than the WebP the card gets, and rather than the PNG both used to be: every scraper
+ * that matters handles JPEG, WebP support among them is uneven, and PNG was three times the bytes
+ * for a picture nobody inspects at full size.
  */
 export function articleCover(slug: string): string {
-  return `/og/blog/${slug}.png`;
+  return `/og/blog/${slug}.jpg`;
 }
 
 /**
- * The same picture without the headline, for a card that prints the headline itself.
+ * The same picture at two thirds the size, for the card in a list: 800 by 420, WebP.
  *
- * A card in a three-column grid is about 330px wide, and a title rendered inside the image at that
- * size is unreadable text pretending to be a picture — beside the real title, twice over.
+ * The card is shown about 390px wide in a three-column grid, so the share image was four times the
+ * pixels the browser needed, on every card on the page. WebP is safe here in a way it is not for
+ * `og:image`, because the only thing that fetches this one is a browser.
  */
 export function articleCardImage(slug: string): string {
-  return `/og/card/${slug}.png`;
+  return `/og/card/${slug}.webp`;
 }
 
 /**
  * Any other page's cover, by route.
  *
- * The front page is `home.png` rather than `index.png`, and a conversion page uses its own path
+ * The front page is `home.jpg` rather than `index.jpg`, and a conversion page uses its own path
  * with the leading slash dropped. A route with no cover gets the front page's, which is better than
  * a share with no picture at all.
  */
@@ -37,14 +41,14 @@ export function pageCover(path: string): string {
   const clean = path.replace(/^\/+|\/+$/g, '');
 
   if (clean === '') {
-    return '/og/home.png';
+    return '/og/home.jpg';
   }
 
   if (clean === 'markdown-to-html') {
-    return '/og/markdown-to-html.png';
+    return '/og/markdown-to-html.jpg';
   }
 
-  return `/og/${clean}.png`;
+  return `/og/${clean}.jpg`;
 }
 
 /** 1200 by 630, which is what the generator draws and what every scraper expects to be told. */

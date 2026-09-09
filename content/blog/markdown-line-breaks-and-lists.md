@@ -1,6 +1,7 @@
 ---
 title: "Markdown line breaks and lists: the rules, and the small betrayals"
 description: Why a newline is a space, what two spaces and a backslash do, how far a nested list indents, tight against loose, and every character that needs escaping
+updated: 2026-09-09
 date: 2026-07-11
 tag: Syntax
 keywords: markdown line break, markdown new line, markdown two spaces, markdown nested list, markdown ordered list, markdown checkbox, markdown task list, markdown escape character, markdown list indentation, loose and tight lists, commonmark hard line break, markdown br tag, markdown soft line break, markdown backslash line break, markdown list not nesting, markdown breaks option, markdown list numbering
@@ -469,7 +470,7 @@ A literal backslash is written \\.
 
 The date is the classic case: a line starting with a number, a full stop and a space is an ordered list, so a paragraph opening with a year quietly becomes item one. Headings (`#`), blockquotes (`>`) and bullets (`-`) do the same at the start of a line, and pipes need escaping inside a table.
 
-Two things that save you backslashes. Underscores inside a word are left alone, so `snake_case_name` survives untouched; asterisks are not, so `a*b*c` still emphasises. And a backslash does nothing inside a code span, which is the better answer anyway for a filename, a flag or a glob pattern.
+Two things that save you backslashes. Underscores inside a word are left alone, so `snake_case_name` survives untouched; asterisks are not, so `a*b*c` still emphasises. And a backslash does nothing inside a code span, which is the better answer anyway for a filename, a flag or a glob pattern — the case that opens [the full reference on escaping](/blog/markdown-escaping), which carries on through the character references a backslash cannot replace and the template, Windows path and `__init__` cases that produce most of the complaints.
 
 ### Every character that needs one, and where
 

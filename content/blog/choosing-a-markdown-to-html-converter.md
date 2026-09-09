@@ -1,6 +1,7 @@
 ---
 title: How to judge a Markdown converter in five minutes
 description: Write down what your situation demands, then run one awkward test document through the candidates. Seven checks and a scoring sheet you can copy.
+updated: 2026-09-09
 date: 2026-06-23
 tag: Converting
 keywords: best markdown to html converter, markdown converter comparison, markdown editor online, free markdown tool, markdown converter no signup, markdown converter with api, open source markdown converter, how to choose a markdown converter, markdown converter requirements, test a markdown converter

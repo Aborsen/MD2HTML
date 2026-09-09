@@ -1,6 +1,7 @@
 ---
 title: Turning a folder of Markdown files into one document
 description: Merging a folder of Markdown files into one - ordering, heading levels, cross-file links, image paths, duplicate anchors and the contents list, with scripts
+updated: 2026-09-09
 date: 2026-07-16
 tag: Converting
 keywords: merge markdown files, combine markdown files, concatenate markdown, multiple markdown files to one html, markdown book from files, table of contents markdown, markdown heading anchors, merge markdown files into one, pandoc merge markdown files, markdown table of contents generator, mdbook summary.md

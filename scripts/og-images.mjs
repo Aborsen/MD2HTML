@@ -25,15 +25,23 @@ const ROOT = resolve('.');
 const OUT = join(ROOT, 'public', 'og');
 const WIDTH = 1200;
 
+const HEIGHT = 630;
+
 /*
- * Two heights, because the two variants go in differently shaped holes.
+ * One composition, drawn twice at different sizes.
  *
- * 630 is what a share expects — every scraper is built for 1.91:1. A card in the blog index is a
- * band above two lines of text, and at 630 it was taller than the words: cropping the tall picture
- * into it lost the composition's top and bottom, so the card variant is drawn at the shape it is
- * shown in instead.
+ * 1200 by 630 is what a share expects — every scraper is built for 1.91:1 — and the card in the
+ * blog index is the same picture at two thirds the size, so the layout is identical and only the
+ * pixels differ. That is `deviceScaleFactor`, not a second template: the earlier version had two
+ * templates, one of which omitted the title, and they drifted every time the design changed.
+ *
+ * The card being smaller matters. It is shown about 390px wide in a three-column grid, so a
+ * 1200px source was four times the pixels the browser needed on every card on the page.
  */
-const HEIGHTS = { og: 630, card: 420 };
+const VARIANTS = {
+  og: { scale: 1, type: 'jpeg', quality: 94, ext: 'jpg' },
+  card: { scale: 2 / 3, type: 'webp', quality: 90, ext: 'webp' },
+};
 
 /*
  * One accent per tag, all of them chosen against #0f0e14 rather than taken from a ramp. Teal is the
@@ -104,17 +112,14 @@ const bars = (widths, colour, thickness, gap) =>
     )
     .join('');
 
-function shape(accent, bare) {
-  const thickness = bare ? 13 : 9;
-  const gap = bare ? 14 : 11;
-
+function shape(accent) {
   return `
     <div class="shape">
-      <div class="stack">${bars([100, 74, 88, 62], '#2b2b39', thickness, gap)}</div>
+      <div class="stack">${bars([100, 74, 88, 62], '#34344a', 11, 13)}</div>
       <div class="arrow">&gt;</div>
       <div class="stack">
-        <div style="width:64%;height:${thickness + 4}px;border-radius:999px;background:${accent}"></div>
-        <div style="margin-top:${gap}px">${bars([100, 82], '#3d3d50', thickness, gap)}</div>
+        <div style="width:64%;height:15px;border-radius:999px;background:${accent}"></div>
+        <div style="margin-top:13px">${bars([100, 82], '#474760', 11, 13)}</div>
         <div class="grid">
           <span></span><span></span><span></span>
           <span></span><span></span><span></span>
@@ -126,19 +131,24 @@ function shape(accent, bare) {
 /**
  * The card, as a page.
  *
- * Two variants, because the picture has two jobs. `og` is what a share shows, so it carries the
- * headline: a share without one says nothing. `card` is the picture on a card that prints the
- * headline itself, three inches away, so a second copy inside the image would be unreadable text
- * pretending to be a picture — that variant is the shape and the tag, and no title at all.
+ * The headline is in the picture, in both sizes. The card variant used to leave it out, on the
+ * argument that a title inside a 390px image sitting three inches from the real title is
+ * unreadable text pretending to be a picture. Set small, in the top-left of a frame with room in
+ * it, it is legible and it is what stops a grid of covers reading as coloured rectangles — which is
+ * what a grid of shapes without words turned out to be.
+ *
+ * The layout: an accent rule, the tag above the headline, the headline over about three lines, the
+ * motif entering from the right edge rather than sitting inside a column, and the mark and the
+ * domain together at the bottom. The motif bleeds off the frame on purpose — a shape that stops
+ * before the edge is a diagram, and one that runs off it is a background.
  */
-function card({ title, eyebrow, accent, slug = '', variant = 'og' }) {
-  const height = HEIGHTS[variant];
+function card({ title, eyebrow, accent }) {
   /*
-   * Three sizes rather than a computed one: enough to keep a nine-word title inside the frame and a
-   * three-word one from looking lost, and every value is one somebody chose.
+   * Three sizes rather than a computed one, and all smaller than they were: the headline now shares
+   * the frame with a motif that reaches into it, and at the old 70px a nine-word title ran into the
+   * arcs. Every value is one somebody chose.
    */
-  const size = title.length > 78 ? 48 : title.length > 48 ? 58 : 70;
-  const bare = variant === 'card';
+  const size = title.length > 78 ? 40 : title.length > 48 ? 46 : 54;
 
   return `<!doctype html>
 <html>
@@ -156,84 +166,98 @@ function card({ title, eyebrow, accent, slug = '', variant = 'og' }) {
 
   body {
     width: ${WIDTH}px;
-    height: ${height}px;
+    height: ${HEIGHT}px;
     position: relative;
     overflow: hidden;
-    /* Lifted towards the accent at the top, so the ground is not a flat rectangle. */
+    /*
+     * Two lifts rather than one. The accent glow sits behind the motif on the right, where the
+     * colour belongs; a colder one behind the headline on the left keeps the text off a flat
+     * rectangle without tinting the words.
+     */
     background:
-      radial-gradient(120% 80% at 88% -10%, ${accent}24 0%, ${accent}00 58%),
-      linear-gradient(160deg, #15151f 0%, #0f0e14 62%);
+      radial-gradient(90% 120% at 96% 8%, ${accent}20 0%, ${accent}00 62%),
+      radial-gradient(70% 90% at 6% 40%, #1c1c28 0%, #1c1c2800 70%),
+      linear-gradient(160deg, #14141d 0%, #0f0e14 64%);
     font-family: "DM Sans", system-ui, sans-serif;
     color: #f9fafb;
   }
 
-  /* The pipe, entering: a rail down the left edge in the tag's own colour. */
-  .rail {
+  /*
+   * The motif, entering from the right edge.
+   *
+   * Positioned rather than laid out in a column, and pushed past the frame so it is cropped by it.
+   * Behind the text in the stacking order and dimmed, because the headline is the picture's job and
+   * the shape is what the frame is made of.
+   */
+  .art {
     position: absolute;
-    top: 0;
-    bottom: 0;
-    left: 0;
-    width: 8px;
-    background: linear-gradient(180deg, ${accent} 0%, ${accent}44 100%);
+    top: 50%;
+    right: -96px;
+    width: 640px;
+    transform: translateY(-50%);
+    opacity: 0.88;
   }
 
   .frame {
     position: absolute;
     inset: 0;
-    padding: ${bare ? '52px 68px' : '68px 80px 60px'};
+    padding: 64px 72px 58px;
     display: flex;
     flex-direction: column;
-    ${bare ? 'justify-content: center; gap: 34px;' : ''}
   }
 
   /*
-   * The share card is two columns: the headline on the left, the shape beside it.
+   * The words never run under the motif: a hard ceiling, not a hope about title length.
    *
-   * With the title alone there was a hand's width of empty ground between it and the footer, and
-   * empty ground in the middle of a picture reads as something that failed to load.
+   * Auto margins top and bottom rather than a top alignment, so a two-line title and a four-line
+   * one both sit on the frame's middle. Top-aligned, a short title left a hand's width of empty
+   * ground above the footer, which reads as something that failed to load.
    */
-  .split {
-    display: flex;
-    align-items: center;
-    gap: 56px;
+  .words {
+    max-width: 62%;
+    margin-top: auto;
+    margin-bottom: auto;
   }
 
-  .split .words { flex: 1 1 auto; min-width: 0; }
-  .split .art { flex: 0 0 40%; }
+  /* The accent, as a rule above the tag. */
+  .rule {
+    width: 44px;
+    height: 3px;
+    border-radius: 999px;
+    background: ${accent};
+  }
 
   .eyebrow {
-    font-size: ${bare ? 26 : 21}px;
+    margin-top: 20px;
+    font-size: 19px;
     font-weight: 600;
-    letter-spacing: 0.18em;
+    letter-spacing: 0.16em;
     text-transform: uppercase;
     color: ${accent};
   }
 
   h1 {
-    margin-top: 22px;
-    max-width: 15em;
+    margin-top: 18px;
     font-size: ${size}px;
     font-weight: 600;
-    line-height: 1.12;
-    letter-spacing: -0.022em;
+    line-height: 1.16;
+    letter-spacing: -0.02em;
     text-wrap: balance;
   }
 
+  /* Both marks together, bottom left, the way a masthead sits. */
   .foot {
-    margin-top: auto;
-    padding-top: 30px;
-    border-top: 1px solid #262633;
     display: flex;
     align-items: baseline;
-    justify-content: space-between;
-    font-size: 21px;
+    gap: 14px;
+    font-size: 19px;
     color: #6b6b7b;
   }
 
   .brand {
     font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
     font-weight: 600;
-    font-size: 24px;
+    font-size: 23px;
     letter-spacing: -0.02em;
     color: #f9fafb;
   }
@@ -244,53 +268,47 @@ function card({ title, eyebrow, accent, slug = '', variant = 'og' }) {
   .shape {
     display: flex;
     align-items: center;
-    gap: ${bare ? 64 : 30}px;
+    gap: 34px;
   }
 
   .stack { flex: 1 1 0; min-width: 0; }
 
   .arrow {
     font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
-    font-size: ${bare ? 76 : 54}px;
+    font-size: 62px;
     font-weight: 600;
     line-height: 1;
     color: ${accent};
   }
 
   .grid {
-    margin-top: ${bare ? 18 : 14}px;
+    margin-top: 16px;
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: ${bare ? 6 : 4}px;
+    gap: 5px;
   }
 
   .grid span {
-    height: ${bare ? 22 : 17}px;
-    border: 2px solid #3d3d50;
+    height: 20px;
+    border: 2px solid #474760;
     border-radius: 4px;
   }
 </style>
 </head>
 <body>
-  <div class="rail"></div>
+  <div class="art">${shape(accent)}</div>
 
   <div class="frame">
-    ${
-      bare
-        ? `<div class="eyebrow">${escape(eyebrow)}</div>${shape(accent, bare)}`
-        : `<div class="split">
-      <div class="words">
-        <div class="eyebrow">${escape(eyebrow)}</div>
-        <h1>${escape(title)}</h1>
-      </div>
-      <div class="art">${shape(accent, bare)}</div>
+    <div class="words">
+      <div class="rule"></div>
+      <div class="eyebrow">${escape(eyebrow)}</div>
+      <h1>${escape(title)}</h1>
     </div>
 
     <div class="foot">
       <div class="brand">T<span>&gt;</span>pipe</div>
       <div>transformpipe.com</div>
-    </div>`
-    }
+    </div>
   </div>
 </body>
 </html>`;
@@ -317,9 +335,9 @@ for (const name of readdirSync(join(ROOT, 'content', 'blog')).sort()) {
     accent: ACCENTS[data.tag] ?? DEFAULT_ACCENT,
   };
 
-  // The share image carries the headline; the one on the card does not.
-  cards.push({ ...one, file: join(OUT, 'blog', `${slug}.png`), variant: 'og' });
-  cards.push({ ...one, file: join(OUT, 'card', `${slug}.png`), variant: 'card' });
+  // The same picture twice: full size for a share, two thirds for the card that shows it.
+  cards.push({ ...one, dir: 'blog', variant: 'og' });
+  cards.push({ ...one, dir: 'card', variant: 'card' });
 }
 
 /*
@@ -344,7 +362,7 @@ const PAGES = [
 ];
 
 for (const [name, title, eyebrow, accent] of PAGES) {
-  cards.push({ file: join(OUT, `${name}.png`), title, eyebrow, accent });
+  cards.push({ slug: name, title, eyebrow, accent, variant: 'og' });
 }
 
 /* ------------------------------------------------------------------ draw them */
@@ -358,13 +376,22 @@ const browser = await puppeteer.launch({
 const page = await browser.newPage();
 
 for (const one of cards) {
-  const height = HEIGHTS[one.variant ?? 'og'];
+  const { scale, type, quality, ext } = VARIANTS[one.variant];
+  const file = join(OUT, ...(one.dir ? [one.dir] : []), `${one.slug}.${ext}`);
 
-  mkdirSync(dirname(one.file), { recursive: true });
-  await page.setViewport({ width: WIDTH, height, deviceScaleFactor: 1 });
+  mkdirSync(dirname(file), { recursive: true });
+  /*
+   * The layout is always drawn at 1200 by 630; the scale factor decides how many pixels come out.
+   * So the card is the same composition, not a second one that has to be kept in step.
+   */
+  await page.setViewport({
+    width: WIDTH,
+    height: HEIGHT,
+    deviceScaleFactor: scale,
+  });
   await page.setContent(card(one), { waitUntil: 'load' });
   await page.evaluate(() => document.fonts.ready);
-  writeFileSync(one.file, await page.screenshot({ type: 'png' }));
+  writeFileSync(file, await page.screenshot({ type, quality }));
 }
 
 await browser.close();

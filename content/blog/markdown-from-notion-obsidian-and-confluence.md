@@ -1,6 +1,7 @@
 ---
 title: Getting Markdown out of Notion, Obsidian, Confluence and the rest
 description: Every export path out of Notion, Obsidian, Confluence, Google Docs and Word — what each one produces, what it quietly mangles, and how to repair it
+updated: 2026-09-09
 date: 2026-07-02
 tag: Workflow
 keywords: notion export markdown, obsidian export html, confluence markdown, confluence to markdown, google docs to markdown, word to markdown, html to markdown, notion to markdown, export confluence page to markdown, evernote export markdown, apple notes export markdown, migrate wiki to markdown

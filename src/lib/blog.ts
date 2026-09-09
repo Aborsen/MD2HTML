@@ -18,8 +18,16 @@ export interface Article {
   slug: string;
   title: string;
   description: string;
-  /** ISO date, as written in the file. */
+  /** ISO date, as written in the file: when the piece was published. */
   date: string;
+  /**
+   * When it last changed in a way a reader would notice, if it has.
+   *
+   * Separate from `date` because they answer different questions and the sitemap needs the second
+   * one: `lastmod` claiming an article was modified the day it was published is a claim a crawler
+   * can check against the page and stop believing. Absent on an article that has not been revised.
+   */
+  updated?: string;
   tag: string;
   /** What the piece is aimed at, from content/keywords.md. Not rendered; kept for the writer. */
   keywords: string[];
