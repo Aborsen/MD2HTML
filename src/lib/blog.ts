@@ -14,6 +14,7 @@
  */
 import { INDEX } from 'virtual:blog-index';
 import { formatDate } from './format';
+import { DEFAULT_LOCALE, localePath, type Locale } from './i18n/locales';
 
 export interface Article {
   slug: string;
@@ -41,13 +42,40 @@ export interface Article {
  * No `eager`, so Vite gives back a function per file and builds a chunk per file. The keys are the
  * paths as written here, which is why `bodyFor` matches on the file name rather than the whole path.
  */
-const BODIES = import.meta.glob('../../content/blog/*.md', {
+const BODIES = import.meta.glob('../../content/blog/**/*.md', {
   query: '?raw',
   import: 'default',
 }) as Record<string, () => Promise<string>>;
 
-/** Everything but the prose, newest first — the plugin has already sorted it. */
-export const ARTICLES: Article[] = INDEX;
+/**
+ * The English articles, newest first — the plugin has already sorted them.
+ *
+ * Kept as a plain export because English is the language the blog is written in and the one the
+ * prerenderer treats as the source. Anything rendering for a reader should ask `articlesFor`.
+ */
+export const ARTICLES: Article[] = INDEX[DEFAULT_LOCALE] ?? [];
+
+/**
+ * What one language has, which is not what another has.
+ *
+ * Only the articles translated into that language: a German index listing English pieces would be
+ * a list of links a German reader cannot use, and an `hreflang="de"` on an article with no German
+ * text is a claim a crawler checks. So the blog is complete in English and as complete as it is
+ * in everything else, and both states are visible rather than papered over.
+ */
+export function articlesFor(locale: Locale): Article[] {
+  return INDEX[locale] ?? [];
+}
+
+/**
+ * Whether this piece exists in that language at all.
+ *
+ * Not called `hasTranslation`, because `src/lib/route.ts` has one of those and it answers a
+ * different question: whether a path is one of the pages that exists in all five languages.
+ */
+export function hasArticleIn(slug: string, locale: Locale): boolean {
+  return articlesFor(locale).some((article) => article.slug === slug);
+}
 
 /**
  * Splits `---` frontmatter off the top of a file.
@@ -67,10 +95,19 @@ function stripFrontmatter(raw: string): string {
  *
  * Returns null for a slug with no file, which is what an old link to a renamed article looks like.
  */
-export async function articleBody(slug: string): Promise<string | null> {
-  const entry = Object.entries(BODIES).find(
-    ([path]) => path.endsWith(`/${slug}.md`)
-  );
+export async function articleBody(
+  slug: string,
+  locale: Locale = DEFAULT_LOCALE
+): Promise<string | null> {
+  /*
+   * English is `content/blog/<slug>.md` and a translation is `content/blog/<locale>/<slug>.md`, so
+   * the locale segment is part of what identifies a file. Matching on `/<slug>.md` alone would
+   * have returned whichever language the glob happened to list first.
+   */
+  const tail =
+    locale === DEFAULT_LOCALE ? `/blog/${slug}.md` : `/blog/${locale}/${slug}.md`;
+
+  const entry = Object.entries(BODIES).find(([path]) => path.endsWith(tail));
 
   if (!entry) {
     return null;
@@ -79,17 +116,29 @@ export async function articleBody(slug: string): Promise<string | null> {
   return stripFrontmatter(await entry[1]());
 }
 
-export function findArticle(slug: string): Article | undefined {
-  return ARTICLES.find((article) => article.slug === slug);
+export function findArticle(
+  slug: string,
+  locale: Locale = DEFAULT_LOCALE
+): Article | undefined {
+  return articlesFor(locale).find((article) => article.slug === slug);
 }
 
-/** The tags actually in use, in the order the articles introduce them. */
-export function articleTags(): string[] {
-  return [...new Set(ARTICLES.map((article) => article.tag))];
+/** The tags actually in use in one language, in the order its articles introduce them. */
+export function articleTags(locale: Locale = DEFAULT_LOCALE): string[] {
+  return [...new Set(articlesFor(locale).map((article) => article.tag))];
 }
 
-export function articlePath(slug: string): string {
-  return `/blog/${slug}`;
+/** Where an article lives, in the language asked for: `/blog/x`, `/de/blog/x`. */
+export function articlePath(
+  slug: string,
+  locale: Locale = DEFAULT_LOCALE
+): string {
+  return localePath(locale, `/blog/${slug}`);
+}
+
+/** The blog's own index, in the language asked for. */
+export function blogPath(locale: Locale = DEFAULT_LOCALE): string {
+  return localePath(locale, '/blog');
 }
 
 /*

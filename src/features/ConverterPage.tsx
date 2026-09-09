@@ -28,7 +28,7 @@ import {
   type ConversionId,
   DEFAULT_CONVERSION,
 } from '@shared/conversions';
-import { ARTICLES, articlePath, formatArticleDate } from '@/lib/blog';
+import { articlePath, articlesFor, formatArticleDate } from '@/lib/blog';
 import { FAQ_FLAGS } from '@/lib/faq';
 import { useI18n, useT } from '@/lib/i18n/context';
 import { INTL_LOCALES } from '@/lib/i18n/locales';
@@ -200,7 +200,7 @@ export function ConverterPage({
         />
 
         {/* Below the fold: two bands, each opening with a pill, so the page stops reading as one sheet. */}
-        {ARTICLES.length > 0 && (
+        {articlesFor(locale).length > 0 && (
           <section className="mt-6 flex flex-col items-center gap-6 border-stroke border-t pt-12">
             <SectionHeading
               align="center"
@@ -212,18 +212,20 @@ export function ConverterPage({
 
             {/* Six: two full rows of three, so the last row is never one card on its own. */}
             <div className="grid w-full gap-4 sm:grid-cols-2 md:grid-cols-3">
-              {ARTICLES.slice(0, 6).map((article) => (
-                <ArticleCard
-                  key={article.slug}
-                  title={article.title}
-                  description={article.description}
-                  href={articlePath(article.slug)}
-                  image={articleCardImage(article.slug)}
-                  onOpen={() => onOpenArticle(article.slug)}
-                  tag={article.tag}
-                  meta={formatArticleDate(article.date, INTL_LOCALES[locale])}
-                />
-              ))}
+              {articlesFor(locale)
+                .slice(0, 6)
+                .map((article) => (
+                  <ArticleCard
+                    key={article.slug}
+                    title={article.title}
+                    description={article.description}
+                    href={articlePath(article.slug, locale)}
+                    image={articleCardImage(article.slug, locale)}
+                    onOpen={() => onOpenArticle(article.slug)}
+                    tag={article.tag}
+                    meta={formatArticleDate(article.date, INTL_LOCALES[locale])}
+                  />
+                ))}
             </div>
 
             <Button variant="secondary" size="sm" onClick={onGoToBlog}>

@@ -10,6 +10,7 @@ import {
   type StaticPageId,
 } from './pages';
 import { localePath, splitLocale, type Locale } from './i18n/locales';
+import { articlesFor, hasArticleIn } from './blog';
 
 /**
  * The app's addresses, kept in the URL rather than in memory.
@@ -94,14 +95,20 @@ const PATHS: Record<Exclude<AppView, 'converter' | 'page'>, string> = {
 };
 
 /*
- * The blog has no translations, so it has no prefixed addresses either.
+ * A shared document has one address and it is always English: /s/<token> is rendered by the server
+ * for a reader it knows nothing about, at an address with no language in it.
+ */
+const ONE_ADDRESS = /^\/(open|s)(\/|$)/;
+
+/*
+ * The blog is translated one article at a time, so it is not one of the pages that exists in all
+ * five languages — some of it does and some of it does not, and which is which changes as pieces
+ * are translated.
  *
- * The articles are written against English search terms; five locales of the same English prose
- * would be five near-duplicate sections competing with each other. So /blog stays one address, the
- * chrome around it follows whatever language the reader has chosen, and the prose is English.
- *
- * This is also what `hasTranslation` is for: a first-time visitor reading an English article is not
- * sent anywhere, because there is nowhere to send them.
+ * `hasTranslation` answers the all-five question, and the only caller that needs it is the
+ * automatic language choice for a first-time visitor. Deliberately false for the blog: being
+ * bounced into another language part-way down an article you are already reading is worse than
+ * being left where you landed, and a reader who wants the other language has the switcher.
  */
 const UNTRANSLATED = /^\/(blog|open|s)(\/|$)/;
 
@@ -110,11 +117,45 @@ export function hasTranslation(path: string): boolean {
   return !UNTRANSLATED.test(path);
 }
 
+/**
+ * Where `path` lives in another language — the language switcher's question.
+ *
+ * Most pages exist in all five, so the answer is just the prefix. The blog is the exception, and
+ * the rule is: the same article when that language has it, otherwise that language's index, which
+ * lists what it does have — and the English index when that language has no articles at all.
+ * Following the prefix blindly would offer a German address for a piece with no German text, which
+ * is a 404 dressed as a translation.
+ */
+export function pathInLocale(next: Locale, path: string): string {
+  if (ONE_ADDRESS.test(path)) {
+    return path;
+  }
+
+  const article = path.match(/^\/blog\/([^/]+)\/?$/);
+
+  if (article) {
+    return hasArticleIn(decodeURIComponent(article[1]), next)
+      ? localePath(next, `/blog/${article[1]}`)
+      : blogIn(next);
+  }
+
+  if (/^\/blog\/?$/.test(path)) {
+    return blogIn(next);
+  }
+
+  return localePath(next, path);
+}
+
+/** That language's index, or English when it has nothing to list. */
+function blogIn(locale: Locale): string {
+  return articlesFor(locale).length > 0 ? localePath(locale, '/blog') : '/blog';
+}
+
 /** Keeps the address in the language the reader is already reading. */
 function inCurrentLocale(path: string): string {
   const { locale } = splitLocale(window.location.pathname);
 
-  return hasTranslation(path) ? localePath(locale, path) : path;
+  return pathInLocale(locale, path);
 }
 
 function move(path: string, search = '') {
@@ -141,9 +182,18 @@ export function goToPage(id: StaticPageId) {
   move(inCurrentLocale(staticPage(id).path));
 }
 
-/** Opens one article. Its own entry in the history, so Back returns to the list. */
+/**
+ * Opens one article. Its own entry in the history, so Back returns to the list.
+ *
+ * In the language being read, when the piece exists in it — a German reader clicking a card in the
+ * German index stays in German. Every card in that index is a piece that language has, so the only
+ * way to reach an untranslated one is a link inside an article's prose, and those are left to the
+ * browser: see the click handler in `ArticlePage`.
+ */
 export function goToArticle(slug: string) {
-  window.history.pushState(null, '', `/blog/${slug}`);
+  const { locale } = splitLocale(window.location.pathname);
+
+  move(pathInLocale(locale, `/blog/${slug}`));
 }
 
 /** Moves to an address worked out elsewhere — the language switcher's way in. */

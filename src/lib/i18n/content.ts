@@ -16,9 +16,12 @@ import type { StaticPageId } from '@/lib/pages';
  *
  * What is NOT in here, on purpose:
  *
- *   - the blog's articles. Fifty-six pieces of about 5,900 words each, written against English
- *     search terms; translating them would produce five near-identical sites and rank in none of
- *     the five languages. Per-language articles are their own job.
+ *   - the blog's articles. Fifty-six pieces averaging 6,150 words, so 345,000 words in English
+ *     alone. They are not strings: an article is a file, and a translation of one is another file
+ *     beside it — content/blog/<locale>/<slug>.md, read by `vite-plugin-blog.ts` into a list per
+ *     language. So the blog is translated a piece at a time, and every part of the site that shows
+ *     articles asks for the language it is drawing in. What a locale does not have, it does not
+ *     list, link to, or claim an `hreflang` for.
  *   - the server's copy of the shared-document page, and the OAuth consent page. Both are rendered
  *     by the server for a reader we know nothing about, at an address with no locale in it, so there
  *     is nothing to choose a language from but `Accept-Language` — and guessing wrong on a consent

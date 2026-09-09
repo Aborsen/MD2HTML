@@ -1,6 +1,7 @@
-import { readdirSync, readFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import type { Plugin } from 'vite';
+import { LOCALES } from './src/lib/i18n/locales';
 
 /*
  * The blog's index, without the blog's text.
@@ -88,6 +89,31 @@ function read(dir: string): Entry[] {
     .sort((a, b) => b.date.localeCompare(a.date) || a.slug.localeCompare(b.slug));
 }
 
+/*
+ * One list per language, and each holds only what that language actually has.
+ *
+ * English sits in content/blog and a translation in content/blog/<locale>, under the same file
+ * name — the slug is the English one in every language. Translating slugs would read better in a
+ * German URL and would break every internal link between articles, because a link is written
+ * `](/blog/markdown-escaping)` in the prose and the target's name would then depend on which
+ * language the reader happens to be in. The prefix is what carries the language.
+ *
+ * A language with no directory yet gets an empty list rather than English, which is what makes an
+ * unfinished translation honest: /de/blog shows the German articles that exist, the index does not
+ * advertise pages that are not there, and no page claims a German alternate it does not have.
+ */
+function readAll(root: string): Record<string, Entry[]> {
+  const byLocale: Record<string, Entry[]> = {};
+
+  for (const locale of LOCALES) {
+    const dir = locale === 'en' ? root : join(root, locale);
+
+    byLocale[locale] = existsSync(dir) ? read(dir) : [];
+  }
+
+  return byLocale;
+}
+
 export function blogIndex(): Plugin {
   const dir = resolve('content/blog');
 
@@ -103,7 +129,7 @@ export function blogIndex(): Plugin {
         return null;
       }
 
-      return `export const INDEX = ${JSON.stringify(read(dir))};`;
+      return `export const INDEX = ${JSON.stringify(readAll(dir))};`;
     },
 
     /* Writing an article should refresh the list without restarting the server. */

@@ -7,6 +7,13 @@
  * `og:image` — a relative one is ignored by every scraper that matters.
  */
 
+/*
+ * A translated article gets its own pictures, under the locale: the headline is drawn into the
+ * image, so reusing the English cover would put an English headline on a German card and in every
+ * German share. Same composition, same accent colour per topic — only the words differ.
+ */
+import type { Locale } from './i18n/locales';
+
 /**
  * A blog article's share image: 1200 by 630, JPEG.
  *
@@ -15,8 +22,10 @@
  * that matters handles JPEG, WebP support among them is uneven, and PNG was three times the bytes
  * for a picture nobody inspects at full size.
  */
-export function articleCover(slug: string): string {
-  return `/og/blog/${slug}.jpg`;
+export function articleCover(slug: string, locale: Locale = 'en'): string {
+  return locale === 'en'
+    ? `/og/blog/${slug}.jpg`
+    : `/og/blog/${locale}/${slug}.jpg`;
 }
 
 /**
@@ -26,8 +35,13 @@ export function articleCover(slug: string): string {
  * pixels the browser needed, on every card on the page. WebP is safe here in a way it is not for
  * `og:image`, because the only thing that fetches this one is a browser.
  */
-export function articleCardImage(slug: string): string {
-  return `/og/card/${slug}.webp`;
+export function articleCardImage(
+  slug: string,
+  locale: Locale = 'en'
+): string {
+  return locale === 'en'
+    ? `/og/card/${slug}.webp`
+    : `/og/card/${locale}/${slug}.webp`;
 }
 
 /**

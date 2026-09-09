@@ -15,7 +15,13 @@
  * The motif is the product: three lines of Markdown, the brand caret, the same three as HTML. The
  * accent comes from the tag, so the blog index reads as seven colours rather than one.
  */
-import { mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
+import {
+  existsSync,
+  mkdirSync,
+  readdirSync,
+  readFileSync,
+  writeFileSync,
+} from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import puppeteer from 'puppeteer-core';
@@ -318,26 +324,63 @@ function card({ title, eyebrow, accent }) {
 
 const cards = [];
 
-for (const name of readdirSync(join(ROOT, 'content', 'blog')).sort()) {
-  if (!name.endsWith('.md')) {
+/*
+ * Written out rather than imported from src/lib/i18n/locales.ts: this script is plain Node with no
+ * bundler in front of it. A language added there and forgotten here draws no covers, and
+ * `npm run blog:check` fails on the missing files rather than shipping broken images.
+ */
+const LOCALES = ['en', 'de', 'fr', 'es', 'it'];
+
+const articleDir = (locale) =>
+  locale === 'en'
+    ? join(ROOT, 'content', 'blog')
+    : join(ROOT, 'content', 'blog', locale);
+
+/*
+ * The accent belongs to the topic, not to the word.
+ *
+ * ACCENTS is keyed by the English tag, and a translated article carries a translated one — so
+ * looking the colour up by the tag as written would drop every translation onto the default and
+ * the same piece would be a different colour in each language. The slug is the same in every
+ * language, so the English tag is what decides.
+ */
+const accents = new Map();
+
+for (const name of readdirSync(articleDir('en')).sort()) {
+  if (name.endsWith('.md')) {
+    const data = frontmatter(readFileSync(join(articleDir('en'), name), 'utf8'));
+
+    accents.set(name.replace(/\.md$/, ''), ACCENTS[data.tag] ?? DEFAULT_ACCENT);
+  }
+}
+
+for (const locale of LOCALES) {
+  const dir = articleDir(locale);
+
+  if (!existsSync(dir)) {
     continue;
   }
 
-  const slug = name.replace(/\.md$/, '');
-  const data = frontmatter(
-    readFileSync(join(ROOT, 'content', 'blog', name), 'utf8')
-  );
+  for (const name of readdirSync(dir).sort()) {
+    if (!name.endsWith('.md')) {
+      continue;
+    }
 
-  const one = {
-    slug,
-    title: data.title ?? slug,
-    eyebrow: data.tag ?? 'Blog',
-    accent: ACCENTS[data.tag] ?? DEFAULT_ACCENT,
-  };
+    const slug = name.replace(/\.md$/, '');
+    const data = frontmatter(readFileSync(join(dir, name), 'utf8'));
+    const under = locale === 'en' ? '' : `/${locale}`;
 
-  // The same picture twice: full size for a share, two thirds for the card that shows it.
-  cards.push({ ...one, dir: 'blog', variant: 'og' });
-  cards.push({ ...one, dir: 'card', variant: 'card' });
+    const one = {
+      slug,
+      title: data.title ?? slug,
+      eyebrow: data.tag ?? 'Blog',
+      accent: accents.get(slug) ?? DEFAULT_ACCENT,
+    };
+
+    // The same picture twice: full size for a share, two thirds for the card that shows it.
+    cards.push({ ...one, dir: `blog${under}`, variant: 'og' });
+    cards.push({ ...one, dir: `card${under}`, variant: 'card' });
+  }
 }
 
 /*

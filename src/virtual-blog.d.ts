@@ -6,13 +6,18 @@
  * the whole point of the split.
  */
 declare module 'virtual:blog-index' {
-  export const INDEX: Array<{
-    slug: string;
-    title: string;
-    description: string;
-    date: string;
-    tag: string;
-    keywords: string[];
-    readingMinutes: number;
-  }>;
+  /** Keyed by locale. A language with no translations yet is present and empty. */
+  export const INDEX: Record<
+    string,
+    Array<{
+      slug: string;
+      title: string;
+      description: string;
+      date: string;
+      updated?: string;
+      tag: string;
+      keywords: string[];
+      readingMinutes: number;
+    }>
+  >;
 }

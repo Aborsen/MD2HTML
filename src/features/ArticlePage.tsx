@@ -10,9 +10,9 @@ import { useActiveHeading } from '@/lib/use-active-heading';
 import { TableOfContents } from '@/ui/components/TableOfContents';
 import { ScrollToTop } from '@/components/ScrollToTop';
 import {
-  ARTICLES,
   articleBody,
   articlePath,
+  articlesFor,
   findArticle,
   formatArticleDate,
 } from '@/lib/blog';
@@ -63,7 +63,7 @@ export function ArticlePage({
   const { content, locale } = useI18n();
   /* The tag `Intl` wants, which is not the tag in the address — see `INTL_LOCALES`. */
   const dates = INTL_LOCALES[locale];
-  const article = findArticle(slug);
+  const article = findArticle(slug, locale);
   const body = useRef<HTMLDivElement>(null);
 
   /*
@@ -83,7 +83,7 @@ export function ArticlePage({
     let wanted = true;
 
     setMarkdown(null);
-    void articleBody(slug).then((text) => {
+    void articleBody(slug, locale).then((text) => {
       if (wanted) {
         setMarkdown(text ?? '');
       }
@@ -92,7 +92,7 @@ export function ArticlePage({
     return () => {
       wanted = false;
     };
-  }, [slug]);
+  }, [slug, locale]);
 
   const html = useMemo(
     () => (markdown ? markdownToHtml(markdown) : ''),
@@ -160,7 +160,13 @@ export function ArticlePage({
       if (path.startsWith('/blog/')) {
         const target = path.slice('/blog/'.length);
 
-        if (findArticle(target)) {
+        /*
+         * Only when this language has the piece. A link in the prose is written once, as
+         * `](/blog/slug)`, and a translation inherits it — so from a German article it may point
+         * at something with no German text. Left to the browser, which follows the bare href to
+         * the English article: the wrong language beats a dead end.
+         */
+        if (findArticle(target, locale)) {
           event.preventDefault();
           onOpenArticle(target);
         }
@@ -179,7 +185,7 @@ export function ArticlePage({
     root.addEventListener('click', handle);
 
     return () => root.removeEventListener('click', handle);
-  }, [onOpenArticle, onGoTo]);
+  }, [onOpenArticle, onGoTo, locale]);
 
   if (!article) {
     return (
@@ -197,7 +203,9 @@ export function ArticlePage({
     );
   }
 
-  const more = ARTICLES.filter((other) => other.slug !== article.slug).slice(0, 2);
+  const more = articlesFor(locale)
+    .filter((other) => other.slug !== article.slug)
+    .slice(0, 2);
 
   return (
     /*
@@ -290,7 +298,7 @@ export function ArticlePage({
         * deployment points at the page the reader is actually looking at.
         */}
       <ShareLinks
-        url={`${window.location.origin}${articlePath(article.slug)}`}
+        url={`${window.location.origin}${articlePath(article.slug, locale)}`}
         title={article.title}
         label={t('article.share')}
       />
@@ -316,8 +324,8 @@ export function ArticlePage({
                 key={other.slug}
                 title={other.title}
                 description={other.description}
-                href={articlePath(other.slug)}
-                image={articleCardImage(other.slug)}
+                href={articlePath(other.slug, locale)}
+                image={articleCardImage(other.slug, locale)}
                 onOpen={() => onOpenArticle(other.slug)}
                 tag={other.tag}
                 meta={t('article.more.meta', {

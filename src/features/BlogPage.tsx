@@ -7,8 +7,8 @@ import { useI18n, useT } from '@/lib/i18n/context';
 import { INTL_LOCALES } from '@/lib/i18n/locales';
 import { ScrollToTop } from '@/components/ScrollToTop';
 import {
-  ARTICLES,
   articlePath,
+  articlesFor,
   articleTags,
   formatArticleDate,
 } from '@/lib/blog';
@@ -37,26 +37,33 @@ export function BlogPage({ onOpenArticle, onGoToConverter }: BlogPageProps) {
   const [tag, setTag] = useState(ALL);
 
   /*
-   * Only the first chip has a word of its own. The rest are the articles' own tags, and the
-   * articles are English — see the note in `src/lib/i18n/content.ts` about why they are not in the
-   * catalogue — so a tag is shown as written rather than translated into a filter that matches
-   * nothing.
+   * What this language has, which is not what English has.
+   *
+   * The blog is translated one article at a time, so a locale's index lists only the pieces that
+   * exist in it. Listing the English ones under a German heading would be a page of links a German
+   * reader cannot use, and it would make the count on the chips a lie.
+   */
+  const articles = useMemo(() => articlesFor(locale), [locale]);
+
+  /*
+   * Only the first chip has a word of its own. The rest are the tags as the articles themselves
+   * write them — a German article carries a German tag — so a chip always matches something.
    */
   const chips = useMemo(
     () => [
-      { value: ALL, label: t('blog.chip.all'), count: ARTICLES.length },
-      ...articleTags().map((name) => ({
+      { value: ALL, label: t('blog.chip.all'), count: articles.length },
+      ...articleTags(locale).map((name) => ({
         value: name,
         label: name,
-        count: ARTICLES.filter((article) => article.tag === name).length,
+        count: articles.filter((article) => article.tag === name).length,
       })),
     ],
-    [t]
+    [articles, locale, t]
   );
 
   const shown = useMemo(
-    () => (tag === ALL ? ARTICLES : ARTICLES.filter((a) => a.tag === tag)),
-    [tag]
+    () => (tag === ALL ? articles : articles.filter((a) => a.tag === tag)),
+    [articles, tag]
   );
 
   const [lead, ...rest] = shown;
@@ -103,8 +110,8 @@ export function BlogPage({ onOpenArticle, onGoToConverter }: BlogPageProps) {
             className="sm:col-span-2 lg:col-span-3"
             title={lead.title}
             description={lead.description}
-            href={articlePath(lead.slug)}
-            image={articleCardImage(lead.slug)}
+            href={articlePath(lead.slug, locale)}
+            image={articleCardImage(lead.slug, locale)}
             onOpen={() => onOpenArticle(lead.slug)}
             tag={lead.tag}
             meta={t('blog.card.meta', {
@@ -118,8 +125,8 @@ export function BlogPage({ onOpenArticle, onGoToConverter }: BlogPageProps) {
               key={article.slug}
               title={article.title}
               description={article.description}
-              href={articlePath(article.slug)}
-              image={articleCardImage(article.slug)}
+              href={articlePath(article.slug, locale)}
+              image={articleCardImage(article.slug, locale)}
               onOpen={() => onOpenArticle(article.slug)}
               tag={article.tag}
               meta={t('blog.card.meta', {

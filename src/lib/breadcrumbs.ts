@@ -1,6 +1,6 @@
 import type { Conversion, ConversionId } from '@shared/conversions';
 import type { Article } from './blog';
-import { articlePath } from './blog';
+import { articlePath, blogPath } from './blog';
 import type { Content } from './i18n/content';
 import { DEFAULT_LOCALE, localePath, type Locale } from './i18n/locales';
 import type { StaticPage, StaticPageId } from './pages';
@@ -55,11 +55,12 @@ export function historyCrumbs(content: Content, locale: Locale): CrumbSpec[] {
  */
 export function crumbsForArticle(
   article: Article,
-  content: Content
+  content: Content,
+  locale: Locale = DEFAULT_LOCALE
 ): CrumbSpec[] {
   return [
-    home(content, DEFAULT_LOCALE),
-    { label: content.ui['header.nav.blog'], path: '/blog' },
+    home(content, locale),
+    { label: content.ui['header.nav.blog'], path: blogPath(locale) },
     { label: article.title },
   ];
 }
@@ -96,7 +97,4 @@ export function crumbsForStaticPage(
   return [home(content, locale), { label: content.pages[page.id].label }];
 }
 
-/** The article path, for the prerenderer's structured data. */
-export function articleCrumbPath(article: Article): string {
-  return articlePath(article.slug);
-}
+

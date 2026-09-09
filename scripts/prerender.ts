@@ -17,7 +17,14 @@ import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { markdownToHtml } from '../server/render.js';
 import { MD_DOC_STYLE, mdDocTheme } from '../shared/md-doc-css.js';
-import { ARTICLES, articlePath, formatArticleDate } from '../src/lib/blog.js';
+import {
+  ARTICLES,
+  articlePath,
+  articlesFor,
+  blogPath,
+  formatArticleDate,
+  hasArticleIn,
+} from '../src/lib/blog.js';
 import { formatDate } from '../src/lib/format.js';
 import {
   CONVERSIONS,
@@ -96,8 +103,13 @@ if (!SHELL.includes('<div id="root"></div>')) {
  * without any. This runs in Node with the repository in front of it, so it reads the file — and the
  * prerendered page has to carry the whole article anyway, since that copy is the one a crawler gets.
  */
-function articleMarkdown(slug: string): string {
-  const raw = readFileSync(resolve('content/blog', `${slug}.md`), 'utf8');
+function articleMarkdown(slug: string, locale: Locale = DEFAULT_LOCALE): string {
+  const file =
+    locale === DEFAULT_LOCALE
+      ? resolve('content/blog', `${slug}.md`)
+      : resolve('content/blog', locale, `${slug}.md`);
+
+  const raw = readFileSync(file, 'utf8');
   const header = raw.match(/^---\r?\n[\s\S]*?\r?\n---\r?\n?/);
 
   return header ? raw.slice(header[0].length) : raw;
@@ -170,6 +182,14 @@ interface Page {
   lastmod?: string;
   /** Which language this file is. English when absent, which is most of them. */
   locale?: Locale;
+  /**
+   * The languages this particular page exists in, when that is not all five.
+   *
+   * For the blog, which is translated one article at a time: a piece with German and Italian text
+   * names those two and English, and nothing else — an `hreflang` pointing at a page that was
+   * never written is a claim a crawler follows and finds missing.
+   */
+  languages?: Locale[];
 }
 
 /*
@@ -182,21 +202,65 @@ interface Page {
  * Only for pages that exist in five languages. The blog is English, so it gets none: claiming an
  * alternate that does not exist is worse than claiming nothing.
  */
-function alternates(rest: string): string {
-  if (!hasTranslation(rest)) {
+function alternates(rest: string, languages?: Locale[]): string {
+  /*
+   * A page that exists in one language only is not part of a group, and a lone self-referencing
+   * alternate says nothing. That is most of the blog while a translation is in progress.
+   */
+  if (languages) {
+    if (languages.length < 2) {
+      return '';
+    }
+  } else if (!hasTranslation(rest)) {
     return '';
   }
 
   const href = (locale: Locale) =>
     `${SITE}${localePath(locale, rest) === '/' ? '' : localePath(locale, rest)}`;
 
+  const group = languages ?? [...LOCALES];
+
   return [
-    ...LOCALES.map(
+    ...group.map(
       (locale) =>
         `<link rel="alternate" hreflang="${locale}" href="${href(locale)}" />`
     ),
+    /* English is the source in both cases, and it is always in the group when there is one. */
     `<link rel="alternate" hreflang="x-default" href="${href(DEFAULT_LOCALE)}" />`,
   ].join('\n    ');
+}
+
+/*
+ * An internal link, pointed at the language the page is in.
+ *
+ * A link in the prose is written once — `](/docs)`, `](/blog/markdown-escaping)` — and every
+ * translation inherits it, so a German article would otherwise send its reader to English pages.
+ * The app rewrites these on click; a prerendered file is what a crawler reads, and it follows the
+ * href as written.
+ *
+ * Two cases are left alone: a shared document, which has one address in one language, and an
+ * article that has no text in this language, where English is the only thing to point at.
+ */
+function localiseLinks(html: string, locale: Locale): string {
+  if (locale === DEFAULT_LOCALE) {
+    return html;
+  }
+
+  return html.replace(/href="(\/[^"]*)"/g, (whole, path: string) => {
+    const article = path.match(/^\/blog\/([^/#?]+)$/);
+
+    if (article) {
+      return hasArticleIn(article[1], locale)
+        ? `href="${articlePath(article[1], locale)}"`
+        : whole;
+    }
+
+    if (/^\/blog\/?$/.test(path)) {
+      return `href="${blogPath(locale)}"`;
+    }
+
+    return hasTranslation(path) ? `href="${localePath(locale, path)}"` : whole;
+  });
 }
 
 function render(page: Page): string {
@@ -205,7 +269,7 @@ function render(page: Page): string {
 
   const head = [
     `<link rel="canonical" href="${url}" />`,
-    alternates(splitLocale(page.path).rest),
+    alternates(splitLocale(page.path).rest, page.languages),
     `<meta property="og:type" content="${page.path.startsWith('/blog/') ? 'article' : 'website'}" />`,
     `<meta property="og:site_name" content="TransformPipe" />`,
     `<meta property="og:title" content="${escapeHtml(page.title)}" />`,
@@ -272,85 +336,133 @@ const DOC_STYLE = `<style>${mdDocTheme('dark')}\n${MD_DOC_STYLE}</style>`;
 const pages: Page[] = [];
 
 // ---------------------------------------------------------------- articles
-for (const article of ARTICLES) {
-  pages.push({
-    path: articlePath(article.slug),
-    title: `${article.title} — TransformPipe`,
-    description: article.description,
-    image: articleCover(article.slug),
-    lastmod: article.updated ?? article.date,
-    listed: true,
-    head: [
-      `<meta property="article:published_time" content="${article.date}" />`,
-      ...(article.updated
-        ? [`<meta property="article:modified_time" content="${article.updated}" />`]
-        : []),
-      `<meta property="article:tag" content="${escapeHtml(article.tag)}" />`,
-      breadcrumbs(crumbsForArticle(article, CATALOGUES.en)),
-      jsonLd({
-        '@context': 'https://schema.org',
-        '@type': 'BlogPosting',
-        headline: article.title,
-        description: article.description,
-        datePublished: article.date,
-        dateModified: article.updated ?? article.date,
-        keywords: article.keywords.join(', '),
-        articleSection: article.tag,
-        inLanguage: 'en',
-        mainEntityOfPage: `${SITE}${articlePath(article.slug)}`,
-        publisher: { '@type': 'Organization', name: 'TransformPipe', url: SITE },
-        author: { '@type': 'Organization', name: 'TransformPipe', url: SITE },
-      }),
-      DOC_STYLE,
-    ].join('\n    '),
-    body: `<article class="md-doc"><h1>${escapeHtml(article.title)}</h1><p>${escapeHtml(
-      formatArticleDate(article.date)
-    )}${
+for (const locale of LOCALES) {
+  const catalogue = CATALOGUES[locale];
+  const dates = INTL_LOCALES[locale];
+
+  for (const article of articlesFor(locale)) {
+    /* The line under the headline, in this language: "8. September 2026 · 7 min Lesezeit". */
+    const meta = (
       article.updated
-        ? ` · updated ${escapeHtml(formatArticleDate(article.updated))}`
-        : ''
-    } · ${article.readingMinutes} min read</p>${markdownToHtml(
-      articleMarkdown(article.slug)
-    )}</article>`,
-  });
+        ? catalogue.ui['article.meta.updated'].replace(
+            '{updated}',
+            formatArticleDate(article.updated, dates)
+          )
+        : catalogue.ui['article.meta']
+    )
+      .replace('{date}', formatArticleDate(article.date, dates))
+      .replace('{minutes}', String(article.readingMinutes));
+
+    pages.push({
+      path: articlePath(article.slug, locale),
+      locale,
+      languages: LOCALES.filter((one) => hasArticleIn(article.slug, one)),
+      title: `${article.title} — TransformPipe`,
+      description: article.description,
+      image: articleCover(article.slug, locale),
+      lastmod: article.updated ?? article.date,
+      listed: true,
+      head: [
+        `<meta property="article:published_time" content="${article.date}" />`,
+        ...(article.updated
+          ? [`<meta property="article:modified_time" content="${article.updated}" />`]
+          : []),
+        `<meta property="article:tag" content="${escapeHtml(article.tag)}" />`,
+        breadcrumbs(crumbsForArticle(article, catalogue, locale)),
+        jsonLd({
+          '@context': 'https://schema.org',
+          '@type': 'BlogPosting',
+          headline: article.title,
+          description: article.description,
+          datePublished: article.date,
+          dateModified: article.updated ?? article.date,
+          keywords: article.keywords.join(', '),
+          articleSection: article.tag,
+          inLanguage: locale,
+          mainEntityOfPage: `${SITE}${articlePath(article.slug, locale)}`,
+          publisher: { '@type': 'Organization', name: 'TransformPipe', url: SITE },
+          author: { '@type': 'Organization', name: 'TransformPipe', url: SITE },
+        }),
+        DOC_STYLE,
+      ].join('\n    '),
+      body: `<article class="md-doc"><h1>${escapeHtml(
+        article.title
+      )}</h1><p>${escapeHtml(meta)}</p>${localiseLinks(
+        markdownToHtml(articleMarkdown(article.slug, locale)),
+        locale
+      )}</article>`,
+    });
+  }
 }
 
-// ---------------------------------------------------------------- the blog index
-pages.push({
-  path: '/blog',
-  title: 'Blog — Markdown, and what to do with it — TransformPipe',
-  description:
-    'Converting Markdown, the syntax that breaks on the way to HTML, publishing documents for people who do not use Markdown, and automating the whole thing.',
-  listed: true,
-  /*
-   * The newest thing on the index, published or revised.
-   *
-   * Not `ARTICLES[0].date`: the list is sorted by publication, so an old article rewritten today
-   * sits far down it, and the index did change on the day that happened.
-   */
-  lastmod: ARTICLES.map((article) => article.updated ?? article.date)
-    .sort()
-    .at(-1),
-  head: breadcrumbs(blogCrumbs(CATALOGUES.en, DEFAULT_LOCALE)) + jsonLd({
-    '@context': 'https://schema.org',
-    '@type': 'Blog',
-    name: 'TransformPipe Blog',
-    url: `${SITE}/blog`,
-    blogPost: ARTICLES.map((article) => ({
-      '@type': 'BlogPosting',
-      headline: article.title,
-      description: article.description,
-      datePublished: article.date,
-      url: `${SITE}${articlePath(article.slug)}`,
-    })),
-  }),
-  body: `<h1>Markdown, and what to do with it</h1><ul>${ARTICLES.map(
-    (article) =>
-      `<li><a href="${articlePath(article.slug)}">${escapeHtml(article.title)}</a> — ${escapeHtml(
-        article.description
-      )}</li>`
-  ).join('')}</ul>`,
-});
+/*
+ * ---------------------------------------------------------------- the blog index
+ *
+ * One per language that has articles, and it lists only that language's. A locale with nothing
+ * translated gets no index at all rather than an empty page: /de/blog would be a heading over
+ * nothing, and it would be in the sitemap saying so.
+ *
+ * The English description is written out because it is aimed at what people search for; the others
+ * take the blurb the page itself shows, which is the same sentence a reader gets.
+ */
+const BLOG_DESCRIPTION =
+  'Converting Markdown, the syntax that breaks on the way to HTML, publishing documents for people who do not use Markdown, and automating the whole thing.';
+
+const withArticles = LOCALES.filter((one) => articlesFor(one).length > 0);
+
+for (const locale of withArticles) {
+  const catalogue = CATALOGUES[locale];
+  const articles = articlesFor(locale);
+
+  pages.push({
+    path: blogPath(locale),
+    locale,
+    languages: withArticles,
+    title: `${catalogue.ui['blog.eyebrow']} — ${catalogue.ui['blog.title']} — TransformPipe`,
+    description:
+      locale === DEFAULT_LOCALE
+        ? BLOG_DESCRIPTION
+        : catalogue.ui['blog.blurb'],
+    listed: true,
+    /*
+     * The newest thing on the index, published or revised.
+     *
+     * Not `articles[0].date`: the list is sorted by publication, so an old article rewritten today
+     * sits far down it, and the index did change on the day that happened.
+     */
+    lastmod: articles
+      .map((article) => article.updated ?? article.date)
+      .sort()
+      .at(-1),
+    head:
+      breadcrumbs(blogCrumbs(catalogue, locale)) +
+      jsonLd({
+        '@context': 'https://schema.org',
+        '@type': 'Blog',
+        name: 'TransformPipe Blog',
+        url: `${SITE}${blogPath(locale)}`,
+        inLanguage: locale,
+        blogPost: articles.map((article) => ({
+          '@type': 'BlogPosting',
+          headline: article.title,
+          description: article.description,
+          datePublished: article.date,
+          url: `${SITE}${articlePath(article.slug, locale)}`,
+        })),
+      }),
+    body: `<h1>${escapeHtml(catalogue.ui['blog.title'])}</h1><ul>${articles
+      .map(
+        (article) =>
+          `<li><a href="${articlePath(
+            article.slug,
+            locale
+          )}">${escapeHtml(article.title)}</a> — ${escapeHtml(
+            article.description
+          )}</li>`
+      )
+      .join('')}</ul>`,
+  });
+}
 
 /*
  * ---------------------------------------------------------------- the conversions

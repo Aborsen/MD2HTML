@@ -12,11 +12,11 @@ import { en } from './messages/en';
 import {
   DEFAULT_LOCALE,
   LOCALES,
-  localePath,
   preferredLocale,
   splitLocale,
   type Locale,
 } from './locales';
+import { pathInLocale } from '../route';
 
 /*
  * The active language, and the words that go with it.
@@ -139,7 +139,12 @@ export function I18nProvider({ children, locale, onNavigate }: ProviderProps) {
 
       const { rest } = splitLocale(window.location.pathname);
 
-      onNavigate(localePath(next, rest) + window.location.search);
+      /*
+       * `pathInLocale` rather than `localePath`: the blog is translated article by article, so the
+       * same address does not always exist in the language being asked for, and the router is
+       * where that is worked out.
+       */
+      onNavigate(pathInLocale(next, rest) + window.location.search);
     },
     [onNavigate]
   );
