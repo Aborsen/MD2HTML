@@ -1,9 +1,10 @@
-import { KeyRound, LogOut, Moon, Sun, User } from 'lucide-react';
+import { KeyRound, LogIn, LogOut, Moon, Plug, Sun, User } from 'lucide-react';
 import { useState } from 'react';
 import { useAuth } from '@/lib/auth';
 import { useT } from '@/lib/i18n/context';
 import { useTheme } from '@/lib/theme';
 import { ApiKeysDialog } from './ApiKeysDialog';
+import { AuthDialog } from './AuthDialog';
 import { GoogleGlyph } from './GoogleGlyph';
 import { Hint } from './Hint';
 import { Button } from '@/ui/components/Button';
@@ -55,6 +56,7 @@ export function UserMenu() {
   const { user, isLoading, isSigningIn, signIn, signOut } = useAuth();
   const { theme, toggle } = useTheme();
   const [isKeysOpen, setIsKeysOpen] = useState(false);
+  const [isAuthOpen, setIsAuthOpen] = useState(false);
 
   if (isLoading) {
     return <Skeleton className="h-8 w-28 rounded-full" />;
@@ -95,12 +97,14 @@ export function UserMenu() {
           rounded="full"
           aria-label={t('header.signin')}
           isLoading={isSigningIn}
-          leftSlot={<GoogleGlyph />}
+          leftSlot={<LogIn />}
           className="!px-2 sm:!px-3"
-          onClick={() => void signIn()}
+          onClick={() => setIsAuthOpen(true)}
         >
           <span className="hidden sm:inline">{t('header.signin')}</span>
         </Button>
+
+        <AuthDialog open={isAuthOpen} onOpenChange={setIsAuthOpen} />
       </div>
     );
   }
@@ -167,6 +171,20 @@ export function UserMenu() {
         <DropdownMenuItem onSelect={() => setIsKeysOpen(true)}>
           <KeyRound />
           {t('header.apikeys')}
+        </DropdownMenuItem>
+
+        {/*
+          * The connector, beside the keys rather than inside them.
+          *
+          * Both open the same dialog, because a key and a connected assistant are two ways into
+          * the same account and the dialog holds both lists. They are two entries because they are
+          * two questions: "make me a key" and "how do I add this to Claude" — and somebody with
+          * the second question was looking under API keys, which is not where they would think to
+          * look for it.
+          */}
+        <DropdownMenuItem onSelect={() => setIsKeysOpen(true)}>
+          <Plug />
+          {t('header.connector')}
         </DropdownMenuItem>
 
         <DropdownMenuItem variant="danger" onSelect={() => void signOut()}>

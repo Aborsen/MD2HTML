@@ -52,6 +52,36 @@ export const ui: Content['ui'] = {
    * back in the query string — a closed set, because the reason arrives in a link and a link is
    * something anybody can write. `auth.incomplete` is the toast that carries whichever it was.
    */
+  'header.connector': 'MCP connector',
+  'dialog.keys.connector.address':
+    'The address to add in an assistant. There is no key to paste — it signs in as you.',
+
+  /* The sign-in dialog: three views — in, up, and asking for a reset link. */
+  'auth.dialog.signin.title': 'Sign in',
+  'auth.dialog.signup.title': 'Create your account',
+  'auth.dialog.reset.title': 'Reset your password',
+  'auth.dialog.reset.lede':
+    'Enter your account email and we\'ll send you a link to reset your password.',
+  'auth.dialog.email': 'Email',
+  'auth.dialog.password': 'Password',
+  'auth.dialog.forgot': 'Forgot password?',
+  'auth.dialog.submit.signin': 'Sign in',
+  'auth.dialog.submit.signup': 'Continue',
+  'auth.dialog.submit.reset': 'Send reset link',
+  'auth.dialog.tonew': 'Don\'t have an account?',
+  'auth.dialog.tonew.action': 'Sign up',
+  'auth.dialog.toexisting': 'Already have an account?',
+  'auth.dialog.toexisting.action': 'Sign in',
+  'auth.dialog.back': 'Back to sign in',
+  'auth.dialog.or': 'or',
+  'auth.dialog.google': 'Continue with Google',
+  'auth.dialog.terms': 'I accept the {terms}',
+  'auth.dialog.terms.link': 'terms of use',
+  'auth.dialog.terms.required': 'The terms have to be accepted to create an account.',
+  'auth.dialog.reset.sent': 'If that address has an account, a reset link is on its way to it.',
+  'auth.verify.sent':
+    'The account is created. Check your email for the link that confirms the address.',
+
   'auth.incomplete': 'Sign-in did not complete',
   'auth.error.unfinished': 'Sign-in did not finish. Try again.',
   'auth.error.link': 'The sign-in link was incomplete. Try again.',

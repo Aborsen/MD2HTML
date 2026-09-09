@@ -133,6 +133,61 @@ export const api = {
     return body.url;
   },
 
+  /*
+   * Email and password, through the same proxy Google goes through.
+   *
+   * No `finish` hand-off here: the social flow needs it because a one-time verifier has to be
+   * exchanged for a session on a server, and these two get their session cookie in the response
+   * to the request itself. The proxy strips the cookie's Domain on the way back, so it belongs to
+   * this site rather than to Neon's.
+   *
+   * Errors are the auth service's own words. `request` already lifts `message` out of the body,
+   * and Better Auth says things like "Invalid email or password" — which is more use to a person
+   * than a sentence of ours that has to guess which of the two it was.
+   */
+  signInWithEmail: (email: string, password: string) =>
+    request<{ user?: AuthUser }>('/api/auth/sign-in/email', {
+      method: 'POST',
+      body: JSON.stringify({ email, password }),
+    }),
+
+  /**
+   * Creates an account.
+   *
+   * `name` is required by the auth service and the form does not ask for one, so it comes from the
+   * address. That is a deliberate trade: a name field is one more thing to fill in before somebody
+   * has converted a single file, and what the name is for here is a greeting — it can be changed
+   * later, and an address is what the account is actually identified by.
+   */
+  signUpWithEmail: (email: string, password: string) =>
+    request<{ user?: AuthUser }>('/api/auth/sign-up/email', {
+      method: 'POST',
+      body: JSON.stringify({
+        email,
+        password,
+        name: email.split('@')[0] || email,
+      }),
+    }),
+
+  /**
+   * Asks for a password-reset link.
+   *
+   * Answers the same way whether or not the address has an account — "if this email exists…" — and
+   * that is the auth service's decision, not a vagueness of ours: an endpoint that says "no such
+   * account" is an endpoint that tells a stranger who has one.
+   */
+  requestPasswordReset: (email: string) =>
+    request<{ status?: boolean; message?: string }>(
+      '/api/auth/request-password-reset',
+      {
+        method: 'POST',
+        body: JSON.stringify({
+          email,
+          redirectTo: `${location.origin}/`,
+        }),
+      }
+    ),
+
   signOut: () =>
     request<{ success?: boolean }>('/api/auth/sign-out', {
       method: 'POST',

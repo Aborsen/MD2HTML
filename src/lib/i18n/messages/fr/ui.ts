@@ -41,6 +41,36 @@ export const ui: Content['ui'] = {
    * un lien et qu’un lien, n’importe qui peut l’écrire. `auth.incomplete` est le toast qui porte
    * celle qui est arrivée.
    */
+  'header.connector': 'Connecteur MCP',
+  'dialog.keys.connector.address':
+    'L’adresse à ajouter dans un assistant. Aucune clé à coller : la connexion se fait sous votre compte.',
+
+  /* The sign-in dialog: three views — in, up, and asking for a reset link. */
+  'auth.dialog.signin.title': 'Connexion',
+  'auth.dialog.signup.title': 'Créer votre compte',
+  'auth.dialog.reset.title': 'Réinitialiser votre mot de passe',
+  'auth.dialog.reset.lede':
+    'Saisissez l’adresse e-mail du compte et un lien de réinitialisation vous sera envoyé.',
+  'auth.dialog.email': 'E-mail',
+  'auth.dialog.password': 'Mot de passe',
+  'auth.dialog.forgot': 'Mot de passe oublié ?',
+  'auth.dialog.submit.signin': 'Se connecter',
+  'auth.dialog.submit.signup': 'Continuer',
+  'auth.dialog.submit.reset': 'Envoyer le lien',
+  'auth.dialog.tonew': 'Vous n’avez pas de compte ?',
+  'auth.dialog.tonew.action': 'S’inscrire',
+  'auth.dialog.toexisting': 'Vous avez déjà un compte ?',
+  'auth.dialog.toexisting.action': 'Se connecter',
+  'auth.dialog.back': 'Retour à la connexion',
+  'auth.dialog.or': 'ou',
+  'auth.dialog.google': 'Continuer avec Google',
+  'auth.dialog.terms': 'J’accepte les {terms}',
+  'auth.dialog.terms.link': 'conditions d’utilisation',
+  'auth.dialog.terms.required': 'Les conditions doivent être acceptées pour créer un compte.',
+  'auth.dialog.reset.sent': 'Si un compte existe pour cette adresse, un lien est en route.',
+  'auth.verify.sent':
+    'Le compte est créé. Le lien de confirmation de l’adresse est dans votre boîte.',
+
   'auth.incomplete': 'La connexion n’a pas abouti',
   'auth.error.unfinished': 'La connexion ne s’est pas terminée. Réessayez.',
   'auth.error.link': 'Le lien de connexion était incomplet. Réessayez.',

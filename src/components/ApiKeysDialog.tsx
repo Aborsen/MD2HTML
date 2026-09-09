@@ -5,6 +5,7 @@ import { formatRelative } from '@/lib/format';
 import { useI18n, useT } from '@/lib/i18n/context';
 import { INTL_LOCALES } from '@/lib/i18n/locales';
 import { Hint } from './Hint';
+import { MCP_PATH } from '@/lib/mcp-facts';
 import { Button } from '@/ui/components/Button';
 import { CodeBlock, InlineCode } from '@/ui/components/Code';
 import { IconButton } from '@/ui/components/IconButton';
@@ -307,6 +308,28 @@ export function ApiKeysDialog({ open, onOpenChange }: ApiKeysDialogProps) {
               ))}
             </ul>
           )}
+
+          {/*
+            * The connector's address, and the command that adds it.
+            *
+            * Shown whether or not anything is connected — before this, the only place to find the
+            * address was the documentation, so the account menu could tell you what was connected
+            * but not how to connect anything. Built from the running origin rather than written
+            * down, so a preview deployment hands out its own address and not production's.
+            */}
+          <div className="flex shrink-0 flex-col gap-2">
+            <Typography variant="span" textColor="light" className="text-xxs uppercase tracking-wide">
+              {t('header.connector')}
+            </Typography>
+
+            <Typography variant="p" textColor="secondary" className="text-xs">
+              {t('dialog.keys.connector.address')}
+            </Typography>
+
+            <CodeBlock className="text-xs">
+              {`claude mcp add --transport http transformpipe ${window.location.origin}${MCP_PATH}`}
+            </CodeBlock>
+          </div>
 
           {grants.length > 0 && (
             <div className="flex shrink-0 flex-col gap-2">

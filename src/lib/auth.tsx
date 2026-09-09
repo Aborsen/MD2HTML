@@ -19,6 +19,10 @@ interface AuthState {
   error: string | null;
   /** `to` is where to come back to; the connector hand-off needs somewhere other than here. */
   signIn: (to?: string) => Promise<void>;
+  /** Returns the message to show beside the form, or null when the person is in. */
+  signInWithEmail: (email: string, password: string) => Promise<string | null>;
+  signUpWithEmail: (email: string, password: string) => Promise<string | null>;
+  requestPasswordReset: (email: string) => Promise<string | null>;
   signOut: () => Promise<void>;
 }
 
@@ -186,6 +190,79 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     [t]
   );
 
+  /*
+   * Email and password, in and up, and the reset request.
+   *
+   * All three go through here rather than being called from the dialog, for the same reason
+   * `signIn` does: this is the only place that decides who is signed in, and a second copy of that
+   * decision is how a form comes to think somebody is in while the header still shows a Sign in
+   * button. On success the user in the response is the user — no second round trip to ask.
+   *
+   * The error is returned rather than stored. A failed password is a message that belongs beside
+   * the field somebody just typed in, not in the banner that reports a broken sign-in service, and
+   * putting it in `failure` would leave it on screen after the dialog closed.
+   */
+  const withEmail = useCallback(
+    async (
+      run: () => Promise<{ user?: AuthUser }>
+    ): Promise<string | null> => {
+      setIsSigningIn(true);
+
+      try {
+        const body = await run();
+
+        if (body.user) {
+          setUser(body.user);
+          setIsSigningIn(false);
+
+          return null;
+        }
+
+        /*
+         * A success with no user means the account exists but the session does not — which is what
+         * an auth service configured to verify addresses answers. Asking again settles it rather
+         * than guessing, and if there is still nobody, the caller says so.
+         */
+        const account = await api.me();
+
+        setUser(account);
+        setIsSigningIn(false);
+
+        return account ? null : t('auth.verify.sent');
+      } catch (cause) {
+        setIsSigningIn(false);
+
+        return cause instanceof Error ? cause.message : t('auth.error.start');
+      }
+    },
+    [t]
+  );
+
+  const signInWithEmail = useCallback(
+    (email: string, password: string) =>
+      withEmail(() => api.signInWithEmail(email, password)),
+    [withEmail]
+  );
+
+  const signUpWithEmail = useCallback(
+    (email: string, password: string) =>
+      withEmail(() => api.signUpWithEmail(email, password)),
+    [withEmail]
+  );
+
+  const requestPasswordReset = useCallback(
+    async (email: string): Promise<string | null> => {
+      try {
+        await api.requestPasswordReset(email);
+
+        return null;
+      } catch (cause) {
+        return cause instanceof Error ? cause.message : t('auth.error.start');
+      }
+    },
+    [t]
+  );
+
   const signOut = useCallback(async () => {
     try {
       await api.signOut();
@@ -204,8 +281,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     failure === null ? null : 'key' in failure ? t(failure.key) : failure.text;
 
   const value = useMemo<AuthState>(
-    () => ({ user, isLoading, isSigningIn, error, signIn, signOut }),
-    [user, isLoading, isSigningIn, error, signIn, signOut]
+    () => ({
+      user,
+      isLoading,
+      isSigningIn,
+      error,
+      signIn,
+      signInWithEmail,
+      signUpWithEmail,
+      requestPasswordReset,
+      signOut,
+    }),
+    [
+      user,
+      isLoading,
+      isSigningIn,
+      error,
+      signIn,
+      signInWithEmail,
+      signUpWithEmail,
+      requestPasswordReset,
+      signOut,
+    ]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

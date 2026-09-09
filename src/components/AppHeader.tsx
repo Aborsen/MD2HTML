@@ -9,6 +9,7 @@ import {
 import { CONVERSIONS, type ConversionId } from '@shared/conversions';
 import { useI18n, useT } from '@/lib/i18n/context';
 import { Logo } from './Logo';
+import { LanguageMenu } from './LanguageMenu';
 import { MobileNav } from './MobileNav';
 import { UserMenu } from './UserMenu';
 import type { StaticPageId } from '@/lib/pages';
@@ -199,6 +200,16 @@ export function AppHeader({
         <Separator orientation="vertical" className="hidden h-5 md:block" />
 
         <div className="ml-auto flex items-center gap-1 md:ml-0">
+          {/*
+            * Before the account, and outside it on purpose.
+            *
+            * A reader who has landed in a language they cannot read has to be able to get out
+            * without opening a menu whose label they cannot read either — so the switcher is a
+            * button in the bar, not an entry inside the account dropdown, and it is there whether
+            * anybody is signed in or not.
+            */}
+          <LanguageMenu className="hidden sm:inline-flex" />
+
           <UserMenu />
 
           <MobileNav

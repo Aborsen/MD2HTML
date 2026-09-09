@@ -52,6 +52,37 @@ export const ui: Content['ui'] = {
    * Query-String zurückgeben kann — eine geschlossene Menge, denn der Grund kommt in einem Link,
    * und einen Link kann jeder schreiben. `auth.incomplete` ist der Toast, der den jeweiligen trägt.
    */
+  'header.connector': 'MCP-Konnektor',
+  'dialog.keys.connector.address':
+    'Die Adresse, die in einem Assistenten hinzugefügt wird. Kein Schlüssel zum Einfügen — die Anmeldung läuft über Ihr Konto.',
+
+  /* The sign-in dialog: three views — in, up, and asking for a reset link. */
+  'auth.dialog.signin.title': 'Anmelden',
+  'auth.dialog.signup.title': 'Konto erstellen',
+  'auth.dialog.reset.title': 'Passwort zurücksetzen',
+  'auth.dialog.reset.lede':
+    'Geben Sie die E-Mail-Adresse des Kontos ein; ein Link zum Zurücksetzen wird zugeschickt.',
+  'auth.dialog.email': 'E-Mail',
+  'auth.dialog.password': 'Passwort',
+  'auth.dialog.forgot': 'Passwort vergessen?',
+  'auth.dialog.submit.signin': 'Anmelden',
+  'auth.dialog.submit.signup': 'Weiter',
+  'auth.dialog.submit.reset': 'Link zusenden',
+  'auth.dialog.tonew': 'Noch kein Konto?',
+  'auth.dialog.tonew.action': 'Registrieren',
+  'auth.dialog.toexisting': 'Sie haben schon ein Konto?',
+  'auth.dialog.toexisting.action': 'Anmelden',
+  'auth.dialog.back': 'Zurück zur Anmeldung',
+  'auth.dialog.or': 'oder',
+  'auth.dialog.google': 'Mit Google fortfahren',
+  'auth.dialog.terms': 'Ich akzeptiere die {terms}',
+  'auth.dialog.terms.link': 'Nutzungsbedingungen',
+  'auth.dialog.terms.required':
+    'Die Nutzungsbedingungen müssen für ein Konto akzeptiert werden.',
+  'auth.dialog.reset.sent': 'Falls zu dieser Adresse ein Konto gehört, ist ein Link unterwegs.',
+  'auth.verify.sent':
+    'Das Konto ist angelegt. Der Link zur Bestätigung der Adresse liegt im Postfach.',
+
   'auth.incomplete': 'Anmeldung nicht abgeschlossen',
   'auth.error.unfinished':
     'Die Anmeldung wurde nicht beendet. Versuchen Sie es erneut.',

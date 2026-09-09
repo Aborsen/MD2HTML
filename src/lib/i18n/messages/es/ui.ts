@@ -43,6 +43,36 @@ export const ui: Content['ui'] = {
    * motivo llega en un enlace y un enlace lo escribe cualquiera—. `auth.incomplete` es el aviso
    * que lleva el que haya sido.
    */
+  'header.connector': 'Conector MCP',
+  'dialog.keys.connector.address':
+    'La dirección que se añade en un asistente. No hay ninguna clave que pegar: entra con tu cuenta.',
+
+  /* The sign-in dialog: three views — in, up, and asking for a reset link. */
+  'auth.dialog.signin.title': 'Iniciar sesión',
+  'auth.dialog.signup.title': 'Crea tu cuenta',
+  'auth.dialog.reset.title': 'Restablece tu contraseña',
+  'auth.dialog.reset.lede':
+    'Escribe el correo de tu cuenta y te enviaremos un enlace para restablecerla.',
+  'auth.dialog.email': 'Correo electrónico',
+  'auth.dialog.password': 'Contraseña',
+  'auth.dialog.forgot': '¿Olvidaste tu contraseña?',
+  'auth.dialog.submit.signin': 'Iniciar sesión',
+  'auth.dialog.submit.signup': 'Continuar',
+  'auth.dialog.submit.reset': 'Enviar el enlace',
+  'auth.dialog.tonew': '¿No tienes una cuenta?',
+  'auth.dialog.tonew.action': 'Regístrate',
+  'auth.dialog.toexisting': '¿Ya tienes una cuenta?',
+  'auth.dialog.toexisting.action': 'Iniciar sesión',
+  'auth.dialog.back': 'Volver a iniciar sesión',
+  'auth.dialog.or': 'o',
+  'auth.dialog.google': 'Continuar con Google',
+  'auth.dialog.terms': 'Acepto los {terms}',
+  'auth.dialog.terms.link': 'términos de uso',
+  'auth.dialog.terms.required': 'Hay que aceptar los términos para crear una cuenta.',
+  'auth.dialog.reset.sent': 'Si esa dirección tiene una cuenta, el enlace ya va en camino.',
+  'auth.verify.sent':
+    'La cuenta está creada. En tu correo está el enlace que confirma la dirección.',
+
   'auth.incomplete': 'El inicio de sesión no se completó',
   'auth.error.unfinished': 'El inicio de sesión no terminó. Vuelve a intentarlo.',
   'auth.error.link':
