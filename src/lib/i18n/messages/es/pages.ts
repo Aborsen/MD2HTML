@@ -101,7 +101,7 @@ export const pages: Content['pages'] = {
           'Una cuenta existe para que los documentos puedan seguirte entre dispositivos y compartirse. Contiene:',
         ],
         items: [
-          'Tu identidad de Google, a través de nuestro proveedor de autenticación: una dirección de correo, un nombre y un identificador de cuenta. Nunca vemos ni guardamos una contraseña.',
+          'Tu identidad, a través de nuestro proveedor de autenticación: una dirección de correo, un nombre cuando se ha dado uno y un identificador de cuenta. Al entrar con Google vienen de Google; al registrarte con una dirección y una contraseña, la contraseña queda en el proveedor de autenticación, como hash. En ninguno de los dos casos vemos ni guardamos una contraseña.',
           'De cada documento que conservas: su nombre, qué conversión lo hizo, su tamaño, los recuentos de palabras, encabezados, enlaces, bloques de código, tablas e imágenes, y cuándo se creó.',
           'El Markdown en sí, en un almacén de blobs privado — privado quiere decir que no tiene ninguna URL pública y solo se lee mediante una petición que autorizamos.',
           'Las claves API como hashes, nunca la clave. Una clave se muestra una vez, al crearla, y después no se puede recuperar — ni tú ni nosotros.',
@@ -111,8 +111,15 @@ export const pages: Content['pages'] = {
       {
         heading: 'Lo que no hacemos',
         body: [
-          'No hay analítica, ni publicidad, ni píxel de seguimiento, ni ningún script de terceros en este sitio — no un conjunto reducido: ninguno. Nada se vende, y nada se comparte con nadie salvo con la infraestructura que hace funcionar el servicio: la base de datos, el almacén de blobs, el proveedor de autenticación y el alojamiento.',
+          'No hay analítica, ni publicidad, ni píxel de seguimiento, ni ningún script de terceros en este sitio — no un conjunto reducido: ninguno. Nada se vende, y nada se comparte con nadie salvo con la infraestructura que hace funcionar el servicio: la base de datos, el almacén de blobs, el proveedor de autenticación, el proveedor de correo y el alojamiento.',
           'Nosotros no leemos tus documentos, y no se usan para entrenar nada.',
+        ],
+      },
+      {
+        heading: 'El correo electrónico',
+        body: [
+          'Se envía correo en cuatro casos y en ninguno más: para confirmar tu dirección, para restablecer una contraseña, para darte la bienvenida una vez tras el registro y para avisar a alguien de que se ha compartido un documento con él. Los dos primeros los envía el proveedor de autenticación; los otros dos, el proveedor de correo. No hay boletín, y no hay nada de lo que darse de baja.',
+          'Al proveedor de correo se le da la dirección de quien recibe el mensaje, la de quien comparte cuando la hay, y el mensaje mismo. Nunca se le da un documento.',
         ],
       },
       {
@@ -145,7 +152,7 @@ export const pages: Content['pages'] = {
     seo: {
       title: 'Privacidad — TransformPipe',
       description:
-        'Sin sesión iniciada, ningún archivo sale de tu navegador. Con sesión guardamos el documento, sus metadatos y tu identidad de Google: sin analítica ni seguimiento.',
+        'Sin sesión iniciada, ningún archivo sale de tu navegador. Con sesión guardamos el documento, sus metadatos y tu identidad de cuenta: sin analítica ni seguimiento.',
     },
   },
   terms: {

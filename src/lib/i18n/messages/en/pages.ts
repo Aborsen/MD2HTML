@@ -103,7 +103,7 @@ export const pages: Content['pages'] = {
           'An account exists so documents can follow you between devices and be shared. It holds:',
         ],
         items: [
-          'Your identity from Google, through our authentication provider: an email address, a name, and an account id. We never see or store a password.',
+          'Your identity, through our authentication provider: an email address, a name where one was given, and an account id. Signing in with Google brings those from Google; signing up with an address and a password leaves the password with the authentication provider, as a hash. Either way we never see or store a password.',
           'For each document you keep: its name, which conversion made it, its size, counts of words, headings, links, code blocks, tables and images, and when it was created.',
           'The Markdown itself, in a private blob store — private meaning it has no public URL and is read only through a request we authorise.',
           'API keys as hashes, never the key. A key is shown once, at creation, and cannot be recovered afterwards — not by you and not by us.',
@@ -113,8 +113,15 @@ export const pages: Content['pages'] = {
       {
         heading: 'What we do not do',
         body: [
-          'There is no analytics, no advertising, no tracking pixel and no third-party script on this site — not a reduced set, none. Nothing is sold, and nothing is shared with anyone except the infrastructure that runs the service: the database, the blob store, the authentication provider and the host.',
+          'There is no analytics, no advertising, no tracking pixel and no third-party script on this site — not a reduced set, none. Nothing is sold, and nothing is shared with anyone except the infrastructure that runs the service: the database, the blob store, the authentication provider, the email provider and the host.',
           'Your documents are not read by us, and they are not used to train anything.',
+        ],
+      },
+      {
+        heading: 'Email',
+        body: [
+          'Email is sent in four cases and no others: to confirm your address, to reset a password, to welcome you once after you register, and to tell somebody that a document has been shared with them. The first two come from the authentication provider, the other two from the email provider. There is no newsletter, and there is nothing to unsubscribe from.',
+          'What the email provider is given is the recipient’s address, the address of the person sharing where there is one, and the message itself. It is never given a document.',
         ],
       },
       {
@@ -147,7 +154,7 @@ export const pages: Content['pages'] = {
     seo: {
       title: 'Privacy — TransformPipe',
       description:
-        'Signed out, no file leaves your browser. Signed in, we store the document, its metadata and your Google identity — no analytics, no tracking, no third-party scripts.',
+        'Signed out, no file leaves your browser. Signed in, we store the document, its metadata and your account identity — no analytics, no tracking, no third-party scripts.',
     },
   },
   terms: {

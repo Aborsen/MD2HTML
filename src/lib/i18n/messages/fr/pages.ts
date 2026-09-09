@@ -97,7 +97,7 @@ export const pages: Content['pages'] = {
           'Un compte existe pour que les documents puissent vous suivre d’un appareil à l’autre et être partagés. Il contient :',
         ],
         items: [
-          'Votre identité venue de Google, par l’intermédiaire de notre prestataire d’authentification : une adresse e-mail, un nom et un identifiant de compte. Nous ne voyons ni ne conservons jamais de mot de passe.',
+          'Votre identité, par l’intermédiaire de notre prestataire d’authentification : une adresse e-mail, un nom lorsqu’il en a été donné un, et un identifiant de compte. Une connexion avec Google les fait venir de Google ; une inscription avec une adresse et un mot de passe laisse ce mot de passe chez le prestataire d’authentification, sous forme de hachage. Dans les deux cas, nous ne voyons ni ne conservons jamais de mot de passe.',
           'Pour chaque document conservé : son nom, la conversion qui l’a produit, sa taille, le nombre de mots, de titres, de liens, de blocs de code, de tableaux et d’images, et sa date de création.',
           'Le Markdown lui-même, dans un stockage d’objets privé — privé signifiant qu’il n’a pas d’URL publique et n’est lu qu’au travers d’une requête que nous autorisons.',
           'Les clés API sous forme de hachages, jamais la clé. Une clé n’est affichée qu’une fois, à sa création, et ne peut plus être retrouvée ensuite — ni par vous, ni par nous.',
@@ -107,8 +107,15 @@ export const pages: Content['pages'] = {
       {
         heading: 'Ce que nous ne faisons pas',
         body: [
-          'Il n’y a sur ce site ni mesure d’audience, ni publicité, ni pixel de suivi, ni script tiers — pas un jeu réduit : aucun. Rien n’est vendu, et rien n’est communiqué à personne en dehors de l’infrastructure qui fait tourner le service : la base de données, le stockage d’objets, le prestataire d’authentification et l’hébergeur.',
+          'Il n’y a sur ce site ni mesure d’audience, ni publicité, ni pixel de suivi, ni script tiers — pas un jeu réduit : aucun. Rien n’est vendu, et rien n’est communiqué à personne en dehors de l’infrastructure qui fait tourner le service : la base de données, le stockage d’objets, le prestataire d’authentification, le prestataire d’e-mail et l’hébergeur.',
           'Vos documents ne sont pas lus par nous, et ils ne servent pas à entraîner quoi que ce soit.',
+        ],
+      },
+      {
+        heading: 'Les e-mails',
+        body: [
+          'Un e-mail part dans quatre cas et dans aucun autre : pour confirmer votre adresse, pour réinitialiser un mot de passe, pour vous accueillir une fois après votre inscription, et pour prévenir quelqu’un qu’un document a été partagé avec lui. Les deux premiers viennent du prestataire d’authentification, les deux autres du prestataire d’e-mail. Il n’y a pas de lettre d’information, et il n’y a rien à quoi se désabonner.',
+          'Ce que reçoit le prestataire d’e-mail, c’est l’adresse du destinataire, celle de la personne qui partage lorsqu’il y en a une, et le message lui-même. Il ne reçoit jamais de document.',
         ],
       },
       {
@@ -141,7 +148,7 @@ export const pages: Content['pages'] = {
     seo: {
       title: 'Confidentialité — TransformPipe',
       description:
-        'Déconnecté, rien ne quitte le navigateur. Connecté, nous conservons le document, ses métadonnées et votre identité Google — ni audience, ni suivi, ni script tiers.',
+        'Déconnecté, rien ne quitte le navigateur. Connecté, nous conservons le document, ses métadonnées et votre identité de compte — ni audience, ni suivi, ni script tiers.',
     },
   },
   terms: {

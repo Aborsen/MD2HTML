@@ -105,7 +105,7 @@ export const pages: Content['pages'] = {
           'Ein Konto besteht, damit Dokumente einem von Gerät zu Gerät folgen und geteilt werden können. Es enthält:',
         ],
         items: [
-          'Ihre Identität von Google, über unseren Authentifizierungsanbieter: eine E-Mail-Adresse, einen Namen und eine Konto-id. Ein Passwort sehen und speichern wir nie.',
+          'Ihre Identität, über unseren Authentifizierungsanbieter: eine E-Mail-Adresse, einen Namen, wo einer angegeben wurde, und eine Konto-id. Bei der Anmeldung mit Google kommen sie von Google; bei der Registrierung mit Adresse und Passwort bleibt das Passwort beim Authentifizierungsanbieter, als Hash. So oder so sehen und speichern wir ein Passwort nie.',
           'Zu jedem behaltenen Dokument: seinen Namen, welche Umwandlung es gemacht hat, seine Größe, die Zahl der Wörter, Überschriften, Links, Codeblöcke, Tabellen und Bilder und den Zeitpunkt seiner Erstellung.',
           'Das Markdown selbst, in einem privaten Blob-Speicher — privat heißt: er hat keine öffentliche URL und wird nur über eine Anfrage gelesen, die wir autorisieren.',
           'API-Schlüssel als Hashes, nie den Schlüssel. Ein Schlüssel wird einmal gezeigt, bei der Erstellung, und ist danach nicht wiederherstellbar — nicht durch Sie und nicht durch uns.',
@@ -115,8 +115,15 @@ export const pages: Content['pages'] = {
       {
         heading: 'Was wir nicht tun',
         body: [
-          'Es gibt auf dieser Seite keine Analyse, keine Werbung, kein Tracking-Pixel und kein Skript von Dritten — nicht einen reduzierten Satz, keines. Nichts wird verkauft, und nichts wird mit irgendjemandem geteilt außer mit der Infrastruktur, die den Dienst betreibt: der Datenbank, dem Blob-Speicher, dem Authentifizierungsanbieter und dem Hoster.',
+          'Es gibt auf dieser Seite keine Analyse, keine Werbung, kein Tracking-Pixel und kein Skript von Dritten — nicht einen reduzierten Satz, keines. Nichts wird verkauft, und nichts wird mit irgendjemandem geteilt außer mit der Infrastruktur, die den Dienst betreibt: der Datenbank, dem Blob-Speicher, dem Authentifizierungsanbieter, dem E-Mail-Anbieter und dem Hoster.',
           'Ihre Dokumente werden von uns nicht gelesen, und sie werden nicht dazu benutzt, irgendetwas zu trainieren.',
+        ],
+      },
+      {
+        heading: 'E-Mail',
+        body: [
+          'E-Mails gehen in vier Fällen hinaus und in keinem anderen: zur Bestätigung Ihrer Adresse, zum Zurücksetzen eines Passworts, zur einmaligen Begrüßung nach der Registrierung und um jemandem mitzuteilen, dass ein Dokument mit ihm geteilt wurde. Die ersten beiden kommen vom Authentifizierungsanbieter, die anderen beiden vom E-Mail-Anbieter. Es gibt keinen Newsletter, und es gibt nichts abzubestellen.',
+          'Der E-Mail-Anbieter erhält die Adresse des Empfängers, die Adresse der teilenden Person, wo es eine gibt, und die Nachricht selbst. Ein Dokument erhält er nie.',
         ],
       },
       {
@@ -149,7 +156,7 @@ export const pages: Content['pages'] = {
     seo: {
       title: 'Datenschutz — TransformPipe',
       description:
-        'Abgemeldet verlässt keine Datei den Browser. Angemeldet speichern wir Dokument, Metadaten und Google-Identität — keine Analyse, kein Tracking, keine Fremdskripte.',
+        'Abgemeldet verlässt keine Datei den Browser. Angemeldet speichern wir Dokument, Metadaten und Konto-Identität — keine Analyse, kein Tracking, keine Fremdskripte.',
     },
   },
   terms: {

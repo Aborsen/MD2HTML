@@ -96,7 +96,7 @@ export const pages: Content['pages'] = {
           'Un account esiste perché i documenti possano seguirti tra i dispositivi ed essere condivisi. Contiene:',
         ],
         items: [
-          'La tua identità da Google, tramite il nostro fornitore di autenticazione: un indirizzo email, un nome e un id dell’account. Non vediamo né conserviamo mai una password.',
+          'La tua identità, tramite il nostro fornitore di autenticazione: un indirizzo email, un nome quando ne è stato dato uno e un id dell’account. Con l’accesso tramite Google arrivano da Google; con la registrazione tramite indirizzo e password, la password resta presso il fornitore di autenticazione, come hash. In nessuno dei due casi vediamo o conserviamo una password.',
           'Per ogni documento conservato: il suo nome, quale conversione l’ha prodotto, la sua dimensione, il conteggio di parole, titoli, link, blocchi di codice, tabelle e immagini, e quando è stato creato.',
           'Il Markdown stesso, in un archivio blob privato — privato nel senso che non ha alcun URL pubblico e viene letto solo tramite una richiesta che autorizziamo noi.',
           'Le chiavi API come hash, mai la chiave. Una chiave viene mostrata una volta sola, alla creazione, e in seguito non è più recuperabile: né da te né da noi.',
@@ -106,8 +106,15 @@ export const pages: Content['pages'] = {
       {
         heading: 'Cosa non facciamo',
         body: [
-          'Su questo sito non c’è nessuna analisi statistica, nessuna pubblicità, nessun pixel di tracciamento e nessuno script di terze parti — non un insieme ridotto: nessuno. Niente viene venduto, e niente viene condiviso con nessuno tranne l’infrastruttura che fa funzionare il servizio: il database, l’archivio blob, il fornitore di autenticazione e l’hosting.',
+          'Su questo sito non c’è nessuna analisi statistica, nessuna pubblicità, nessun pixel di tracciamento e nessuno script di terze parti — non un insieme ridotto: nessuno. Niente viene venduto, e niente viene condiviso con nessuno tranne l’infrastruttura che fa funzionare il servizio: il database, l’archivio blob, il fornitore di autenticazione, il fornitore di e-mail e l’hosting.',
           'I tuoi documenti non vengono letti da noi, e non vengono usati per addestrare niente.',
+        ],
+      },
+      {
+        heading: 'Le e-mail',
+        body: [
+          'Un’e-mail parte in quattro casi e in nessun altro: per confermare il tuo indirizzo, per reimpostare una password, per darti il benvenuto una volta dopo la registrazione e per avvisare qualcuno che un documento è stato condiviso con lui. I primi due li invia il fornitore di autenticazione, gli altri due il fornitore di e-mail. Non c’è nessuna newsletter, e non c’è niente da cui disiscriversi.',
+          'Al fornitore di e-mail vengono dati l’indirizzo del destinatario, quello di chi condivide quando c’è, e il messaggio stesso. Un documento non gli viene mai dato.',
         ],
       },
       {
@@ -140,7 +147,7 @@ export const pages: Content['pages'] = {
     seo: {
       title: 'Privacy — TransformPipe',
       description:
-        'Senza accesso nessun file lascia il browser. Con l’accesso: documento, metadati e identità Google. Nessuna analisi, nessun tracciamento, né script di terze parti.',
+        'Senza accesso nessun file lascia il browser. Con l’accesso: documento, metadati e identità dell’account. Nessuna analisi, nessun tracciamento, né script di terze parti.',
     },
   },
   terms: {
