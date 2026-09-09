@@ -53,7 +53,7 @@ export const docs: Content['docs'] = {
       'Publishes the Markdown a pull request changed and comments the links on it. Every input, and the two permissions it needs.',
   },
   assistant: {
-    title: 'In an assistant',
+    title: 'MCP',
     summary:
       'Add transformpipe to Claude as a connector and it can convert, save, share and delete documents in this account — signed in as you, with no key to paste.',
   },

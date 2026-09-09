@@ -52,7 +52,7 @@ export const docs: Content['docs'] = {
       'Publie le Markdown qu’une pull request a modifié et en commente les liens. Toutes les entrées, et les deux permissions dont elle a besoin.',
   },
   assistant: {
-    title: 'Dans un assistant',
+    title: 'MCP',
     summary:
       'Ajoutez transformpipe à Claude comme connecteur et il peut convertir, enregistrer, partager et supprimer des documents dans ce compte — connecté en votre nom, sans aucune clé à coller.',
   },
