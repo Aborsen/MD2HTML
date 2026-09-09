@@ -52,9 +52,13 @@ export const ui: Content['ui'] = {
    * back in the query string — a closed set, because the reason arrives in a link and a link is
    * something anybody can write. `auth.incomplete` is the toast that carries whichever it was.
    */
+  'dialog.mcp.lede':
+    'Add transformpipe to an assistant and it can convert, save and share documents in this account.',
+  'dialog.mcp.address': 'Connector address',
+  'dialog.mcp.nokey':
+    'On claude.ai: Settings → Connectors → Add custom connector. There is no key to paste — it signs in as you and can be disconnected here.',
+  'dialog.mcp.command': 'From a terminal',
   'header.connector': 'MCP connector',
-  'dialog.keys.connector.address':
-    'The address to add in an assistant. There is no key to paste — it signs in as you.',
 
   /* The sign-in dialog: three views — in, up, and asking for a reset link. */
   'auth.dialog.signin.title': 'Sign in',

@@ -5,6 +5,7 @@ import { useT } from '@/lib/i18n/context';
 import { useTheme } from '@/lib/theme';
 import { ApiKeysDialog } from './ApiKeysDialog';
 import { AuthDialog } from './AuthDialog';
+import { McpDialog } from './McpDialog';
 import { GoogleGlyph } from './GoogleGlyph';
 import { Hint } from './Hint';
 import { Button } from '@/ui/components/Button';
@@ -57,6 +58,7 @@ export function UserMenu() {
   const { theme, toggle } = useTheme();
   const [isKeysOpen, setIsKeysOpen] = useState(false);
   const [isAuthOpen, setIsAuthOpen] = useState(false);
+  const [isMcpOpen, setIsMcpOpen] = useState(false);
 
   if (isLoading) {
     return <Skeleton className="h-8 w-28 rounded-full" />;
@@ -173,16 +175,8 @@ export function UserMenu() {
           {t('header.apikeys')}
         </DropdownMenuItem>
 
-        {/*
-          * The connector, beside the keys rather than inside them.
-          *
-          * Both open the same dialog, because a key and a connected assistant are two ways into
-          * the same account and the dialog holds both lists. They are two entries because they are
-          * two questions: "make me a key" and "how do I add this to Claude" — and somebody with
-          * the second question was looking under API keys, which is not where they would think to
-          * look for it.
-          */}
-        <DropdownMenuItem onSelect={() => setIsKeysOpen(true)}>
+        {/* Its own dialog: somebody opening this came for the address, not for a key. */}
+        <DropdownMenuItem onSelect={() => setIsMcpOpen(true)}>
           <Plug />
           {t('header.connector')}
         </DropdownMenuItem>
@@ -195,6 +189,7 @@ export function UserMenu() {
     </DropdownMenu>
 
     <ApiKeysDialog open={isKeysOpen} onOpenChange={setIsKeysOpen} />
+    <McpDialog open={isMcpOpen} onOpenChange={setIsMcpOpen} />
     </>
   );
 }

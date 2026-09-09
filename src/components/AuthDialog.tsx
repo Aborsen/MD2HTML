@@ -1,11 +1,15 @@
-
+import { Mail } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { GoogleGlyph } from '@/components/GoogleGlyph';
 import { useAuth } from '@/lib/auth';
 import { useT } from '@/lib/i18n/context';
 import { Button } from '@/ui/components/Button';
 import { Checkbox } from '@/ui/components/Checkbox';
-import { Input } from '@/ui/components/Input';
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+} from '@/ui/components/InputGroup';
 import {
   Modal,
   ModalBody,
@@ -140,15 +144,27 @@ export function AuthDialog({
 
         <ModalBody className="flex flex-col gap-4">
           <form className="flex flex-col gap-3" onSubmit={submit}>
-            <Input
-              type="email"
-              required
-              autoComplete="email"
-              placeholder={t('auth.dialog.email')}
-              
-              value={email}
-              onChange={(event) => setEmail(event.target.value)}
-            />
+            {/*
+              * An InputGroup, not a bare `Input`.
+              *
+              * `Input` in this design system is transparent and borderless — it is the field
+              * inside a group, not a field on its own — so on its own it rendered the placeholder
+              * as loose text with no box around it, beside a password field that looked right.
+              */}
+            <InputGroup>
+              <InputGroupAddon>
+                <Mail className="size-4" />
+              </InputGroupAddon>
+              <InputGroupInput
+                type="email"
+                required
+                autoComplete="email"
+                placeholder={t('auth.dialog.email')}
+                aria-label={t('auth.dialog.email')}
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
+              />
+            </InputGroup>
 
             {view !== 'reset' && (
               <PasswordInput
@@ -162,7 +178,6 @@ export function AuthDialog({
                   view === 'signin' ? 'current-password' : 'new-password'
                 }
                 placeholder={t('auth.dialog.password')}
-                
                 value={password}
                 onChange={(event) => setPassword(event.target.value)}
               />

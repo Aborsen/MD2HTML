@@ -41,9 +41,13 @@ export const ui: Content['ui'] = {
    * un lien et qu’un lien, n’importe qui peut l’écrire. `auth.incomplete` est le toast qui porte
    * celle qui est arrivée.
    */
+  'dialog.mcp.lede':
+    'Ajoutez transformpipe dans un assistant : il pourra convertir, enregistrer et partager des documents de ce compte.',
+  'dialog.mcp.address': 'Adresse du connecteur',
+  'dialog.mcp.nokey':
+    'Sur claude.ai : Paramètres → Connecteurs → Ajouter un connecteur personnalisé. Aucune clé à coller : la connexion se fait sous votre compte et peut être coupée ici.',
+  'dialog.mcp.command': 'Depuis un terminal',
   'header.connector': 'Connecteur MCP',
-  'dialog.keys.connector.address':
-    'L’adresse à ajouter dans un assistant. Aucune clé à coller : la connexion se fait sous votre compte.',
 
   /* The sign-in dialog: three views — in, up, and asking for a reset link. */
   'auth.dialog.signin.title': 'Connexion',

@@ -1,4 +1,5 @@
-import { Check, Languages } from 'lucide-react';
+import { Check } from 'lucide-react';
+import { LocaleFlag } from './LocaleFlag';
 import { useI18n } from '@/lib/i18n/context';
 import { LOCALE_NAMES, LOCALES } from '@/lib/i18n/locales';
 import {
@@ -15,8 +16,12 @@ import { cn } from '@/ui/lib/utils';
  *
  * Each language is named in itself — Deutsch, not German — because the name a reader recognises is
  * the one in their own language, and a reader who has landed on the wrong one cannot read the list
- * that would get them out of it. No flags: a flag is a country, several of these languages are
- * spoken in many, and Spanish has no flag that does not exclude somebody.
+ * that would get them out of it.
+ *
+ * Beside each name, its flag — and the name stays, because a flag is a country and a language is
+ * not: German is spoken in three of them and Spanish across two continents. The flag makes an
+ * entry findable at a glance; the name is what actually says which language it is. `LocaleFlag`
+ * explains why they are drawn as SVG rather than written as emoji.
  *
  * Switching is a navigation, not a state change. `setLocale` rewrites the address to the same page
  * in the new language, so the choice is in the URL where it can be shared, reloaded and indexed —
@@ -39,7 +44,8 @@ export function LanguageMenu({ className }: { className?: string }) {
            */
           aria-label="Language"
         >
-          <Languages className="size-4" />
+          {/* The flag of the language you are in, so the control says what it will change. */}
+          <LocaleFlag locale={locale} className="h-3 w-4" />
         </IconButton>
       </DropdownMenuTrigger>
 
@@ -50,7 +56,10 @@ export function LanguageMenu({ className }: { className?: string }) {
             onSelect={() => setLocale(one)}
             className="flex items-center justify-between gap-3"
           >
-            <span lang={one}>{LOCALE_NAMES[one]}</span>
+            <span className="flex min-w-0 items-center gap-2">
+              <LocaleFlag locale={one} className="h-3 w-4" />
+              <span lang={one}>{LOCALE_NAMES[one]}</span>
+            </span>
             <Check
               aria-hidden
               className={cn(

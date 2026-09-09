@@ -52,9 +52,13 @@ export const ui: Content['ui'] = {
    * Query-String zurückgeben kann — eine geschlossene Menge, denn der Grund kommt in einem Link,
    * und einen Link kann jeder schreiben. `auth.incomplete` ist der Toast, der den jeweiligen trägt.
    */
+  'dialog.mcp.lede':
+    'transformpipe in einem Assistenten hinzufügen: er kann dann Dokumente in diesem Konto umwandeln, speichern und teilen.',
+  'dialog.mcp.address': 'Konnektor-Adresse',
+  'dialog.mcp.nokey':
+    'Auf claude.ai: Einstellungen → Konnektoren → Eigenen Konnektor hinzufügen. Kein Schlüssel zum Einfügen — die Anmeldung läuft über Ihr Konto, und die Verbindung lässt sich hier trennen.',
+  'dialog.mcp.command': 'Im Terminal',
   'header.connector': 'MCP-Konnektor',
-  'dialog.keys.connector.address':
-    'Die Adresse, die in einem Assistenten hinzugefügt wird. Kein Schlüssel zum Einfügen — die Anmeldung läuft über Ihr Konto.',
 
   /* The sign-in dialog: three views — in, up, and asking for a reset link. */
   'auth.dialog.signin.title': 'Anmelden',

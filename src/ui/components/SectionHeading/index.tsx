@@ -68,7 +68,17 @@ export function SectionHeading({
           <Typography
             variant="p"
             textColor="secondary"
-            className={cn('text-sm', centred && 'max-w-xl text-pretty')}
+            /*
+             * Centred means centred, including this line.
+             *
+             * It had `max-w-xl` and nothing else, so a two-line description sat left-aligned inside
+             * a narrow column under a centred title — which reads as a mistake rather than a
+             * choice. `mx-auto` centres the column itself, since the width is what made it visible.
+             */
+            className={cn(
+              'text-sm',
+              centred && 'mx-auto max-w-xl text-pretty text-center'
+            )}
           >
             {description}
           </Typography>
