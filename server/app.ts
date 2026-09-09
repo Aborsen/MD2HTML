@@ -8,7 +8,7 @@ import {
   buildStandaloneHtml,
 } from '../shared/markdown.js';
 import { authProxy, currentUser, selfOrigin, type SessionUser } from './auth.js';
-import { sendWelcome } from './mail.js';
+import { canSendMail, sendShareNotice, sendWelcome } from './mail.js';
 import { sql, type DocumentRow } from './db.js';
 import { createKey, forgetKey, listKeys, revokeKey } from './keys.js';
 import {
@@ -421,11 +421,15 @@ api.post('/documents/:id/share/people', async (c) => {
     return c.json({ error: 'Not found' }, 404);
   }
 
-  await sql()`
+  /* `returning` is empty when the address was already on the list, which is the signal not to mail. */
+  const rows = (await sql()`
     insert into m2h_document_share (document_id, email)
     values (${id}, ${email})
     on conflict do nothing
-  `;
+    returning email
+  `) as Array<{ email: string }>;
+
+  const inserted = rows.length === 1;
 
   await sql()`
     update m2h_document
@@ -435,7 +439,46 @@ api.post('/documents/:id/share/people', async (c) => {
 
   const state = await shareState(userId, id);
 
-  return state ? c.json(state) : c.json({ error: 'Not found' }, 404);
+  /*
+   * Tell the person their name was just put on a document.
+   *
+   * This endpoint, not the one that sets the mode: adding an address is a deliberate act with one
+   * address in it, so there is nothing to diff and nobody to accidentally write to twice. The
+   * `on conflict do nothing` above means a repeat of the same address is a no-op in the table, and
+   * `inserted` below is how this knows it was a no-op in the mailbox too.
+   *
+   * Not awaited into the response, and failures only logged: a share that is already written must
+   * not report failure because a mail provider was slow, and the access exists either way.
+   */
+  if (state?.mode === 'people' && state.token && inserted) {
+    const owner = c.get('user').email;
+    const document = (await sql()`
+      select name from m2h_document where id = ${id} and user_id = ${userId}
+    `) as Array<{ name: string }>;
+
+    void sendShareNotice({
+      to: email,
+      from: owner ?? 'Somebody',
+      documentName: document[0]?.name ?? 'a document',
+      url: `${selfOrigin(c)}/s/${state.token}`,
+    }).then((sent) => {
+      if (!sent.ok) {
+        console.error(`share notice to ${email} not sent: ${sent.reason}`);
+      }
+    });
+  }
+
+  /*
+   * Say whether a notice went out, so this is observable from outside.
+   *
+   * Two silent failures in a row looked identical from the dialog — the notice wired to the API
+   * endpoint the dialog does not call, and then a deployment with no mail key — and in both cases
+   * the only symptom was an email that never arrived. A field in the response is the difference
+   * between diagnosing that in a minute and guessing at it.
+   */
+  return state
+    ? c.json({ ...state, notified: inserted && canSendMail() })
+    : c.json({ error: 'Not found' }, 404);
 });
 
 api.delete('/documents/:id/share/people', async (c) => {
