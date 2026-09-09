@@ -180,7 +180,15 @@ const SHARED_CHROME_STYLE = `
   color: var(--md-secondary);
 }
 
+/*
+ * Monospace, like the wordmark in the app.
+ *
+ * This bar is set in DM Sans, and the long form of the mark tolerated that because it read as a
+ * word with a caret in it. The short form is half punctuation, and a proportional font renders the
+ * caret as something someone forgot to delete.
+ */
 .md-bar .brand {
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
   font-weight: 600;
   color: var(--md-ink);
   text-decoration: none;
@@ -312,7 +320,7 @@ ${SHARED_CHROME_STYLE}
 </head>
 <body id="md-top-of-page">
 <div class="md-bar">
-  <a class="brand" href="/">transform<span>&gt;</span>pipe</a>
+  <a class="brand" href="/">T<span>&gt;</span>pipe</a>
   <span class="name">${escapeHtml(title)}</span>
   ${downloadHref ? `<a class="keep" href="${escapeHtml(downloadHref)}">Download .html</a>` : ''}
 </div>

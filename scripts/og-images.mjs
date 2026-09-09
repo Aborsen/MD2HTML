@@ -287,7 +287,7 @@ function card({ title, eyebrow, accent, slug = '', variant = 'og' }) {
     </div>
 
     <div class="foot">
-      <div class="brand">transform<span>&gt;</span>pipe</div>
+      <div class="brand">T<span>&gt;</span>pipe</div>
       <div>transformpipe.com</div>
     </div>`
     }
