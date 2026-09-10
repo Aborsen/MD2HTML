@@ -46,6 +46,53 @@ whatever the articles say and two spellings make two chips.
 `Workflow` stays as it is in German: it is the word German developers use, and `Arbeitsablauf` reads
 like a translation of a word nobody needed translated.
 
+## The German terms, once each
+
+Fourteen articles now use these. A synonym is not wrong German, it is a second word for a thing the
+reader already learned two articles ago, so keep to the column.
+
+| English | Deutsch |
+| --- | --- |
+| flavour (of Markdown) | Dialekt |
+| fenced code block | eingezäunter Codeblock |
+| code span | Code-Spanne |
+| info string | Info-String |
+| to escape / escaping | maskieren / Maskierung |
+| allow-list | Positivliste |
+| block-list | Sperrliste |
+| to sanitise | bereinigen |
+| sanitiser | Bereiniger |
+| separator row (in a table) | Trennzeile |
+| header row | Kopfzeile |
+| body row | Datenzeile |
+| pipe | Pipe |
+| backslash | Backslash |
+| task list | Aufgabenliste |
+| strikethrough | Durchgestrichenes |
+| self-contained (file) | eigenständig |
+| page furniture | Seitenmobiliar |
+| extractor | Extraktor |
+| tracked changes | verfolgte Änderungen |
+| style map | Stilzuordnung |
+| hard line break | harter Zeilenumbruch |
+| soft line break | sanfter Zeilenumbruch |
+| tight / loose list | dichte / locker gesetzte Liste |
+| front matter | Frontmatter |
+| admonition | Hinweisblock |
+| delimiter run | Trennzeichenlauf |
+| lazy continuation | nachlässige Fortsetzung |
+| thematic break | thematische Trennlinie |
+| superset | Obermenge |
+| entity reference | Zeichenreferenz |
+| syntax highlighting | Syntaxhervorhebung |
+| alt text | Alt-Text |
+| root-relative (path) | wurzelrelativ |
+| reference label (a link's) | Kürzel |
+| link checker | Link-Prüfer |
+| tracking pixel | Zählpixel |
+
+Formal address throughout: "Sie", never "du".
+
 ## What is not translated
 
 Code samples, command lines, flags and file names. A German reader runs `pandoc --standalone`, not
