@@ -2,7 +2,7 @@ import { CONVERSIONS, type ConversionId } from '@shared/conversions';
 import { Logo } from '@/components/Logo';
 import { useI18n, useT } from '@/lib/i18n/context';
 import { REPO_URL, STATIC_PAGES, type StaticPageId } from '@/lib/pages';
-import type { AppView } from '@/lib/route';
+import type { Destination } from '@/lib/route';
 import {
   SiteFooter,
   type FooterColumn,
@@ -10,7 +10,7 @@ import {
 
 interface AppFooterProps {
   onConversionChange: (id: ConversionId) => void;
-  onViewChange: (view: AppView) => void;
+  onViewChange: (view: Destination) => void;
   onOpenPage: (id: StaticPageId) => void;
 }
 

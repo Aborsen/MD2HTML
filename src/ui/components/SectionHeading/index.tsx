@@ -54,8 +54,15 @@ export function SectionHeading({
           </Typography>
         )}
 
+        {/*
+         * `align` rather than a class, because `Typography` defaults it to `left` and emits
+         * `text-left` on every element it renders — so the wrapper's `text-center` never reached
+         * the title. A one-line title hid it, since `items-center` centres a box that hugs its
+         * text; it showed only on a title that wrapped, which in German is most of them.
+         */}
         <Typography
           variant="h2"
+          align={centred ? 'center' : 'left'}
           className={cn(
             size === 'lg' ? 'text-2xl md:text-3xl' : 'text-lg md:text-lg',
             'text-balance'

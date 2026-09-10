@@ -1,11 +1,11 @@
 import type { CrumbSpec } from '@/lib/breadcrumbs';
-import type { AppView } from '@/lib/route';
+import type { Destination } from '@/lib/route';
 import { Breadcrumbs } from '@/ui/components/Breadcrumbs';
 
 interface AppBreadcrumbsProps {
   items: CrumbSpec[];
   /** Moving inside the app rather than reloading it, when the destination is a view we have. */
-  onNavigate: (view: AppView) => void;
+  onNavigate: (view: Destination) => void;
   className?: string;
 }
 

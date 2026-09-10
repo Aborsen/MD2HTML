@@ -28,7 +28,17 @@ export type AppView =
   | 'docs'
   | 'blog'
   | 'page'
-  | 'embed';
+  | 'embed'
+  | 'notFound';
+
+/**
+ * A view something can navigate to.
+ *
+ * `notFound` is not one. It is what an address turns out to be, not a place the app sends anybody,
+ * and `goTo('notFound')` would have to invent a path for a page that has none — which is how this
+ * type came to exist: the compiler asked what to push.
+ */
+export type Destination = Exclude<AppView, 'notFound'>;
 
 export interface Route {
   view: AppView;
@@ -67,17 +77,7 @@ export function readRoute(): Route {
 
   return {
     locale,
-    view: page
-      ? 'page'
-      : /^\/embed\/?$/.test(path)
-        ? 'embed'
-        : /^\/history\/?$/.test(path)
-          ? 'history'
-          : /^\/docs\/?$/.test(path)
-            ? 'docs'
-            : /^\/blog(\/|$)/.test(path)
-              ? 'blog'
-              : 'converter',
+    view: viewFor(path, Boolean(page), Boolean(shared)),
     conversionId: (conversionForPath(path)?.id ?? DEFAULT_CONVERSION),
     filter: new URLSearchParams(window.location.search).get('filter'),
     sharedToken: shared ? decodeURIComponent(shared[1]) : null,
@@ -86,7 +86,56 @@ export function readRoute(): Route {
   };
 }
 
-const PATHS: Record<Exclude<AppView, 'converter' | 'page'>, string> = {
+/*
+ * Which screen an address asks for, and `notFound` when it asks for nothing.
+ *
+ * The last branch used to be `converter`, so every address the app did not recognise rendered the
+ * Markdown screen: a typo in a URL looked like the front page with a stranger's path in the bar,
+ * and nothing anywhere said the page did not exist. Vercel answers most of those before the bundle
+ * runs — but it answers them by serving /404.html, and then this decides what the reader sees.
+ */
+function viewFor(path: string, hasPage: boolean, isShared: boolean): AppView {
+  if (hasPage) {
+    return 'page';
+  }
+
+  if (/^\/embed\/?$/.test(path)) {
+    return 'embed';
+  }
+
+  if (/^\/history\/?$/.test(path)) {
+    return 'history';
+  }
+
+  if (/^\/docs\/?$/.test(path)) {
+    return 'docs';
+  }
+
+  /*
+   * The whole of /blog, an article that does not exist included. ArticlePage says "no such article"
+   * with the index a click away, which is a better answer than a generic page — and the 404 status
+   * is Vercel's to send, since there is no prerendered file at that address for it to serve.
+   */
+  if (/^\/blog(\/|$)/.test(path)) {
+    return 'blog';
+  }
+
+  /*
+   * A conversion's own address, `/` among them: see `conversionForPath`, where the default
+   * conversion holds the root.
+   *
+   * `isShared` is here so /open/<token> cannot fall through. App renders a shared document before
+   * the shell, so the view it reports for that address is never read — but a router that called a
+   * working address `notFound` would mislead the next person to read it.
+   */
+  if (isShared || conversionForPath(path)) {
+    return 'converter';
+  }
+
+  return 'notFound';
+}
+
+const PATHS: Record<Exclude<Destination, 'converter' | 'page'>, string> = {
   history: '/history',
   docs: '/docs',
   blog: '/blog',
@@ -165,7 +214,7 @@ function move(path: string, search = '') {
 }
 
 /** Moves to a view, adding a history entry so Back returns to the previous one. */
-export function goTo(view: AppView, filter?: string | null) {
+export function goTo(view: Destination, filter?: string | null) {
   // A page of words has its own address; `goToPage` is how you get to one.
   const path = view === 'converter' || view === 'page' ? '/' : PATHS[view];
 

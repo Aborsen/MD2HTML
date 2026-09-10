@@ -15,6 +15,7 @@ import { BlogPage } from './features/BlogPage';
 import { DocsPage } from './features/DocsPage';
 import { EmbedPage } from './features/EmbedPage';
 import { HistoryPage } from './features/HistoryPage';
+import { NotFoundPage } from './features/NotFoundPage';
 import { SharedDocumentPage } from './features/SharedDocumentPage';
 import { StaticPage } from './features/StaticPage';
 import { staticPage, type StaticPageId } from './lib/pages';
@@ -34,6 +35,7 @@ import { getDocStats, markdownToHtml } from './lib/markdown';
 import { mergedName, mergeMarkdown } from './lib/merge';
 import {
   type AppView,
+  type Destination,
   goTo,
   goToArticle,
   goToConversion,
@@ -96,7 +98,7 @@ function Shell() {
    * dropzone — the one thing that page exists for, off screen. `popstate` is deliberately left
    * alone: going Back should return you to where you were, which the browser already does.
    */
-  const setView = useCallback((next: AppView) => {
+  const setView = useCallback((next: Destination) => {
     setViewState(next);
     setArticleSlug(null);
     setPageId(null);
@@ -506,6 +508,12 @@ function Shell() {
               onGoToConverter={startOver}
             />
           )
+        ) : view === 'notFound' ? (
+          <NotFoundPage
+            onGoToConverter={startOver}
+            onGoToDocs={() => setView('docs')}
+            onGoToBlog={() => setView('blog')}
+          />
         ) : view === 'converter' ? (
           <ConverterPage
             conversion={conversion(conversionId)}

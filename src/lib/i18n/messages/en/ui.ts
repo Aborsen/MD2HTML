@@ -402,6 +402,25 @@ export const ui: Content['ui'] = {
   /* The foot of the site. The column of conversions and the legal links get their words elsewhere. */
   'footer.tagline':
     'Markdown, HTML, Word, CSV and JSON documents, converted in your browser.',
+  /*
+   * The page for an address that is not a page.
+   *
+   * `notfound.note` is the one line here that is not navigation: a reader who mistyped something
+   * knows they did, and a reader who followed a link from these pages has found a defect and is
+   * the only person who can say so.
+   */
+  'notfound.eyebrow': '404',
+  'notfound.title': 'That address is not a page',
+  'notfound.lede':
+    'Nothing on this site answers to it. Either a character is wrong, or a link somewhere else points at something that has moved.',
+  'notfound.converter': 'Convert a file',
+  'notfound.docs': 'Read the documentation',
+  'notfound.blog': 'Browse the blog',
+  'notfound.note': 'If a link on this site sent you here, that is a bug rather than a typo.',
+  'notfound.seo.title': 'Page not found',
+  'notfound.seo.description':
+    'This address does not match any page on the site. The converter, the documentation and the blog are one click away.',
+
   'footer.builtby': 'Built by Raudar Labs.',
   'footer.note': '© Raudar Labs {year}',
   'footer.converter': 'Converter',

@@ -14,7 +14,7 @@ import {
 } from '@shared/conversions';
 import { useI18n, useT } from '@/lib/i18n/context';
 import { STATIC_PAGES, type StaticPageId } from '@/lib/pages';
-import type { AppView } from '@/lib/route';
+import type { AppView, Destination } from '@/lib/route';
 import { IconButton } from '@/ui/components/IconButton';
 import {
   Sheet,
@@ -32,7 +32,7 @@ interface MobileNavProps {
   view: AppView;
   conversionId: ConversionId;
   historyCount: number;
-  onViewChange: (view: AppView) => void;
+  onViewChange: (view: Destination) => void;
   onConversionChange: (id: ConversionId) => void;
   onOpenPage: (id: StaticPageId) => void;
 }

@@ -17,7 +17,7 @@ import {
   formatArticleDate,
 } from '@/lib/blog';
 import { markdownToHtml } from '@/lib/markdown';
-import type { AppView } from '@/lib/route';
+import type { Destination } from '@/lib/route';
 import { ArticleCard } from '@/ui/components/ArticleCard';
 import { Badge } from '@/ui/components/Badge';
 import { Button } from '@/ui/components/Button';
@@ -30,7 +30,7 @@ interface ArticlePageProps {
   onBack: () => void;
   onOpenArticle: (slug: string) => void;
   /** For the links inside the article that point at the rest of the app. */
-  onGoTo: (view: AppView) => void;
+  onGoTo: (view: Destination) => void;
   onGoToConverter: () => void;
 }
 
@@ -38,7 +38,7 @@ interface ArticlePageProps {
 const DEFAULT_TITLE = 'TransformPipe — Markdown to HTML';
 
 /** The app's own addresses, as an article would write them. */
-const VIEW_FOR_PATH: Record<string, AppView> = {
+const VIEW_FOR_PATH: Record<string, Destination> = {
   '/': 'converter',
   '/history': 'history',
   '/docs': 'docs',

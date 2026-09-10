@@ -415,6 +415,26 @@ export const ui: Content['ui'] = {
   /* Der Fuß der Seite. Die Spalte der Umwandlungen und die Rechtslinks holen ihre Worte anderswo. */
   'footer.tagline':
     'Markdown-, HTML-, Word-, CSV- und JSON-Dokumente, umgewandelt im Browser.',
+  /*
+   * The page for an address that is not a page.
+   *
+   * `notfound.note` is the one line here that is not navigation: a reader who mistyped something
+   * knows they did, and a reader who followed a link from these pages has found a defect and is
+   * the only person who can say so.
+   */
+  'notfound.eyebrow': '404',
+  'notfound.title': 'Diese Adresse ist keine Seite',
+  'notfound.lede':
+    'Auf dieser Website antwortet nichts darauf. Entweder ist ein Zeichen falsch, oder ein Link woanders zeigt auf etwas, das umgezogen ist.',
+  'notfound.converter': 'Eine Datei konvertieren',
+  'notfound.docs': 'Die Dokumentation lesen',
+  'notfound.blog': 'Im Blog stöbern',
+  'notfound.note':
+    'Wenn ein Link auf dieser Website Sie hierher geschickt hat, ist das ein Fehler und kein Tippfehler.',
+  'notfound.seo.title': 'Seite nicht gefunden',
+  'notfound.seo.description':
+    'Diese Adresse passt zu keiner Seite dieser Website. Der Konverter, die Dokumentation und der Blog sind einen Klick entfernt.',
+
   'footer.builtby': 'Gebaut von Raudar Labs.',
   'footer.note': '© Raudar Labs {year}',
   'footer.converter': 'Konverter',

@@ -50,6 +50,22 @@
       "destination": "/index.html"
     },
     {
+      "source": "/de/history",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/fr/history",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/es/history",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/it/history",
+      "destination": "/index.html"
+    },
+    {
       "source": "/html-to-markdown",
       "destination": "/index.html"
     },
@@ -91,10 +107,6 @@
     },
     {
       "source": "/blog",
-      "destination": "/index.html"
-    },
-    {
-      "source": "/blog/(.*)",
       "destination": "/index.html"
     },
     {

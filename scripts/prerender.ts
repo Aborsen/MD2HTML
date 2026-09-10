@@ -179,6 +179,14 @@ interface Page {
   head?: string;
   /** Left out of the sitemap when false. */
   listed?: boolean;
+  /**
+   * Set on a page that is not at an address of its own.
+   *
+   * Only 404.html so far. A canonical link and an `og:url` are claims about where a document
+   * lives, and this one is served for whatever address a reader mistyped — so it claims nothing,
+   * and says `noindex` instead.
+   */
+  addressless?: boolean;
   lastmod?: string;
   /** Which language this file is. English when absent, which is most of them. */
   locale?: Locale;
@@ -268,8 +276,10 @@ function render(page: Page): string {
   const locale = page.locale ?? DEFAULT_LOCALE;
 
   const head = [
-    `<link rel="canonical" href="${url}" />`,
-    alternates(splitLocale(page.path).rest, page.languages),
+    page.addressless
+      ? '<meta name="robots" content="noindex" />'
+      : `<link rel="canonical" href="${url}" />`,
+    page.addressless ? '' : alternates(splitLocale(page.path).rest, page.languages),
     `<meta property="og:type" content="${page.path.startsWith('/blog/') ? 'article' : 'website'}" />`,
     `<meta property="og:site_name" content="TransformPipe" />`,
     `<meta property="og:title" content="${escapeHtml(page.title)}" />`,
@@ -688,6 +698,41 @@ for (const page of pages) {
   write(page);
 }
 
+/*
+ * ---------------------------------------------------------------- the page that is not a page
+ *
+ * dist/404.html, and it is written here rather than pushed onto `pages` for two reasons. It goes
+ * to that exact filename instead of a directory of its own, because that is the file the host
+ * serves — with a 404 status — for an address matching nothing. And it is not in the sitemap, an
+ * omission `listed` already expresses but which is worth saying out loud for this one.
+ *
+ * The file is English and the bundle re-renders it in the reader's language, which works because
+ * the address in the bar is still the one they asked for: the router reads `/de/…`, sets German,
+ * and the screen changes. One file, five languages, no redirect.
+ */
+const missing = CATALOGUES[DEFAULT_LOCALE].ui;
+
+writeFileSync(
+  join(DIST, '404.html'),
+  render({
+    path: '/404',
+    addressless: true,
+    title: `${missing['notfound.seo.title']} — TransformPipe`,
+    description: missing['notfound.seo.description'],
+    body: [
+      `<h1>${escapeHtml(missing['notfound.title'])}</h1>`,
+      `<p>${escapeHtml(missing['notfound.lede'])}</p>`,
+      '<ul>',
+      `<li><a href="/">${escapeHtml(missing['notfound.converter'])}</a></li>`,
+      `<li><a href="/docs">${escapeHtml(missing['notfound.docs'])}</a></li>`,
+      `<li><a href="/blog">${escapeHtml(missing['notfound.blog'])}</a></li>`,
+      '</ul>',
+      `<p>${escapeHtml(missing['notfound.note'])}</p>`,
+    ].join(''),
+  }),
+  'utf8'
+);
+
 // ---------------------------------------------------------------- sitemap and robots
 const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
@@ -722,6 +767,11 @@ writeFileSync(
     'Disallow: /report/',
     'Disallow: /api/',
     'Disallow: /history',
+    /* The same view under each prefix, which the rewrites serve and a crawler has no use for. */
+    'Disallow: /de/history',
+    'Disallow: /fr/history',
+    'Disallow: /es/history',
+    'Disallow: /it/history',
     /* Framed into other pages, and the same converter as `/`. Not a search result. */
     'Disallow: /embed',
     'Disallow: /.well-known/',

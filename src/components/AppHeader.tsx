@@ -23,16 +23,16 @@ import { Separator } from '@/ui/components/Separator';
 import { Typography } from '@/ui/components/Typography';
 import { cn } from '@/ui/lib/utils';
 
-import type { AppView } from '@/lib/route';
+import type { AppView, Destination } from '@/lib/route';
 
-export type { AppView };
+export type { AppView, Destination };
 
 interface AppHeaderProps {
   view: AppView;
   /** Which conversion the converter is on, so the menu can show it as the current one. */
   conversionId: ConversionId;
   historyCount: number;
-  onViewChange: (view: AppView) => void;
+  onViewChange: (view: Destination) => void;
   onConversionChange: (id: ConversionId) => void;
   /** Only the phone's menu offers these; on a wide screen they live in the footer. */
   onOpenPage: (id: StaticPageId) => void;
