@@ -65,10 +65,17 @@ export function NotFoundPage({
         <Button variant="primary" rightSlot={<ArrowRight />} onClick={onGoToConverter}>
           {t('notfound.converter')}
         </Button>
+        {/*
+         * Both alternatives are `secondary`, because the documentation and the blog are peers —
+         * two places to go instead of the converter, not a second and a third choice. The blog was
+         * `tertiary`, which in this design system is transparent on transparent until it is
+         * hovered: next to a filled button and an outlined one it read as a sentence rather than
+         * an option, so one of the three ways out did not look like one.
+         */}
         <Button variant="secondary" onClick={onGoToDocs}>
           {t('notfound.docs')}
         </Button>
-        <Button variant="tertiary" onClick={onGoToBlog}>
+        <Button variant="secondary" onClick={onGoToBlog}>
           {t('notfound.blog')}
         </Button>
       </div>
