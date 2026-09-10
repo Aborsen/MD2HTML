@@ -403,6 +403,22 @@ export const ui: Content['ui'] = {
   'footer.tagline':
     'Markdown, HTML, Word, CSV and JSON documents, converted in your browser.',
   /*
+   * The changelog page, at /changelog and linked from the footer's Resources.
+   *
+   * Only the chrome is here. The entries are `content/changelog.md`, in English, for the reason
+   * `ChangelogPage` gives: a changelog grows by an entry per release, and five translations per
+   * entry is a cost that gets skipped after the second one.
+   */
+  'changelog.eyebrow': 'Changelog',
+  'changelog.title': 'What has shipped',
+  'changelog.lede':
+    'Every release, and the changes under it that somebody would notice. Newest first; the versions are the tags in the repository.',
+  'changelog.seo.title': 'Changelog',
+  'changelog.seo.description':
+    'Every TransformPipe release and the changes under it, newest first.',
+  'footer.changelog': 'Changelog',
+
+  /*
    * The page for an address that is not a page.
    *
    * `notfound.note` is the one line here that is not navigation: a reader who mistyped something

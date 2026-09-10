@@ -41,6 +41,10 @@ export function docsCrumbs(content: Content, locale: Locale): CrumbSpec[] {
   ];
 }
 
+export function changelogCrumbs(content: Content, locale: Locale): CrumbSpec[] {
+  return [home(content, locale), { label: content.ui['changelog.title'] }];
+}
+
 export function historyCrumbs(content: Content, locale: Locale): CrumbSpec[] {
   return [home(content, locale), { label: content.ui['header.nav.history'] }];
 }

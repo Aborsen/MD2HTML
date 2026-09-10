@@ -64,6 +64,11 @@ export function AppFooter({
           href: '/blog',
           onNavigate: () => onViewChange('blog'),
         },
+        {
+          label: t('footer.changelog'),
+          href: '/changelog',
+          onNavigate: () => onViewChange('changelog'),
+        },
         { label: t('footer.git'), href: REPO_URL, external: true },
       ],
     },

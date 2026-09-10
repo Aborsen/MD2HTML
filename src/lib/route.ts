@@ -29,6 +29,7 @@ export type AppView =
   | 'blog'
   | 'page'
   | 'embed'
+  | 'changelog'
   | 'notFound';
 
 /**
@@ -111,6 +112,10 @@ function viewFor(path: string, hasPage: boolean, isShared: boolean): AppView {
     return 'docs';
   }
 
+  if (/^\/changelog\/?$/.test(path)) {
+    return 'changelog';
+  }
+
   /*
    * The whole of /blog, an article that does not exist included. ArticlePage says "no such article"
    * with the index a click away, which is a better answer than a generic page — and the 404 status
@@ -138,6 +143,7 @@ function viewFor(path: string, hasPage: boolean, isShared: boolean): AppView {
 const PATHS: Record<Exclude<Destination, 'converter' | 'page'>, string> = {
   history: '/history',
   docs: '/docs',
+  changelog: '/changelog',
   blog: '/blog',
   /* Reachable only by being framed; nothing in the app navigates to it. */
   embed: '/embed',
