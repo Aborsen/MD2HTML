@@ -1,5 +1,8 @@
 import { Hono } from 'hono';
 import type { Context } from 'hono';
+import { htmlToMarkdown } from '../shared/from-html.js';
+import { jsonToMarkdown } from '../shared/from-json.js';
+import { delimitedToMarkdown } from '../shared/from-table.js';
 import { buildStandaloneHtml } from '../shared/markdown.js';
 import { DOCS_SECTIONS } from '../src/lib/docs-sections.js';
 import { FAQ_ENTRIES } from '../src/lib/faq.js';
@@ -26,6 +29,21 @@ import v1 from './v1.js';
  * A tool that queried the database directly would be a second implementation of "whose documents
  * are these", and that is the question you least want two answers to.
  */
+
+/**
+ * What `from` means to the API, which knows a conversion by the name on its own page.
+ *
+ * Word is absent on purpose. A .docx is a zip of XML and a tool's arguments are JSON, so the file
+ * would have to travel as base64 through the conversation — which an assistant cannot
+ * produce from an attachment it only ever sees as extracted text. Word converts in the app and at
+ * the API, where a request body can be bytes.
+ */
+const SAVE_KINDS: Record<string, string> = {
+  html: 'html-to-markdown',
+  csv: 'csv-to-markdown',
+  tsv: 'csv-to-markdown',
+  json: 'json-to-markdown',
+};
 
 /** Versions this server will speak if a client asks for one of them. */
 const SPOKEN = new Set(['2024-11-05', '2025-03-26', '2025-06-18', '2025-11-25']);
@@ -351,19 +369,103 @@ const TOOLS: Record<McpToolName, Tool> = {
     },
   },
 
+  tp_convert_to_markdown: {
+    description:
+      'Convert HTML, CSV, TSV or JSON to Markdown and return it. `from` says which. Nothing is saved to the account; to keep the result, pass the same source and `from` to tp_save_document, which stores it and records what it was made from. A Word file cannot come through here — a .docx is a zip, not text — so it converts in the app, or by POSTing the file to /api/v1/documents?kind=word-to-markdown.',
+    inputSchema: {
+      type: 'object',
+      additionalProperties: false,
+      required: ['source', 'from'],
+      properties: {
+        source: { type: 'string', description: 'The file, as text.' },
+        from: {
+          type: 'string',
+          enum: ['html', 'csv', 'tsv', 'json'],
+          description: 'What the source is.',
+        },
+        name: {
+          type: 'string',
+          description:
+            'What to call it. JSON uses it as the heading of the document it builds; the others ignore it.',
+        },
+      },
+    },
+    run: async (_c, args) => {
+      const source = String(args.source ?? '');
+      const from = String(args.from ?? '');
+
+      if (!source.trim()) {
+        return say('There is nothing to convert.', true);
+      }
+
+      if (source.length > QUOTA.documentBytes) {
+        return say(
+          `That is ${bytes(source.length)}; the limit for one document is ${bytes(QUOTA.documentBytes)}.`,
+          true
+        );
+      }
+
+      /*
+       * The same functions the API and the browser call, which is why they live in `shared/`: a
+       * conversion written twice is two conversions, and the second one is discovered by a person
+       * whose table came out differently in a chat than on the site.
+       */
+      if (from === 'html') {
+        return say(clip(htmlToMarkdown(source)));
+      }
+
+      if (from === 'csv' || from === 'tsv') {
+        const table = delimitedToMarkdown(source, {
+          delimiter: from === 'tsv' ? '\t' : undefined,
+        });
+
+        return table ? say(clip(table)) : say('That has no rows in it.', true);
+      }
+
+      if (from === 'json') {
+        try {
+          return say(
+            clip(
+              jsonToMarkdown(source, {
+                title: String(args.name ?? 'document').replace(/\.[^.]+$/, ''),
+              })
+            )
+          );
+        } catch (cause) {
+          // The parser says where it stopped, and that is the whole of what anybody can act on.
+          return say(
+            cause instanceof Error ? cause.message : 'That is not valid JSON.',
+            true
+          );
+        }
+      }
+
+      return say('`from` must be html, csv, tsv or json.', true);
+    },
+  },
+
   tp_save_document: {
     description:
-      'Save Markdown to this TransformPipe account as a document, and optionally publish it in the same call. Returns the id, the size and — when shared — the URL. `share: "link"` is anyone holding the URL, `"people"` narrows it to the addresses in `emails`, `"private"` is nobody but the owner. Publishing makes a page on the public web: share a document the person actually asked to share.',
+      'Save a document to this TransformPipe account, and optionally publish it in the same call. Markdown by default; pass `from` to send HTML, CSV, TSV or JSON instead, which is converted on the way in and recorded as what it was made from. Returns the id, the size and — when shared — the URL. `share: "link"` is anyone holding the URL, `"people"` narrows it to the addresses in `emails`, `"private"` is nobody but the owner. Publishing makes a page on the public web: share a document the person actually asked to share.',
     writes: true,
     inputSchema: {
       type: 'object',
       additionalProperties: false,
       required: ['markdown'],
       properties: {
-        markdown: { type: 'string', description: 'The Markdown source to store.' },
+        markdown: {
+          type: 'string',
+          description: 'The source to store. Markdown unless `from` says otherwise.',
+        },
+        from: {
+          type: 'string',
+          enum: ['html', 'csv', 'tsv', 'json'],
+          description:
+            'Convert the source on the way in. Omit for Markdown. A .docx cannot come through a tool; use the app or the API.',
+        },
         name: {
           type: 'string',
-          description: 'File name, ending in .md. Default "document.md".',
+          description: 'File name. Default "document.md"; a converted file is stored as .md.',
         },
         share: {
           type: 'string',
@@ -381,12 +483,39 @@ const TOOLS: Record<McpToolName, Tool> = {
       const markdown = String(args.markdown ?? '');
 
       if (!markdown.trim()) {
-        return say('There is no Markdown to save.', true);
+        return say('There is nothing to save.', true);
       }
 
-      const name = String(args.name ?? 'document.md');
+      const from = String(args.from ?? '');
+      const kind = SAVE_KINDS[from];
+
+      if (from && !kind) {
+        return say('`from` must be html, csv, tsv or json.', true);
+      }
+
+      /*
+       * The source goes to the API as it is, with the conversion named, rather than converted here
+       * and posted as Markdown. The document then records what it was made from, exactly as one
+       * saved from the app does, and the history screen can say so.
+       */
+      let name = String(args.name ?? 'document.md');
+
+      /*
+       * A tab-separated file is a comma-separated one with a different delimiter, and the API tells
+       * them apart by the extension — the rule the app follows when somebody drops a
+       * file on it. `from: "tsv"` is a caller saying the same thing in words, so the name is made
+       * to agree rather than the rule being written twice.
+       */
+      if (from === 'tsv' && !name.toLowerCase().endsWith('.tsv')) {
+        name = `${name.replace(/[.][^.]+$/, '')}.tsv`;
+      }
+
       const share = args.share === 'link' || args.share === 'people' ? args.share : '';
       const query = new URLSearchParams({ name });
+
+      if (kind) {
+        query.set('kind', kind);
+      }
 
       if (share) {
         query.set('share', share);
@@ -394,7 +523,7 @@ const TOOLS: Record<McpToolName, Tool> = {
 
       const created = await callApi(c, `/api/v1/documents?${query}`, {
         method: 'POST',
-        headers: { 'content-type': 'text/markdown' },
+        headers: { 'content-type': 'text/plain' },
         body: markdown,
       });
 

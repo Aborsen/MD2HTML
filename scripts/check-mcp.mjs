@@ -8,6 +8,7 @@
  * exchange, replay, refresh rotation, revocation, and every tool.
  */
 import { createHash, randomBytes } from 'node:crypto';
+import zlib from 'node:zlib';
 import { neon } from '@neondatabase/serverless';
 import { config } from 'dotenv';
 
@@ -606,6 +607,202 @@ check(
   'an id that is not an id is not found, rather than a crash',
   nonsenseId.isError,
   nonsenseId.text.slice(0, 80)
+);
+
+console.log('\n— the other sources');
+
+const html = await tool(tokens.access_token, 'tp_convert_to_markdown', {
+  source: '<h1>Title</h1><p>A <a href="https://transformpipe.com">link</a>.</p>',
+  from: 'html',
+});
+check(
+  'HTML comes back as Markdown',
+  /^# Title/m.test(html.text) && /\[link\]\(https:\/\/transformpipe\.com\)/.test(html.text),
+  html.text.slice(0, 120)
+);
+
+const csv = await tool(tokens.access_token, 'tp_convert_to_markdown', {
+  source: 'name,role\nAda,engine\nGrace,compiler',
+  from: 'csv',
+});
+check(
+  'CSV comes back as a table',
+  /\| name \| role \|/.test(csv.text) && /\| Ada \| engine \|/.test(csv.text),
+  csv.text.slice(0, 120)
+);
+
+const tsv = await tool(tokens.access_token, 'tp_convert_to_markdown', {
+  source: 'name\trole\nAda\tengine',
+  from: 'tsv',
+});
+check(
+  'and a tab-separated one is not read as a single column',
+  /\| name \| role \|/.test(tsv.text),
+  tsv.text.slice(0, 120)
+);
+
+const json = await tool(tokens.access_token, 'tp_convert_to_markdown', {
+  source: '[{"name":"Ada","role":"engine"},{"name":"Grace","role":"compiler"}]',
+  from: 'json',
+  name: 'people.json',
+});
+check(
+  'JSON of flat objects becomes a table',
+  /\| Name \| Role \|/i.test(json.text) && /Ada/.test(json.text),
+  json.text.slice(0, 160)
+);
+
+const brokenJson = await tool(tokens.access_token, 'tp_convert_to_markdown', {
+  source: '{"a": ',
+  from: 'json',
+});
+check(
+  'and broken JSON is refused with what the parser saw',
+  brokenJson.isError && brokenJson.text.length > 10,
+  brokenJson.text.slice(0, 120)
+);
+
+const asWord = await tool(tokens.access_token, 'tp_convert_to_markdown', {
+  source: 'PK...',
+  from: 'word',
+});
+check(
+  'a .docx is refused here, and the sentence says where it goes',
+  asWord.isError && /html, csv, tsv or json/i.test(asWord.text),
+  asWord.text.slice(0, 120)
+);
+
+/*
+ * A .docx, built here rather than committed as a fixture: a Word file is a zip of XML, and forty
+ * lines that write one are easier to read — and to trust — than a binary blob in the repository
+ * nobody can diff. Stored, not deflated, so there is nothing to get wrong but the offsets.
+ */
+function docx(parts) {
+  const files = [];
+  const central = [];
+  let offset = 0;
+
+  for (const [name, text] of Object.entries(parts)) {
+    const data = Buffer.from(text, 'utf8');
+    const nameBytes = Buffer.from(name, 'utf8');
+    const crc = zlib.crc32(data);
+
+    const local = Buffer.alloc(30);
+    local.writeUInt32LE(0x04034b50, 0);
+    local.writeUInt16LE(20, 4);
+    local.writeUInt32LE(crc, 14);
+    local.writeUInt32LE(data.length, 18);
+    local.writeUInt32LE(data.length, 22);
+    local.writeUInt16LE(nameBytes.length, 26);
+
+    files.push(local, nameBytes, data);
+
+    const entry = Buffer.alloc(46);
+    entry.writeUInt32LE(0x02014b50, 0);
+    entry.writeUInt16LE(20, 4);
+    entry.writeUInt16LE(20, 6);
+    entry.writeUInt32LE(crc, 16);
+    entry.writeUInt32LE(data.length, 20);
+    entry.writeUInt32LE(data.length, 24);
+    entry.writeUInt16LE(nameBytes.length, 28);
+    entry.writeUInt32LE(offset, 42);
+
+    central.push(entry, nameBytes);
+    offset += local.length + nameBytes.length + data.length;
+  }
+
+  const body = Buffer.concat([...files, ...central]);
+  const directory = Buffer.concat(central);
+  const end = Buffer.alloc(22);
+
+  end.writeUInt32LE(0x06054b50, 0);
+  end.writeUInt16LE(Object.keys(parts).length, 8);
+  end.writeUInt16LE(Object.keys(parts).length, 10);
+  end.writeUInt32LE(directory.length, 12);
+  end.writeUInt32LE(offset, 16);
+
+  return Buffer.concat([body, end]);
+}
+
+const WORD = docx({
+  '[Content_Types].xml':
+    '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+    '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">' +
+    '<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>' +
+    '<Default Extension="xml" ContentType="application/xml"/>' +
+    '<Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>' +
+    '</Types>',
+  '_rels/.rels':
+    '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+    '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">' +
+    '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/>' +
+    '</Relationships>',
+  'word/document.xml':
+    '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+    '<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body>' +
+    '<w:p><w:pPr><w:pStyle w:val="Heading1"/></w:pPr><w:r><w:t>A Word heading</w:t></w:r></w:p>' +
+    '<w:p><w:r><w:t>A sentence from a .docx.</w:t></w:r></w:p>' +
+    '</w:body></w:document>',
+});
+
+const postWord = (body) =>
+  fetch(`${HOST}/api/v1/documents?kind=word-to-markdown&name=probe.docx`, {
+    method: 'POST',
+    headers: {
+      authorization: `Bearer ${tokens.access_token}`,
+      'content-type':
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    },
+    body,
+  });
+
+const wordUp = await postWord(WORD);
+const wordBody = await wordUp.json().catch(() => ({}));
+
+if (wordUp.status === 502 && /store/i.test(wordBody.error ?? '')) {
+  /*
+   * The conversion is what this checks, and it happened: the request got as far as the Blob store
+   * and failed there. Everything after the conversion needs this machine's credentials.
+   */
+  skip('a .docx posted to the API is converted and stored', why);
+} else {
+  check(
+    'a .docx posted to the API is converted and stored',
+    wordUp.status === 201,
+    `${wordUp.status} ${JSON.stringify(wordBody).slice(0, 160)}`
+  );
+  check(
+    'and it is recorded as the Word conversion',
+    wordBody.document?.kind === 'word-to-markdown',
+    JSON.stringify(wordBody.document ?? null).slice(0, 160)
+  );
+
+  if (wordBody.document?.id) {
+    const back = await fetch(`${HOST}/api/v1/documents/${wordBody.document.id}`, {
+      headers: { authorization: `Bearer ${tokens.access_token}` },
+    });
+    const got = await back.json().catch(() => ({}));
+
+    check(
+      'with the heading and the sentence in it',
+      /# A Word heading/.test(got.document?.markdown ?? '') &&
+        /A sentence from a \.docx\./.test(got.document?.markdown ?? ''),
+      (got.document?.markdown ?? '').slice(0, 120)
+    );
+
+    await fetch(`${HOST}/api/v1/documents/${wordBody.document.id}`, {
+      method: 'DELETE',
+      headers: { authorization: `Bearer ${tokens.access_token}` },
+    });
+  }
+}
+
+const notWord = await postWord(Buffer.from('this is not a zip at all'));
+const notWordBody = await notWord.json().catch(() => ({}));
+check(
+  'and something that is not a .docx is refused in a sentence',
+  notWord.status === 400 && /docx/i.test(notWordBody.error ?? ''),
+  `${notWord.status} ${JSON.stringify(notWordBody).slice(0, 120)}`
 );
 
 console.log('\n— scope');

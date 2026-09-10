@@ -130,7 +130,7 @@ export const docsPage = {
    * stehen die Erklärungen daneben. Die Platzhalter sind Query-Parameter und JSON-Formen.
    */
   'docs.api.post':
-    'Markdown als Body ({name}) oder JSON {json}. {share} veröffentlicht es im selben Aufruf. {kindHtml}, {kindCsv} oder {kindJson} wandelt den Body zuerst um, sodass eine Seite, eine Tabelle oder eine API-Antwort so gesendet werden kann, wie sie ist; {word} wird hier abgewiesen, denn ein {docx} wird im Browser gelesen.',
+    'Markdown als Body ({name}) oder JSON {json}. {share} veröffentlicht es im selben Aufruf. {kindHtml}, {kindCsv}, {kindJson} oder {word} wandelt den Body zuerst um, sodass eine Seite, eine Tabelle, eine API-Antwort oder ein {docx} so gesendet werden kann, wie es ist.',
   'docs.api.list':
     'Die neuesten 500, mit Größen, Zahlen und Freigabestand.',
   'docs.api.one': 'Metadaten und der Markdown-Quelltext.',

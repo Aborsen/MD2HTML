@@ -10,6 +10,7 @@ import {
   checkQuota,
   countCall,
   isVerified,
+  mb,
   QUOTA,
   RATE,
   usageOf,
@@ -190,10 +191,12 @@ v1.post('/documents', async (c) => {
    * What made this document. A caller that says nothing means Markdown, which is what every
    * document was before there was more than one conversion.
    *
-   * Two of the conversions run here as well as in the browser, because both are text in and text
-   * out. Word is not: reading a .docx needs a zip reader and an XML mapper, and putting those in
-   * the function to serve an endpoint nobody has asked for yet is weight for its own sake — so it
-   * is refused by name rather than silently stored as if it had been converted.
+   * Every conversion the app offers runs here now, Word included. It was refused by name for a
+   * while, on the grounds that a zip reader and an XML mapper were weight in the function for an
+   * endpoint nobody had asked for; both arguments have gone. `mammoth` is already a dependency, so
+   * the weight is already here, and it is loaded only on the request that needs it. And this is
+   * the one place a .docx can go: a file is bytes, a request body carries bytes, and the connector
+   * cannot — a tool's arguments are JSON.
    */
   const asked = c.req.query('kind') ?? '';
   const named = CONVERSIONS.find((one) => one.id === asked);
@@ -209,18 +212,9 @@ v1.post('/documents', async (c) => {
 
   const kind: ConversionId = named?.id ?? DEFAULT_CONVERSION;
 
-  if (kind === 'word-to-markdown') {
-    return c.json(
-      {
-        error:
-          'word-to-markdown runs in the browser only. Convert the .docx at /word-to-markdown, or post the Markdown it produced.',
-      },
-      400
-    );
-  }
-
   let name = c.req.query('name') ?? '';
   let source = '';
+  let docx: ArrayBuffer | null = null;
 
   /*
    * The `{name, markdown}` envelope belongs to Markdown alone.
@@ -230,7 +224,9 @@ v1.post('/documents', async (c) => {
    * envelope, find no `markdown` field in, and refuse. So a named conversion means the body is the
    * source file, whatever its content type says; only the default reads an envelope.
    */
-  if (kind === DEFAULT_CONVERSION && type.includes('application/json')) {
+  if (kind === 'word-to-markdown') {
+    docx = await c.req.arrayBuffer();
+  } else if (kind === DEFAULT_CONVERSION && type.includes('application/json')) {
     const body = await c.req
       .json<{ name?: string; markdown?: string }>()
       .catch(() => ({}) as { name?: string; markdown?: string });
@@ -241,7 +237,24 @@ v1.post('/documents', async (c) => {
     source = await c.req.text();
   }
 
-  if (!source.trim()) {
+  if (docx) {
+    if (docx.byteLength === 0) {
+      return c.json({ error: 'Send the .docx file as the request body' }, 400);
+    }
+
+    /*
+     * Checked before it is parsed, not after. The quota below measures the Markdown that comes
+     * out, and by then a hundred megabytes of zip has already been through an XML parser.
+     */
+    if (docx.byteLength > QUOTA.documentBytes) {
+      return c.json(
+        {
+          error: `That file is ${mb(docx.byteLength)}; the limit for one document is ${mb(QUOTA.documentBytes)}.`,
+        },
+        413
+      );
+    }
+  } else if (!source.trim()) {
     return c.json(
       {
         error:
@@ -254,6 +267,54 @@ v1.post('/documents', async (c) => {
   }
 
   let markdown = source;
+
+  if (docx) {
+    /*
+     * Loaded here rather than at the top of the file: every other request through this module pays
+     * for an import at the top, and only this one needs a zip reader.
+     */
+    const mammoth = await import('mammoth');
+
+    let value = '';
+    let messages: Array<{ message: string }> = [];
+
+    try {
+      ({ value, messages } = await mammoth.convertToHtml({
+        buffer: Buffer.from(docx),
+      }));
+    } catch (cause) {
+      /*
+       * What a .docx that is not a .docx reaches here as: mammoth opens it as a zip and says so.
+       * The sentence is the caller's only clue about which file they sent.
+       */
+      return c.json(
+        {
+          error: `That is not a readable .docx: ${
+            cause instanceof Error ? cause.message : 'it could not be opened'
+          }`,
+        },
+        400
+      );
+    }
+
+    markdown = htmlToMarkdown(value);
+
+    if (!markdown.trim()) {
+      /*
+       * mammoth keeps its own account of what it could not map, and when nothing came out that
+       * account is the only thing anybody can act on. The app shows the same two lines.
+       */
+      const why = messages
+        .map((one) => one.message)
+        .slice(0, 2)
+        .join('; ');
+
+      return c.json(
+        { error: why ? `Nothing came out of that file: ${why}` : 'Nothing came out of that file' },
+        400
+      );
+    }
+  }
 
   if (kind === 'html-to-markdown') {
     markdown = htmlToMarkdown(source);

@@ -109,7 +109,7 @@ export const docsPage = {
    * explanations beside them. The placeholders are query parameters and JSON shapes.
    */
   'docs.api.post':
-    'Markdown nel corpo ({name}) oppure JSON {json}. {share} lo pubblica nella stessa chiamata. {kindHtml}, {kindCsv} o {kindJson} convertono prima il corpo, così una pagina, un foglio di calcolo o una risposta di API si possono inviare così come sono; {word} qui viene rifiutato, perché la lettura di un {docx} avviene nel browser.',
+    'Markdown nel corpo ({name}) oppure JSON {json}. {share} lo pubblica nella stessa chiamata. {kindHtml}, {kindCsv}, {kindJson} o {word} convertono prima il corpo, così una pagina, un foglio di calcolo, una risposta di API o un {docx} si possono inviare così come sono.',
   'docs.api.list': 'I 500 più recenti, con dimensioni, statistiche e stato della condivisione.',
   'docs.api.one': 'I metadati e il sorgente Markdown.',
   'docs.api.html': 'Il documento autosufficiente. {theme} è opzionale.',

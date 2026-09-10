@@ -151,7 +151,7 @@ curl -H "Authorization: Bearer tp_live_…"      --data-binary @README.md      "
 
 | | |
 | --- | --- |
-| `POST /api/v1/documents` | Markdown as the body (`?name=`) or JSON `{name, markdown}`; `?share=link\|people` publishes it in the same call; `?kind=html-to-markdown\|csv-to-markdown\|json-to-markdown` converts the body first, and `word-to-markdown` is refused here because reading a `.docx` happens in the browser |
+| `POST /api/v1/documents` | Markdown as the body (`?name=`) or JSON `{name, markdown}`; `?share=link\|people` publishes it in the same call; `?kind=html-to-markdown\|csv-to-markdown\|json-to-markdown\|word-to-markdown` converts the body first — for Word, post the `.docx` itself as the body |
 | `GET /api/v1/documents` | the newest 500 |
 | `GET /api/v1/documents/:id` | metadata and the source |
 | `GET /api/v1/documents/:id.html` | the standalone document, `?theme=dark` optional |

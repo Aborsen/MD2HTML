@@ -116,7 +116,7 @@ export const docsPage = {
    * voici les explications à côté. Les espaces réservés sont des paramètres et des formes JSON.
    */
   'docs.api.post':
-    'Le Markdown en corps de requête ({name}) ou en JSON {json}. {share} le publie dans le même appel. {kindHtml}, {kindCsv} ou {kindJson} convertit d’abord le corps, de sorte qu’une page, un tableur ou une réponse d’API se poste tel quel ; {word} est refusé ici, parce que la lecture d’un {docx} se fait dans le navigateur.',
+    'Le Markdown en corps de requête ({name}) ou en JSON {json}. {share} le publie dans le même appel. {kindHtml}, {kindCsv}, {kindJson} ou {word} convertit d’abord le corps, de sorte qu’une page, un tableur, une réponse d’API ou un {docx} se poste tel quel.',
   'docs.api.list':
     'Les 500 plus récents, avec les tailles, les décomptes et l’état de partage.',
   'docs.api.one': 'Les métadonnées et la source Markdown.',

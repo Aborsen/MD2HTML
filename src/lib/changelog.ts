@@ -32,6 +32,18 @@ export interface ChangelogEntry {
 const ENTRIES: ChangelogEntry[] = [
   {
     date: '2026-09-11',
+    title: 'Every conversion, everywhere it can go',
+    body:
+      'The app converted five things and the other two ways in did not. An assistant could only '
+      + 'be handed Markdown, and the API refused Word outright.\n\n'
+      + 'Now `tp_convert_to_markdown` takes HTML, CSV, TSV or JSON through the connector, and '
+      + '`tp_save_document` takes the same with `from`, so a document is stored knowing what it '
+      + 'was made from. And the API accepts a `.docx` as the request body — the one place a Word '
+      + 'file can go, because a file is bytes and a tool call is JSON: an assistant never holds '
+      + 'the file, only the text somebody extracted from it.',
+  },
+  {
+    date: '2026-09-11',
     title: 'The Connect button now connects',
     body:
       'Approving an assistant did nothing. The page said the form had not come from here, and it '

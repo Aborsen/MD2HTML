@@ -116,7 +116,7 @@ export const docsPage = {
    * las explicaciones de al lado. Los marcadores son parámetros de consulta y formas de JSON.
    */
   'docs.api.post':
-    'Markdown en el cuerpo ({name}) o JSON {json}. {share} lo publica en la misma llamada. {kindHtml}, {kindCsv} o {kindJson} convierten antes el cuerpo, así que una página, una hoja de cálculo o la respuesta de una API se pueden enviar tal cual; {word} se rechaza aquí, porque leer un {docx} ocurre en el navegador.',
+    'Markdown en el cuerpo ({name}) o JSON {json}. {share} lo publica en la misma llamada. {kindHtml}, {kindCsv}, {kindJson} o {word} convierten antes el cuerpo, así que una página, una hoja de cálculo, la respuesta de una API o un {docx} se pueden enviar tal cual.',
   'docs.api.list': 'Los 500 más recientes, con tamaños, recuentos y estado de lo compartido.',
   'docs.api.one': 'Los metadatos y el Markdown de origen.',
   'docs.api.html': 'El documento autónomo. {theme} es opcional.',

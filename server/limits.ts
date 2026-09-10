@@ -49,7 +49,8 @@ export type QuotaVerdict =
   | { ok: true; usage: Usage }
   | { ok: false; status: 403 | 413; error: string; usage: Usage };
 
-const mb = (bytes: number) => `${(bytes / 1024 / 1024).toFixed(1)} MB`;
+/** Exported so the API says a size the same way this file does. */
+export const mb = (bytes: number) => `${(bytes / 1024 / 1024).toFixed(1)} MB`;
 
 /**
  * Decides whether one more document fits.

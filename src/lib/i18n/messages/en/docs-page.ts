@@ -127,7 +127,7 @@ export const docsPage = {
    * explanations beside them. The placeholders are query parameters and JSON shapes.
    */
   'docs.api.post':
-    'Markdown as the body ({name}) or JSON {json}. {share} publishes it in the same call. {kindHtml}, {kindCsv} or {kindJson} converts the body first, so a page, a spreadsheet or an API response can be posted as it is; {word} is refused here, because reading a {docx} happens in the browser.',
+    'Markdown as the body ({name}) or JSON {json}. {share} publishes it in the same call. {kindHtml}, {kindCsv}, {kindJson} or {word} converts the body first, so a page, a spreadsheet, an API response or a {docx} can be posted as it is.',
   'docs.api.list': 'The newest 500, with sizes, stats and share state.',
   'docs.api.one': 'Metadata and the Markdown source.',
   'docs.api.html': 'The standalone document. {theme} optional.',

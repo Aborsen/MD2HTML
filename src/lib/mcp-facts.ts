@@ -12,6 +12,7 @@ export const MCP_PATH = '/api/mcp';
 export const MCP_TOOL_NAMES = [
   'tp_help',
   'tp_convert_markdown',
+  'tp_convert_to_markdown',
   'tp_save_document',
   'tp_list_documents',
   'tp_get_document',
@@ -27,8 +28,10 @@ export const MCP_TOOLS: Record<McpToolName, string> = {
   tp_help: 'Answers questions about TransformPipe from the documentation rather than from memory.',
   tp_convert_markdown:
     'Markdown in, sanitised HTML out. Optionally the whole self-contained document.',
+  tp_convert_to_markdown:
+    'HTML, CSV, TSV or JSON in, Markdown out. Word is a file, so it goes to the API or the app.',
   tp_save_document:
-    'Saves Markdown to the account, and publishes it in the same call when asked.',
+    'Saves Markdown to the account — or HTML, CSV, TSV or JSON, converted on the way in.',
   tp_list_documents: 'What is on the account, with the id each other tool takes.',
   tp_get_document: 'One document, as its Markdown source or as rendered HTML.',
   tp_share_document:
