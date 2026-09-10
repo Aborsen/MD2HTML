@@ -90,6 +90,26 @@ reader already learned two articles ago, so keep to the column.
 | reference label (a link's) | Kürzel |
 | link checker | Link-Prüfer |
 | tracking pixel | Zählpixel |
+| single file HTML | HTML in einer Datei |
+| web font | Webschrift |
+| assets (a folder of) | Beiwerk |
+| copy button | Kopierschaltfläche |
+| rich text | formatierter Text |
+| destination (where you paste) | Zielort |
+| cheat sheet | Merkblatt |
+| checklist | Prüfliste |
+| read-only link | Nur-Lese-Link |
+| citation marker | Zitatmarke |
+| block reference | Blockreferenz |
+| emphasis | Betonung |
+| globbing | Glob |
+| exit code | Exit-Code |
+| wrapper | Verpackung |
+| toolchain | Werkzeugkette |
+| default (a setting's) | Voreinstellung |
+
+`Betonung` for emphasis, not `Hervorhebung`: that one is reserved for `Syntaxhervorhebung`,
+where it means colouring code rather than marking a word.
 
 Formal address throughout: "Sie", never "du".
 
@@ -98,6 +118,10 @@ Formal address throughout: "Sie", never "du".
 Code samples, command lines, flags and file names. A German reader runs `pandoc --standalone`, not
 `pandoc --eigenständig`. Comments inside a sample are prose and are translated; the code around them
 is not.
+
+A docstring is prose too, and is translated — it is the sample's documentation, addressed to the
+reader, not something the program parses. Any path or identifier inside it stays as it is. That is
+the line between the two: a string the program acts on is code, a string that only explains is prose.
 
 Product names, error messages quoted from a tool, and anything in a table of licences.
 
