@@ -219,6 +219,61 @@ check(
   pendingRow.length === 1 && pendingRow[0].params.client_id === client.client_id
 );
 
+console.log('\n— the Connect button');
+
+/*
+ * The approval POST is the one request in the app that acts on a session, so it refuses to be
+ * driven from anywhere else — and for three days it refused everybody, because the consent page
+ * carried `Referrer-Policy: no-referrer` and Chrome derives a navigation's Origin header from the
+ * referrer policy: the page's own form arrived with `Origin: null`. Nothing here could see it. The
+ * database could: every pending row was shown and none was ever approved.
+ */
+const consentHeaders = await fetch(`${HOST}/api/oauth/approve`);
+
+check(
+  'the consent pages do not suppress their own origin',
+  consentHeaders.headers.get('referrer-policy') === 'same-origin',
+  consentHeaders.headers.get('referrer-policy') ?? '(absent)'
+);
+
+const approve = (headers) =>
+  fetch(`${HOST}/api/oauth/approve`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/x-www-form-urlencoded', ...headers },
+    body: new URLSearchParams({ pending: 'nothing', decision: 'allow' }),
+  });
+
+const fromOurPage = await approve({ origin: HOST, 'sec-fetch-site': 'same-origin' });
+check(
+  'a POST from our own page gets past the origin check',
+  fromOurPage.status === 401,
+  `got ${fromOurPage.status}`
+);
+
+const opaqueOrigin = await approve({ origin: 'null', 'sec-fetch-site': 'same-origin' });
+check(
+  'and so does one whose origin the browser opaqued',
+  opaqueOrigin.status === 401,
+  `got ${opaqueOrigin.status}`
+);
+
+const elsewhere = await approve({
+  origin: 'https://evil.example',
+  'sec-fetch-site': 'cross-site',
+});
+check(
+  'but a POST from another site is still refused',
+  elsewhere.status === 403,
+  `got ${elsewhere.status}`
+);
+
+const opaqueFromElsewhere = await approve({ origin: 'null', 'sec-fetch-site': 'cross-site' });
+check(
+  'and an opaque origin cross-site with it',
+  opaqueFromElsewhere.status === 403,
+  `got ${opaqueFromElsewhere.status}`
+);
+
 console.log('\n— a client that identified itself with a metadata document');
 
 /*

@@ -32,6 +32,19 @@ export interface ChangelogEntry {
 const ENTRIES: ChangelogEntry[] = [
   {
     date: '2026-09-11',
+    title: 'The Connect button now connects',
+    body:
+      'Approving an assistant did nothing. The page said the form had not come from here, and it '
+      + 'was right in a way that was wrong: the approval page asked browsers not to send a '
+      + 'referrer, and Chrome takes a page’s origin off the same setting — so the page’s own '
+      + 'form arrived claiming to come from nowhere, and the check that stops another site '
+      + 'approving things for you stopped the page itself.\n\n'
+      + 'Nothing had ever been connected through it. The tests could not see this, because a test '
+      + 'is not a browser and sends whichever headers it is told to; the database could, and said '
+      + 'so plainly: every request shown, none ever approved.',
+  },
+  {
+    date: '2026-09-11',
     title: 'An assistant can say who it is without registering',
     body:
       'Connecting an assistant used to mean it registered itself here first, and Claude made a '

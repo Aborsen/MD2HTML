@@ -447,7 +447,17 @@ const CONSENT_HEADERS = {
   // somebody else's page — which is the whole of what this flow exists to prevent.
   'content-security-policy':
     "default-src 'none'; style-src 'unsafe-inline'; form-action 'self'; script-src 'none'; frame-ancestors 'none'",
-  'referrer-policy': 'no-referrer',
+  /*
+   * `same-origin`, not `no-referrer`, and the difference is the whole of why the Connect button
+   * never worked.
+   *
+   * Under `no-referrer` Chrome sends a same-origin form POST with `Origin: null` — the header is
+   * derived from the referrer policy for a navigation, so a page that suppresses its referrer
+   * suppresses its own origin with it. The check on /approve read that `null` as "somewhere else"
+   * and refused every real approval; measured, both ways, against a local server that echoes what
+   * arrives. `same-origin` still sends nothing to anybody else, which is what the policy was for.
+   */
+  'referrer-policy': 'same-origin',
   'x-content-type-options': 'nosniff',
 };
 
@@ -845,7 +855,28 @@ oauth.post('/approve', async (c) => {
   const from = c.req.header('origin');
   const site = c.req.header('sec-fetch-site');
 
-  if ((from && from !== origin) || (site && site !== 'same-origin')) {
+  /*
+   * `null` is not "somewhere else". A page whose referrer policy strips the referrer sends its own
+   * same-origin POST with `Origin: null`, which is what this page did until the header above was
+   * changed — and a browser that keeps doing it for a reason of its own must still be able to
+   * approve. Sec-Fetch-Site is the check in that case: the browser sets it, no script can, and
+   * `same-origin` is a statement the page and the endpoint are the same place.
+   */
+  const opaque = from === 'null' && site === 'same-origin';
+
+  if ((from && from !== origin && !opaque) || (site && site !== 'same-origin')) {
+    /*
+     * Said out loud. The refusal is correct far more often than not, but when it is wrong it is
+     * wrong for everybody at once, and the page cannot say why without telling a stranger what our
+     * origin is.
+     */
+    console.warn(
+      'approve: refused — origin %s, sec-fetch-site %s, expected %s',
+      from ?? '(absent)',
+      site ?? '(absent)',
+      origin
+    );
+
     return notice(
       'That did not come from here',
       'This form only works from the page TransformPipe showed you. Start the connection again from your assistant.',
