@@ -236,6 +236,17 @@ check(
   consentHeaders.headers.get('referrer-policy') ?? '(absent)'
 );
 
+/*
+ * The consent page itself names the one client address it may send you to, which cannot be checked
+ * from here — rendering it needs a session. What can be checked is that everything else still names
+ * nothing at all: a page that answered `form-action *` would take the whole directive with it.
+ */
+check(
+  'and the pages with nowhere to send you still say so',
+  (consentHeaders.headers.get('content-security-policy') ?? '').includes("form-action 'self';"),
+  consentHeaders.headers.get('content-security-policy') ?? '(absent)'
+);
+
 const approve = (headers) =>
   fetch(`${HOST}/api/oauth/approve`, {
     method: 'POST',

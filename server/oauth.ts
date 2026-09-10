@@ -440,13 +440,15 @@ export function noticePage(options: {
 `;
 }
 
+const csp = (formAction: string) =>
+  `default-src 'none'; style-src 'unsafe-inline'; form-action ${formAction}; script-src 'none'; frame-ancestors 'none'`;
+
 const CONSENT_HEADERS = {
   'content-type': 'text/html; charset=utf-8',
   'cache-control': 'no-store',
   // It carries no scripts of its own, and a consent page that can be framed can be dressed up as
   // somebody else's page — which is the whole of what this flow exists to prevent.
-  'content-security-policy':
-    "default-src 'none'; style-src 'unsafe-inline'; form-action 'self'; script-src 'none'; frame-ancestors 'none'",
+  'content-security-policy': csp("'self'"),
   /*
    * `same-origin`, not `no-referrer`, and the difference is the whole of why the Connect button
    * never worked.
@@ -460,6 +462,32 @@ const CONSENT_HEADERS = {
   'referrer-policy': 'same-origin',
   'x-content-type-options': 'nosniff',
 };
+
+/**
+ * The consent page's own headers, with the client's address named in `form-action`.
+ *
+ * `form-action 'self'` alone is what stopped every approval reaching the assistant. Chrome applies
+ * the directive to the whole redirect chain of a form submission, so the POST arrived here, the
+ * code was minted and the row marked approved — and then the 302 to the client's callback was
+ * refused by the page's own policy. From the person's side the button did nothing; from the
+ * client's side, nothing ever came back. Measured against a local server: with `'self'` the
+ * redirect is blocked and the destination is never reached, with the destination named it is.
+ *
+ * Only the one address this request will actually be sent to, which `registered()` has already
+ * matched against the client's own list. Not a wildcard, and not `*`: the point of the directive is
+ * that a page holding a Connect button can only send you where it said it would.
+ */
+export function consentHeaders(redirectUri: string): Record<string, string> {
+  let target = '';
+
+  try {
+    target = ` ${new URL(redirectUri).origin}`;
+  } catch {
+    target = '';
+  }
+
+  return { ...CONSENT_HEADERS, 'content-security-policy': csp(`'self'${target}`) };
+}
 
 /** Occasionally, and never on the request that pays for it being slow. */
 async function sweep(): Promise<void> {
@@ -801,7 +829,7 @@ oauth.get('/authorize', async (c) => {
     return c.html(
       consentPage({ origin, client, who, params, pendingId: id }),
       200,
-      CONSENT_HEADERS
+      consentHeaders(params.redirect_uri)
     );
   }
 
@@ -819,7 +847,7 @@ oauth.get('/authorize', async (c) => {
   return c.html(
     consentPage({ origin, client, who, params, pendingId: parked }),
     200,
-    CONSENT_HEADERS
+    consentHeaders(params.redirect_uri)
   );
 });
 

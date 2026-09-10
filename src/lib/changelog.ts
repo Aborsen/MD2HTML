@@ -41,7 +41,11 @@ const ENTRIES: ChangelogEntry[] = [
       + 'approving things for you stopped the page itself.\n\n'
       + 'Nothing had ever been connected through it. The tests could not see this, because a test '
       + 'is not a browser and sends whichever headers it is told to; the database could, and said '
-      + 'so plainly: every request shown, none ever approved.',
+      + 'so plainly: every request shown, none ever approved.\n\n'
+      + 'Behind that sat a second one. The page tells the browser it may only send you to the '
+      + 'assistant that asked — and it had been saying it may send you nowhere but back to '
+      + 'us, so approving worked and the trip back to the assistant was refused by the page '
+      + 'itself. It now names that one address, and nothing else.',
   },
   {
     date: '2026-09-11',
