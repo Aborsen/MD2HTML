@@ -105,9 +105,10 @@ for (const path of [
     check('S256 only', JSON.stringify(body.code_challenge_methods_supported) === '["S256"]');
     check('no client secret expected', body.token_endpoint_auth_methods_supported?.includes('none'));
     check(
-      'CIMD is not advertised',
-      body.client_id_metadata_document_supported === undefined
+      'CIMD is advertised',
+      body.client_id_metadata_document_supported === true
     );
+    check('and registration is still offered beside it', Boolean(body.registration_endpoint));
   }
 }
 
@@ -216,6 +217,90 @@ const pendingRow = await sql`select params from m2h_oauth_pending where id = ${p
 check(
   'the whole request is parked server-side, not carried in the address',
   pendingRow.length === 1 && pendingRow[0].params.client_id === client.client_id
+);
+
+console.log('\n— a client that identified itself with a metadata document');
+
+/*
+ * Claude Code's own document, fetched from the address Claude Code puts in its client_id. A
+ * fixture of ours would prove the parser and nothing else; this proves the thing that has to
+ * work — the real document, the real fetch, and the loopback redirect_uri with a port that
+ * cannot have been registered because it is chosen at runtime.
+ */
+const CIMD = 'https://claude.ai/oauth/claude-code-client-metadata';
+
+const byDocument = await authorize({
+  client_id: CIMD,
+  redirect_uri: 'http://localhost:53119/callback',
+  response_type: 'code',
+  code_challenge: 'x'.repeat(43),
+  code_challenge_method: 'S256',
+  state: 'st',
+});
+
+check(
+  'a URL client_id is fetched and accepted',
+  byDocument.status === 302 && (byDocument.headers.get('location') ?? '').includes('/?connect='),
+  `${byDocument.status} ${byDocument.headers.get('location') ?? (await byDocument.text()).slice(0, 80)}`
+);
+
+const mirrored = await sql`select name, redirect_uris from m2h_oauth_client where id = ${CIMD}`;
+check(
+  'and mirrored into the client table under its URL',
+  mirrored.length === 1 && mirrored[0].name === 'Claude Code',
+  JSON.stringify(mirrored[0] ?? null)
+);
+
+const strayFromDocument = await authorize({
+  client_id: CIMD,
+  redirect_uri: 'https://evil.example/callback',
+  response_type: 'code',
+  code_challenge: 'x'.repeat(43),
+  code_challenge_method: 'S256',
+});
+check(
+  'a redirect_uri the document does not list is refused',
+  strayFromDocument.status === 400,
+  `got ${strayFromDocument.status}`
+);
+
+const notJson = await authorize({
+  client_id: `${HOST.replace('http://', 'https://')}/docs`,
+  redirect_uri: 'https://claude.ai/api/mcp/auth_callback',
+  response_type: 'code',
+  code_challenge: 'x'.repeat(43),
+  code_challenge_method: 'S256',
+});
+check(
+  'an https URL that is not a metadata document is refused',
+  notJson.status === 400,
+  `got ${notJson.status}`
+);
+
+const bareOrigin = await authorize({
+  client_id: 'https://claude.ai',
+  redirect_uri: 'https://claude.ai/api/mcp/auth_callback',
+  response_type: 'code',
+  code_challenge: 'x'.repeat(43),
+  code_challenge_method: 'S256',
+});
+check(
+  'an origin with no path is not a client_id',
+  bareOrigin.status === 400,
+  `got ${bareOrigin.status}`
+);
+
+const insideOut = await authorize({
+  client_id: 'https://localhost/client.json',
+  redirect_uri: 'https://claude.ai/api/mcp/auth_callback',
+  response_type: 'code',
+  code_challenge: 'x'.repeat(43),
+  code_challenge_method: 'S256',
+});
+check(
+  'a client_id pointing inside is refused before it is fetched',
+  insideOut.status === 400,
+  `got ${insideOut.status}`
 );
 
 console.log('\n— the token exchange');

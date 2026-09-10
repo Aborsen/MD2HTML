@@ -2,6 +2,7 @@ import { createHash, randomBytes, randomUUID, timingSafeEqual } from 'node:crypt
 import { Hono } from 'hono';
 import type { Context } from 'hono';
 import { currentUser, selfOrigin } from './auth.js';
+import { clientDocument, isDocumentId } from './cimd.js';
 import { sql } from './db.js';
 import { countCall } from './limits.js';
 
@@ -19,8 +20,10 @@ import { countCall } from './limits.js';
  *      the protected-resource document.
  *   2. It reads /.well-known/oauth-protected-resource (RFC 9728) to find the authorization server,
  *      then /.well-known/oauth-authorization-server (RFC 8414) to find these endpoints.
- *   3. It registers itself here (RFC 7591) and gets a client_id. No secret: a client running on
- *      someone else's machine cannot keep one, which is what PKCE is for.
+ *   3. It identifies itself: either its client_id is an https URL and we fetch the metadata
+ *      document there (`server/cimd.ts`), or it registers here (RFC 7591) and is given one. No
+ *      secret either way — a client running on someone else's machine cannot keep one, which is
+ *      what PKCE is for.
  *   4. It sends the person to /authorize with a PKCE challenge. Not signed in, they are parked and
  *      bounced through the app's own sign-in.
  *   5. They approve — a POST from a page they read, so a link on its own authorises nothing.
@@ -84,6 +87,11 @@ export interface OAuthClient {
   id: string;
   name: string;
   redirect_uris: string[];
+  /**
+   * The host its description came from, for a client that identified itself with a metadata
+   * document. Absent for one that registered: a registration has no source to name.
+   */
+  from?: string;
 }
 
 /** The canonical name of the thing these tokens are for (RFC 8707). */
@@ -157,9 +165,53 @@ function registered(client: OAuthClient, uri: string): boolean {
   });
 }
 
+/**
+ * A client that identified itself with a metadata document, from the document.
+ *
+ * The row it writes is not the source of truth — the document is, and it is re-read when the cache
+ * lets go — but everything downstream of a token was written against a client that has a row: the
+ * connections screen joins it for a name, and without one a person would be offered
+ * "https://claude.ai/oauth/claude-code-client-metadata" to disconnect. So the fetched description
+ * is mirrored, keyed by the URL, and refreshed whenever it is used.
+ */
+async function documentClient(id: string): Promise<OAuthClient | null> {
+  const read = await clientDocument(id);
+
+  if (!read.ok) {
+    console.warn('cimd: refused %s — %s', id, read.why);
+
+    return null;
+  }
+
+  const name = clean(read.document.client_name, 120) || 'an MCP client';
+  const uris = read.document.redirect_uris
+    .map((uri) => clean(uri, 500))
+    .filter(usableRedirect)
+    .slice(0, MAX_REDIRECT_URIS);
+
+  if (uris.length === 0) {
+    console.warn('cimd: refused %s — no usable redirect_uri', id);
+
+    return null;
+  }
+
+  await sql()`
+    insert into m2h_oauth_client (id, name, redirect_uris)
+    values (${id}, ${name}, ${JSON.stringify(uris)}::jsonb)
+    on conflict (id) do update
+      set name = excluded.name, redirect_uris = excluded.redirect_uris
+  `.catch(() => undefined);
+
+  return { id, name, redirect_uris: uris, from: new URL(id).host };
+}
+
 async function findClient(id: string): Promise<OAuthClient | null> {
   if (!id) {
     return null;
+  }
+
+  if (isDocumentId(id)) {
+    return documentClient(id);
   }
 
   const rows = (await sql()`
@@ -192,7 +244,9 @@ interface AuthorizeParams {
 
 function readAuthorizeParams(query: URLSearchParams): AuthorizeParams {
   return {
-    client_id: clean(query.get('client_id'), 80),
+    // 512 rather than 80: a metadata document URL is the client_id itself, and `cimd.ts`
+    // refuses anything longer than this before it fetches.
+    client_id: clean(query.get('client_id'), 512),
     redirect_uri: clean(query.get('redirect_uri'), 500),
     state: clean(query.get('state'), 500),
     code_challenge: clean(query.get('code_challenge'), 200),
@@ -242,6 +296,22 @@ export function consentPage(options: {
   const { origin, client, who, params, pendingId } = options;
   const canWrite = params.scope.includes('documents:write');
 
+  /*
+   * A client whose every address is on this machine cannot be told from anything else on this
+   * machine: the metadata document is published by the real client, but binding a port is all it
+   * takes to receive the code that comes back. The draft asks for the warning for exactly this,
+   * and it is the one thing on this page the person alone can judge.
+   */
+  const onlyLoopback =
+    client.redirect_uris.length > 0 &&
+    client.redirect_uris.every((uri) => {
+      try {
+        return loopback(new URL(uri));
+      } catch {
+        return false;
+      }
+    });
+
   const hidden = [
     ['pending', pendingId],
     ['decision', ''],
@@ -276,6 +346,8 @@ export function consentPage(options: {
            cursor: pointer; }
   button.go { background: var(--brand); border-color: var(--brand); color: #06121a; }
   .foot { margin: 1rem 0 0; font-size: 0.8rem; }
+  .warn { border: 1px solid #4a3a12; border-radius: 8px; background: #221a06; padding: 0.7rem 0.8rem;
+          color: #e8d9a8; font-size: 0.85rem; }
 </style>
 </head>
 <body>
@@ -291,6 +363,19 @@ export function consentPage(options: {
   </ul>
 
   <p>You can take this back at any time from the account menu, under API keys.</p>
+${
+  client.from
+    ? `  <p class="foot">Its name and the addresses it may be sent back to are published at <code>${escapeHtml(
+        client.from
+      )}</code>, and were read from there just now.</p>`
+    : ''
+}${
+  onlyLoopback
+    ? `  <p class="warn">It will be sent back to a program running on this computer. Any program on
+       your machine can ask to be sent there, and this page cannot tell them apart — approve it
+       only if you just started this yourself.</p>`
+    : ''
+}
   <p class="foot">It will send you back to <code>${escapeHtml(params.redirect_uri)}</code></p>
 
   <form method="POST" action="${escapeHtml(origin)}/api/oauth/approve">
@@ -1194,11 +1279,26 @@ oauth.get('/grants', async (c) => {
   });
 });
 
-oauth.delete('/grants/:clientId', async (c) => {
+/**
+ * Disconnect one client.
+ *
+ * The id comes from `?client=` first and the path second. A metadata-document client_id is a URL,
+ * and a URL in a path segment means an encoded slash — which platforms, proxies and routers each
+ * normalise in their own way, and one of them turning `%2F` back into `/` is a route that no longer
+ * matches. The query string carries the same value with none of that. The path form stays for the
+ * registered ids that are already out there.
+ */
+const revokeClient = async (c: Context) => {
   const who = await currentUser(c);
 
   if (!who) {
     return c.json({ error: 'Sign in first' }, 401);
+  }
+
+  const clientId = c.req.query('client') ?? c.req.param('clientId') ?? '';
+
+  if (!clientId) {
+    return c.json({ error: 'Name the client to disconnect' }, 400);
   }
 
   /*
@@ -1207,11 +1307,14 @@ oauth.delete('/grants/:clientId', async (c) => {
    */
   const gone = (await sql()`
     update m2h_oauth_token set revoked_at = now()
-    where user_id = ${who.id} and client_id = ${c.req.param('clientId')} and revoked_at is null
+    where user_id = ${who.id} and client_id = ${clientId} and revoked_at is null
     returning token_hash
   `) as Array<{ token_hash: string }>;
 
   return c.json({ ok: true, revoked: gone.length });
-});
+};
+
+oauth.delete('/grants', revokeClient);
+oauth.delete('/grants/:clientId', revokeClient);
 
 export default oauth;

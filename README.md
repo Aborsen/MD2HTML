@@ -210,8 +210,12 @@ claude mcp add --transport http transformpipe https://transformpipe.com/api/mcp
 
 The first call is answered `401` with a `WWW-Authenticate` header naming
 `/.well-known/oauth-protected-resource`, the client follows that to
-`/.well-known/oauth-authorization-server`, registers itself (RFC 7591), and sends the person to
-`/api/oauth/authorize`. They sign in with the same Google account and approve a named client on a
+`/.well-known/oauth-authorization-server`, identifies itself, and sends the person to
+`/api/oauth/authorize`. It identifies itself in one of two ways: with a Client ID Metadata Document
+— an https URL for a `client_id`, which `server/cimd.ts` fetches, checks and caches — or by
+registering (RFC 7591) and being given an id. Claude prefers the document and so does the MCP spec,
+because registration mints a fresh client on every connection; registration stays for clients that
+do not implement it. They sign in with the same Google account and approve a named client on a
 page they read — a POST, so a link on its own authorises nothing — and the client exchanges its code
 for a token of ours. `server/oauth.ts` is that authorization server and `server/mcp.ts` is the
 endpoint; `src/lib/mcp-facts.ts` holds the tool names, typed, so a tool renamed on the server stops

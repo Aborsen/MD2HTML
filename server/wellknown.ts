@@ -44,9 +44,13 @@ export function protectedResource(c: Context) {
  * `S256` only, and no `plain`: a public client cannot keep a secret, so the verifier is the whole of
  * what proves the token request came from whoever started the flow.
  *
- * Client ID Metadata Documents are deliberately not advertised. A client picks that path when it
- * sees both the flag and `none`, and this server does not implement it — advertising it would
- * choose a road that dead-ends. Registration is the documented fallback.
+ * `client_id_metadata_document_supported` is what makes a client hand us a URL as its client_id
+ * instead of registering. It is read together with `none` above — a metadata-document client is a
+ * public one and authenticates at the token endpoint with nothing — and a client that finds only
+ * one of the two falls back to registration, which still works and is still advertised below.
+ *
+ * It was deliberately absent while `server/cimd.ts` did not exist, because advertising it would
+ * have chosen a road that dead-ends. It exists now.
  */
 export function authorizationServer(c: Context) {
   const origin = selfOrigin(c);
@@ -63,6 +67,7 @@ export function authorizationServer(c: Context) {
       grant_types_supported: ['authorization_code', 'refresh_token'],
       code_challenge_methods_supported: ['S256'],
       token_endpoint_auth_methods_supported: ['none'],
+      client_id_metadata_document_supported: true,
       revocation_endpoint_auth_methods_supported: ['none'],
       authorization_response_iss_parameter_supported: true,
       service_documentation: `${origin}/docs`,

@@ -303,9 +303,14 @@ export const api = {
   listGrants: async () =>
     (await request<{ grants: Grant[] }>('/api/oauth/grants')).grants,
 
+  /*
+   * The id goes in the query string, not the path: a client that identified itself with a metadata
+   * document has a URL for a client_id, and a URL inside a path segment is an encoded slash that
+   * something between here and the function will decode.
+   */
   revokeGrant: (clientId: string) =>
     request<{ ok: true; revoked: number }>(
-      `/api/oauth/grants/${encodeURIComponent(clientId)}`,
+      `/api/oauth/grants?client=${encodeURIComponent(clientId)}`,
       { method: 'DELETE' }
     ),
 
