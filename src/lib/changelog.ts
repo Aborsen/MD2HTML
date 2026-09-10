@@ -31,6 +31,18 @@ export interface ChangelogEntry {
 
 const ENTRIES: ChangelogEntry[] = [
   {
+    date: '2026-09-11',
+    title: 'An assistant can say who it is without registering',
+    body:
+      'Connecting an assistant used to mean it registered itself here first, and Claude made a '
+      + 'new client every time somebody connected. It can now identify itself with a metadata '
+      + 'document instead — an address it publishes, which this server reads — which is '
+      + 'what the MCP specification prefers. Registration still works for clients that do not.\n\n'
+      + 'The approval page changed with it. It now says where a client’s description was '
+      + 'published, and warns when the only place it can be sent back to is a program on your own '
+      + 'computer, because anything running there can ask to be sent there too.',
+  },
+  {
     date: '2026-09-10',
     title: 'This page',
     body:
