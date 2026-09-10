@@ -766,7 +766,7 @@ for (const locale of LOCALES) {
             )
             .join('')}</section>`
       )
-      .join('')}`,
+      .join('')}<p>${escapeHtml(catalogue.ui['changelog.scope'])}</p>`,
   });
 }
 
