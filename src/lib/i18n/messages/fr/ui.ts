@@ -413,6 +413,8 @@ export const ui: Content['ui'] = {
   'changelog.lede':
     'Chaque version et, sous elle, les changements que quelqu’un remarquerait. La plus récente en premier ; les versions sont les tags du dépôt.',
   'changelog.years': 'Par année',
+  'changelog.scope':
+    'Uniquement les changements visibles dans le produit. Les remaniements internes et les travaux d’infrastructure ne figurent pas ici, et les entrées elles-mêmes sont en anglais.',
   'changelog.seo.title': 'Journal des versions',
   'changelog.seo.description':
     'Chaque version de TransformPipe et les changements qui l’accompagnent, la plus récente en premier.',

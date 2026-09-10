@@ -402,6 +402,8 @@ export const ui: Content['ui'] = {
   'changelog.lede':
     'Ogni versione e, sotto, le modifiche che qualcuno noterebbe. La più recente per prima; le versioni sono i tag del repository.',
   'changelog.years': 'Per anno',
+  'changelog.scope':
+    'Solo le modifiche visibili nel prodotto. I lavori interni di refactoring e di infrastruttura non compaiono qui, e le voci sono scritte in inglese.',
   'changelog.seo.title': 'Registro delle modifiche',
   'changelog.seo.description':
     'Ogni versione di TransformPipe e le modifiche che porta, la più recente per prima.',

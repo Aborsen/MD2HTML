@@ -427,6 +427,8 @@ export const ui: Content['ui'] = {
   'changelog.lede':
     'Jede Version und die Änderungen darunter, die jemandem auffallen würden. Neueste zuerst; die Versionen sind die Tags im Repository.',
   'changelog.years': 'Nach Jahr',
+  'changelog.scope':
+    'Nur Änderungen, die im Produkt auffallen. Interner Umbau und Infrastrukturarbeit stehen nicht hier, und die Einträge selbst sind auf Englisch.',
   'changelog.seo.title': 'Changelog',
   'changelog.seo.description':
     'Jede Version von TransformPipe und die Änderungen darunter, neueste zuerst.',

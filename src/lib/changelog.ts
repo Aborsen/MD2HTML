@@ -11,6 +11,10 @@
  * of the file and is kept: a release note that breaks the renderer breaks a customer's document
  * too, and this is a better place to find that out.
  *
+ * The rule that keeps this file true is in CLAUDE.md: a tagged release is not shipped until its
+ * entry is here, and anything a person using the product would notice gets an entry between tags.
+ * Nothing enforces it — a missing entry breaks no build, which is exactly why it is written down.
+ *
  * English, deliberately. The chrome around these is translated; five translations per entry is a
  * cost that gets skipped after the second release, and `src/lib/i18n/content.ts` draws the same
  * line for the blog.

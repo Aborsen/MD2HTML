@@ -53,19 +53,17 @@ export function ChangelogPage({
   }, [locale]);
 
   /*
-   * The year navigation appears when there is more than one year to navigate between. Today there
-   * is one, and a column headed "Browse by year" listing the only year there is would be chrome
-   * pretending the archive is deeper than it is. The page is built for the second year; it just
-   * does not claim it yet.
+   * The year heading appears when there is more than one year: with a single year on the page it
+   * is the same word as the month heading's own year, and stacking them reads as a mistake.
+   *
+   * The panel beside the entries does not wait for that, because it carries the scope note as
+   * well as the years — what belongs in this list and what does not is worth saying on the first
+   * day, and a reader who wonders why a fix they were sent is missing should not have to guess.
    */
   const browsable = years.length > 1;
 
   return (
-    <div
-      className={`mx-auto flex w-full flex-col gap-6 ${
-        browsable ? 'max-w-5xl' : 'max-w-3xl'
-      }`}
-    >
+    <div className="mx-auto flex w-full max-w-5xl flex-col gap-6">
       <AppBreadcrumbs
         items={changelogCrumbs(content, locale)}
         onNavigate={onGoToConverter}
@@ -79,41 +77,54 @@ export function ChangelogPage({
         className="pt-2"
       />
 
-      <div className="flex flex-col gap-8 lg:flex-row-reverse lg:items-start lg:gap-10">
-        {browsable && (
-          /*
-           * Anchors rather than buttons: a year is an address on this page, so it should be
-           * openable in a new tab and shareable. The column sits after the entries in the source
-           * and beside them on a wide screen — a reader arriving on a phone wants the newest
-           * change, not a list of years, and `flex-row-reverse` moves the column without moving
-           * the reading order.
-           */
-          <nav
-            aria-label={t('changelog.years')}
-            className="lg:sticky lg:top-24 lg:w-40 lg:shrink-0"
-          >
-            <Typography
-              variant="span"
-              textColor="light"
-              className="block text-xxs uppercase tracking-wide"
-            >
-              {t('changelog.years')}
-            </Typography>
+      <div className="flex flex-col-reverse gap-8 lg:flex-row-reverse lg:items-start lg:gap-10">
+        {/*
+         * Both directions are reversed, so the panel is first in the source and last on the
+         * screen: beside the entries on a wide one and under them on a phone. A reader arriving
+         * on a phone wants the newest change, not a list of years and a note about what the list
+         * contains — that note reads better once the list has been read.
+         */}
+        <aside className="lg:sticky lg:top-24 lg:w-60 lg:shrink-0">
+          <div className="flex flex-col gap-4 rounded-xl border border-stroke bg-surface-card p-5">
+            {/*
+             * Anchors rather than buttons: a year is an address on this page, so it should be
+             * openable in a new tab, shareable, and reachable by keyboard without any script of
+             * ours. Two to a row, at a size a thumb can hit.
+             */}
+            <nav aria-label={t('changelog.years')} className="flex flex-col gap-3">
+              <Typography variant="span" className="text-xs font-bold uppercase tracking-wide">
+                {t('changelog.years')}
+              </Typography>
 
-            <ul className="mt-3 flex flex-wrap gap-2 lg:flex-col lg:gap-1">
-              {years.map((year) => (
-                <li key={year.year}>
-                  <a
-                    href={`#changelog-${year.year}`}
-                    className="inline-flex rounded-md border border-stroke px-2.5 py-1 text-sm tabular-nums transition-colors hover:border-brand-primary lg:border-transparent lg:px-2"
-                  >
-                    {year.year}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </nav>
-        )}
+              <ul className="grid grid-cols-2 gap-2">
+                {years.map((year) => (
+                  <li key={year.year}>
+                    <a
+                      href={`#changelog-${year.year}`}
+                      className="block rounded-full border border-stroke px-3 py-2 text-center text-sm font-medium tabular-nums transition-colors hover:border-stroke-hover hover:bg-surface-chips"
+                    >
+                      {year.year}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+
+            {/*
+             * What the list contains, under a rule, in the reader's language. The entries are the
+             * changes somebody using the product would notice; the internal work is most of what
+             * happens in the repository and none of it is here, which is a decision worth stating
+             * rather than leaving a reader to infer from what is missing.
+             */}
+            <Typography
+              variant="p"
+              textColor="light"
+              className="border-t border-stroke pt-4 text-xs leading-relaxed"
+            >
+              {t('changelog.scope')}
+            </Typography>
+          </div>
+        </aside>
 
         <div className="flex min-w-0 flex-1 flex-col gap-10">
           {years.map((year) => (
