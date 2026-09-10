@@ -29,10 +29,29 @@ export function NotFoundPage({
 
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-col items-center gap-6 py-12">
+      {/*
+       * The number, at a size that makes it the first thing on the page.
+       *
+       * It was the SectionHeading's eyebrow, which is `text-xxs` in the muted ink every other
+       * eyebrow uses — correct for the word "Blog" above a heading, and almost invisible for the
+       * one piece of information a reader recognises before reading anything. Size carries it
+       * instead of colour, so it stays plainly not a control.
+       *
+       * `tabular-nums` because three digits in a proportional face sit unevenly at this size, and
+       * `leading-none` because the default line height would push it away from the heading.
+       */}
+      <Typography
+        variant="span"
+        textColor="light"
+        align="center"
+        className="block font-semibold text-6xl leading-none tracking-tight tabular-nums md:text-7xl"
+      >
+        {t('notfound.eyebrow')}
+      </Typography>
+
       <SectionHeading
         align="center"
         size="lg"
-        eyebrow={t('notfound.eyebrow')}
         title={t('notfound.title')}
         description={t('notfound.lede')}
       />
