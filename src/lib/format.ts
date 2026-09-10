@@ -134,6 +134,40 @@ export function formatDate(iso: string, locale: string): string {
     : dateFormatter(locale).format(parsed);
 }
 
+const MONTHS = new Map<string, Intl.DateTimeFormat>();
+
+function monthFormatter(locale: string): Intl.DateTimeFormat {
+  const held = MONTHS.get(locale);
+
+  if (held) {
+    return held;
+  }
+
+  const made = new Intl.DateTimeFormat(locale, {
+    month: 'long',
+    year: 'numeric',
+  });
+
+  MONTHS.set(locale, made);
+
+  return made;
+}
+
+/**
+ * A month, from the `YYYY-MM` it is grouped by: "September 2026", "septembre 2026".
+ *
+ * The day is deliberately absent — this names a group of entries, not one of them — and the year
+ * is deliberately present, because a month heading a reader has scrolled to has no year above it
+ * any more.
+ */
+export function formatMonth(key: string, locale: string): string {
+  const parsed = new Date(`${key}-01T00:00:00`);
+
+  return Number.isNaN(parsed.getTime())
+    ? key
+    : monthFormatter(locale).format(parsed);
+}
+
 const RELATIVES = new Map<string, Intl.RelativeTimeFormat>();
 
 function relativeFormatter(locale: string): Intl.RelativeTimeFormat {

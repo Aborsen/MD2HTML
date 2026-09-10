@@ -25,7 +25,11 @@ import {
   formatArticleDate,
   hasArticleIn,
 } from '../src/lib/blog.js';
-import { formatDate } from '../src/lib/format.js';
+import { formatDate, formatMonth } from '../src/lib/format.js';
+import {
+  CHANGELOG_UPDATED,
+  changelogByYear,
+} from '../src/lib/changelog.js';
 import {
   CONVERSIONS,
   conversion,
@@ -698,25 +702,27 @@ for (const locale of LOCALES) {
 /*
  * ---------------------------------------------------------------- the changelog
  *
- * The entries are `content/changelog.md`, read off disk and rendered by the product's own
- * converter, so the file in the repository and the page on the site cannot say different things.
+ * The entries are `src/lib/changelog.ts`, grouped by month under the year they happened in and
+ * rendered by the product's own converter — the same list and the same grouping the app renders
+ * from, so the page a crawler reads and the page a reader gets cannot say different things.
  *
- * Everything above the first release heading is the file explaining itself to somebody reading it
- * in the repository; the page has its own heading and lede, in the reader's language, so that part
- * is dropped here exactly as `src/lib/changelog.ts` drops it for the app. A file with no release
- * heading throws rather than rendering its own title twice under the page's.
+ * It read `content/changelog.md` off disk until the entries became typed data. That file's dates
+ * were prose in its headings, so nothing here could sort them, group them by month or hand one to
+ * a crawler; the version and the date now come off the entry itself.
  */
-const changelogFile = readFileSync(resolve('content/changelog.md'), 'utf8');
-const firstEntry = changelogFile.indexOf('\n## ');
+const changelogYears = changelogByYear();
 
-if (firstEntry === -1) {
-  throw new Error('content/changelog.md has no "## " release heading to render');
-}
-
-const changelogHtml = markdownToHtml(changelogFile.slice(firstEntry + 1));
+/*
+ * The year heading appears only when there is more than one year, and `ChangelogPage` makes the
+ * same call for the same reason: with one year on the page it repeats the month heading's own year
+ * directly above it. The two must agree, or the prerendered page would shift as the bundle took
+ * over.
+ */
+const changelogBrowsable = changelogYears.length > 1;
 
 for (const locale of LOCALES) {
   const catalogue = CATALOGUES[locale];
+  const dates = INTL_LOCALES[locale];
 
   pages.push({
     locale,
@@ -725,15 +731,42 @@ for (const locale of LOCALES) {
     description: catalogue.ui['changelog.seo.description'],
     listed: true,
     /*
-     * No `lastmod`. The file's dates are prose — `## 2.0.0 — 9 September 2026` — and parsing an
-     * English month name to hand a crawler an ISO date is a guess dressed as a fact. A sitemap
-     * entry with no date is read as unknown, which is true; one with the deploy date would say
-     * the changelog changed every time anything did.
+     * The newest entry's date, which is a real one: the page changes when something ships, not
+     * when the site is deployed. It was left out entirely while the dates were English prose in a
+     * Markdown heading, because parsing a month name back into an ISO date is a guess dressed as
+     * a fact.
      */
+    lastmod: CHANGELOG_UPDATED,
     head: breadcrumbs(changelogCrumbs(catalogue, locale)) + DOC_STYLE,
     body: `<h1>${escapeHtml(catalogue.ui['changelog.title'])}</h1><p>${escapeHtml(
       catalogue.ui['changelog.lede']
-    )}</p><div class="md-doc">${localiseLinks(changelogHtml, locale)}</div>`,
+    )}</p>${changelogYears
+      .map(
+        (year) =>
+          `<section id="changelog-${year.year}">${
+            changelogBrowsable ? `<h2>${escapeHtml(year.year)}</h2>` : ''
+          }${year.months
+            .map(
+              (month) =>
+                `<section><h3>${escapeHtml(
+                  formatMonth(month.key, dates)
+                )}</h3>${month.entries
+                  .map(
+                    (entry) =>
+                      `<article><p><time datetime="${entry.date}">${escapeHtml(
+                        formatDate(entry.date, dates)
+                      )}</time>${
+                        entry.version ? ` — ${escapeHtml(entry.version)}` : ''
+                      }</p><h4>${escapeHtml(entry.title)}</h4><div class="md-doc">${localiseLinks(
+                        markdownToHtml(entry.body),
+                        locale
+                      )}</div></article>`
+                  )
+                  .join('')}</section>`
+            )
+            .join('')}</section>`
+      )
+      .join('')}`,
   });
 }
 

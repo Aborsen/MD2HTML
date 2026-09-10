@@ -405,7 +405,7 @@ export const ui: Content['ui'] = {
   /*
    * The changelog page, at /changelog and linked from the footer's Resources.
    *
-   * Only the chrome is here. The entries are `content/changelog.md`, in English, for the reason
+   * Only the chrome is here. The entries are `src/lib/changelog.ts`, in English, for the reason
    * `ChangelogPage` gives: a changelog grows by an entry per release, and five translations per
    * entry is a cost that gets skipped after the second one.
    */
@@ -413,6 +413,7 @@ export const ui: Content['ui'] = {
   'changelog.title': 'Lo que se ha publicado',
   'changelog.lede':
     'Cada versión y, debajo, los cambios que alguien notaría. La más reciente primero; las versiones son las etiquetas del repositorio.',
+  'changelog.years': 'Por año',
   'changelog.seo.title': 'Registro de cambios',
   'changelog.seo.description':
     'Cada versión de TransformPipe y los cambios que trae, la más reciente primero.',
