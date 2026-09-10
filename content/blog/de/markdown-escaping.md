@@ -45,7 +45,7 @@ Zwei Folgen, die man vor der Tabelle festhalten sollte. Erstens ist Maskieren ze
 | `<` | Ein Autolink, ein rohes HTML-Tag oder ein HTML-Block | Überall inline; am Zeilenanfang | `\<`, oder `&lt;` |
 | `>` | Das Ende eines Autolinks oder eines rohen HTML-Tags | Innerhalb von `<…>`, wo ein Backslash tot ist | `&gt;` in Prosa; Prozentkodierung innerhalb einer URL |
 | `&` | Der Anfang einer Zeichenreferenz | Überall inline | `&amp;` |
-| `|` | Eine Zellengrenze in einer GFM-Tabelle | Nur innerhalb einer Tabellenzeile — auch innerhalb einer Code-Spanne | `\|` |
+| `\|` | Eine Zellengrenze in einer GFM-Tabelle | Nur innerhalb einer Tabellenzeile — auch innerhalb einer Code-Spanne | `\|` |
 | `~` | Durchgestrichenes in GFM, paarweise; ein alternativer Code-Zaun | Überall inline; am Zeilenanfang | `\~` |
 | `"` `'` | Nichts, außer typografische Zeichensetzung ist an; grenzen einen Linktitel ab | Innerhalb von `(… "…")` | `\"`, oder `&quot;` |
 | `$` | Nichts in CommonMark oder GFM; ein Mathe-Trenner, wo diese Erweiterung an ist | Nur mit einer Mathe-Erweiterung | `\$`, oder eine Code-Spanne |
@@ -104,7 +104,7 @@ Die Eigenschaft, die sie nützlich macht, ist eine Zeile aus demselben Abschnitt
 | `&quot;` | `"` | In einem HTML-Attribut, wo ein Backslash den Wert bricht |
 | `&#42;` | `*` | Ein wörtliches Sternchen, das kein Parser als Betonung lesen kann |
 | `&#95;` | `_` | Dasselbe für einen Unterstrich, in einem Dialekt mit Betonung im Wort |
-| `&#124;` | `|` | Eine Pipe in einer Tabellenzelle, in einem Renderer, dessen `\|`-Behandlung Sie misstrauen |
+| `&#124;` | `\|` | Eine Pipe in einer Tabellenzelle, in einem Renderer, dessen `\|`-Behandlung Sie misstrauen |
 | `&copy;` `&reg;` | `©` `®` | Keine ASCII-Satzzeichen, ein Backslash kann sie also ohnehin nicht maskieren |
 | `&nbsp;` | Ein geschütztes Leerzeichen | „10 MB" oder „Abbildung 3" auf einer Zeile halten |
 | `&#x2014;` | Ein Geviertstrich | Ein Zeichen, das Ihr Editor oder Ihre Tastatur unbequem macht |

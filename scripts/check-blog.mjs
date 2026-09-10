@@ -171,13 +171,16 @@ for (const locale of LOCALES) {
     const words = body.split(/\s+/).filter(Boolean).length;
     const headings = (prose.match(/^## /gm) ?? []).length;
     /*
-     * Case-insensitive, because the brand is written TransformPipe.
+     * Case-insensitive, because the brand is written TransformPipe, and with an optional `s`,
+     * because German puts one on the end.
      *
      * It was `/g` against a lowercase pattern, and when the name was capitalised across the articles
      * this quietly started counting zero — so the rule that stops a piece reading as an advertisement
-     * was switched off by a rename, without anything failing.
+     * was switched off by a rename, without anything failing. The `s` is the same hole found the
+     * same way: `TransformPipes Konvertierung` is a mention, and `\b` after the `e` does not match
+     * before a letter, so every German genitive was invisible to this count.
      */
-    const mentions = (prose.match(/\btransformpipe\b/gi) ?? []).length;
+    const mentions = (prose.match(/\btransformpipes?\b/gi) ?? []).length;
 
     if (locale === DEFAULT_LOCALE) {
       englishWords.set(slug, words);

@@ -45,7 +45,7 @@ Two consequences worth holding on to before the table. First, escaping is per-ch
 | `<` | An autolink, a raw HTML tag, or an HTML block | Anywhere inline; start of a line | `\<`, or `&lt;` |
 | `>` | The end of an autolink or a raw HTML tag | Inside `<…>`, where a backslash is inert | `&gt;` in prose; percent-encoding inside a URL |
 | `&` | The start of a character reference | Anywhere inline | `&amp;` |
-| `|` | A cell boundary in a GFM table | Inside a table row only — including inside a code span | `\|` |
+| `\|` | A cell boundary in a GFM table | Inside a table row only — including inside a code span | `\|` |
 | `~` | Strikethrough in GFM, in pairs; an alternative code fence | Anywhere inline; start of a line | `\~` |
 | `"` `'` | Nothing, unless smart punctuation is on; delimit a link title | Inside `(… "…")` | `\"`, or `&quot;` |
 | `$` | Nothing in CommonMark or GFM; a maths delimiter where that extension is on | Only with a maths extension | `\$`, or a code span |
@@ -104,7 +104,7 @@ The property that makes them useful is one line of the same section: references 
 | `&quot;` | `"` | Inside an HTML attribute, where a backslash breaks the value |
 | `&#42;` | `*` | A literal asterisk that no parser can read as emphasis |
 | `&#95;` | `_` | Same, for an underscore, in a flavour with intraword emphasis |
-| `&#124;` | `|` | A pipe in a table cell, in a renderer whose `\|` handling you distrust |
+| `&#124;` | `\|` | A pipe in a table cell, in a renderer whose `\|` handling you distrust |
 | `&copy;` `&reg;` | `©` `®` | Not ASCII punctuation, so a backslash cannot escape them anyway |
 | `&nbsp;` | A non-breaking space | Keeping "10 MB" or "Figure 3" on one line |
 | `&#x2014;` | An em dash | A character your editor's font or keyboard makes awkward |
