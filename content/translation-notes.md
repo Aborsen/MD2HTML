@@ -107,6 +107,32 @@ reader already learned two articles ago, so keep to the column.
 | wrapper | Verpackung |
 | toolchain | Werkzeugkette |
 | default (a setting's) | Voreinstellung |
+| backlink | Rückverweis |
+| identifier | Identifikator |
+| superscript | hochgestellt |
+| round trip | Hin- und Rückweg |
+| widows, orphans | Hurenkinder, Schusterjungen |
+| typeset (a PDF) | gesetzt |
+| bibliography | Literaturverzeichnis |
+| house style | Hausstil |
+| batch (of files) | Stapel |
+| format matrix | Formatmatrix |
+| standalone (a repository) | separat |
+| preset | Preset |
+| lookup table | Nachschlagetabelle |
+| chunk (of a stream) | Häppchen |
+| viewer (an app) | Betrachter |
+| default app | Standardanwendung |
+| runbook | Betriebshandbuch |
+
+`separat` for a standalone repository, not `eigenständig`: that one belongs to a self-contained
+file, and two agents reached for it in the wrong sense before choosing `separat` instead. The two
+words are not synonyms here — one is about a package living apart, the other about a file needing
+nothing.
+
+`Hurenkinder, Schusterjungen` is the standard German typographic pair for widows and
+orphans, not a coarse translation of something else: it is what a German typesetter calls
+them, and a calque would be less accurate rather than politer.
 
 `Betonung` for emphasis, not `Hervorhebung`: that one is reserved for `Syntaxhervorhebung`,
 where it means colouring code rather than marking a word.
