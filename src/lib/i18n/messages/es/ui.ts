@@ -219,6 +219,23 @@ export const ui: Content['ui'] = {
 
   /* La lista de todo lo convertido: su cabecera, sus filtros, sus filas y sus columnas. */
   'history.title': 'Historial',
+  /*
+   * Saving, which is now something a person does rather than something that happens to them.
+   *
+   * A conversion stays in this browser; the account gets a document when the button is pressed. So
+   * the list has two kinds of row, and `history.mixed` is what the page says when it holds both.
+   */
+  'converter.save': 'Guardar',
+  'converter.saved': 'Guardado',
+  'converter.save.hint': 'Lo guarda en tu cuenta, en todos tus dispositivos.',
+  'converter.save.hint.signedout':
+    'Inicia sesión para guardarlo en tu cuenta. Hasta entonces se queda en este navegador.',
+  'converter.save.done': 'Guardado en tu cuenta',
+  'converter.share.hint.unsaved':
+    'Guárdalo primero: un enlace necesita el documento en tu cuenta.',
+  'history.row.unsaved': 'Sin guardar',
+  'history.mixed': 'Los documentos guardados y lo que este navegador convirtió',
+
   'history.synced': 'Guardado en tu cuenta',
   'history.local': 'Guardado en este navegador — inicia sesión para tenerlos en cualquier sitio',
   'history.usage':

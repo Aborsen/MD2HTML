@@ -10,6 +10,7 @@ import {
   Minimize2,
   Printer,
   RotateCcw,
+  Save,
   Share2,
 } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -76,6 +77,9 @@ interface ConverterPageProps {
   onConversionChange: (id: ConversionId) => void;
   onFiles: (files: File[]) => void;
   onReset: () => void;
+  /** Whether there is an account to save into. Signed out, the button says so rather than hiding. */
+  canSave: boolean;
+  onSave: () => void;
   onGoToBlog: () => void;
   onGoToLivePreview: (markdown: string) => void;
   onOpenArticle: (slug: string) => void;
@@ -88,6 +92,8 @@ export function ConverterPage({
   onConversionChange,
   onFiles,
   onReset,
+  canSave,
+  onSave,
   onGoToBlog,
   onGoToLivePreview,
   onOpenArticle,
@@ -367,11 +373,40 @@ export function ConverterPage({
           >
             {t('converter.newfile')}
           </Button>
+          {/*
+           * Nothing reaches the account on its own any more, so this is the button that puts it
+           * there. Disabled rather than hidden when signed out: a control that is missing teaches
+           * nobody that the account is where documents live.
+           */}
+          <Hint
+            content={
+              doc.remoteId
+                ? t('converter.save.done')
+                : canSave
+                  ? t('converter.save.hint')
+                  : t('converter.save.hint.signedout')
+            }
+          >
+            <span>
+              <Button
+                variant="secondary"
+                size="sm"
+                leftSlot={doc.remoteId ? <Check /> : <Save />}
+                disabled={!canSave || Boolean(doc.remoteId)}
+                onClick={onSave}
+              >
+                {doc.remoteId ? t('converter.saved') : t('converter.save')}
+              </Button>
+            </span>
+          </Hint>
+
           <Hint
             content={
               doc.remoteId
                 ? t('converter.share.hint')
-                : t('converter.share.hint.signedout')
+                : canSave
+                  ? t('converter.share.hint.unsaved')
+                  : t('converter.share.hint.signedout')
             }
           >
             <span>

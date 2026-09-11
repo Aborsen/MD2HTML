@@ -95,6 +95,28 @@ function KindBadge({ entry, isShared, className }: RowPartProps & { className?: 
 }
 
 /**
+ * Said on a row rather than on the page, now that a signed-in list holds both kinds.
+ *
+ * A conversion stays in this browser until somebody saves it, so a list that looked uniform would
+ * be claiming that twenty-five things are in the account when one of them is. Shown only when
+ * there is an account to compare against: signed out, every row is local and the page says so once
+ * at the top.
+ */
+function UnsavedBadge({ entry, isSynced }: { entry: HistoryEntry; isSynced: boolean }) {
+  const t = useT();
+
+  if (!isSynced || entry.remote) {
+    return null;
+  }
+
+  return (
+    <Badge variant="attention" size="sm" rounded="full" className="justify-center">
+      {t('history.row.unsaved')}
+    </Badge>
+  );
+}
+
+/**
  * Share, download in any format, remove.
  *
  * One component because the same three appear in a table row on a wide screen and in a card on a
@@ -424,7 +446,7 @@ export function HistoryPage({
           ) : (
             <MonitorSmartphone className="size-4" />
           )}
-          {isSynced ? t('history.synced') : t('history.local')}
+          {isSynced ? t('history.mixed') : t('history.local')}
           {usage && (
             <span className="text-ink-inactive">
               {/* Four numbers in one sentence: all four are values, none of them is a word. */}
@@ -711,6 +733,7 @@ export function HistoryPage({
 
                   <span className="flex flex-wrap items-center gap-2 text-ink-secondary text-xs">
                     <KindBadge entry={entry} isShared={isShared} />
+                    <UnsavedBadge entry={entry} isSynced={isSynced} />
                     <span>{formatBytes(entry.size, numbers)}</span>
                     <span aria-hidden>·</span>
                     <span>{formatRelative(entry.createdAt, numbers)}</span>
@@ -873,7 +896,10 @@ export function HistoryPage({
                 </TableCell>
 
                 <TableCell className="hidden sm:table-cell">
-                  <KindBadge entry={entry} isShared={isShared} className="w-24" />
+                  <span className="flex items-center gap-2">
+                    <KindBadge entry={entry} isShared={isShared} className="w-24" />
+                    <UnsavedBadge entry={entry} isSynced={isSynced} />
+                  </span>
                 </TableCell>
 
                 <TableCell className="hidden sm:table-cell">

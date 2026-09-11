@@ -229,6 +229,22 @@ export const ui: Content['ui'] = {
 
   /* Die Liste aller Umwandlungen: ihr Kopf, ihre Filter, ihre Zeilen und ihre Spalten. */
   'history.title': 'Verlauf',
+  /*
+   * Saving, which is now something a person does rather than something that happens to them.
+   *
+   * A conversion stays in this browser; the account gets a document when the button is pressed. So
+   * the list has two kinds of row, and `history.mixed` is what the page says when it holds both.
+   */
+  'converter.save': 'Speichern',
+  'converter.saved': 'Gespeichert',
+  'converter.save.hint': 'Bleibt in deinem Konto, auf jedem Gerät.',
+  'converter.save.hint.signedout':
+    'Melde dich an, um es im Konto zu behalten. Bis dahin bleibt es in diesem Browser.',
+  'converter.save.done': 'Im Konto gespeichert',
+  'converter.share.hint.unsaved': 'Erst speichern — ein Link braucht das Dokument im Konto.',
+  'history.row.unsaved': 'Nicht gespeichert',
+  'history.mixed': 'Gespeicherte Dokumente, und was dieser Browser umgewandelt hat',
+
   'history.synced': 'Im Konto gespeichert',
   'history.local': 'Nur in diesem Browser — angemeldet überall erreichbar',
   'history.usage':

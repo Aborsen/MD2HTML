@@ -32,6 +32,20 @@ export interface ChangelogEntry {
 const ENTRIES: ChangelogEntry[] = [
   {
     date: '2026-09-11',
+    title: 'Nothing reaches your account until you save it',
+    body:
+      'Converting a file used to put it in your account. Drop, look, close the tab — and it was '
+      + 'there, along with everything else you had ever glanced at. Signing in was worse: whatever '
+      + 'this browser had converted was uploaded in one go, so twenty-five things you had looked '
+      + 'at became twenty-five documents you had never asked to keep.\n\n'
+      + 'Now a conversion stays in this browser, and **Save** puts it in the account. The history '
+      + 'shows both and says which is which; sharing still needs a saved document, and says so '
+      + 'rather than being mysteriously unavailable.\n\n'
+      + 'The connector and the API always worked this way — `tp_convert_markdown` saves '
+      + 'nothing, `tp_save_document` saves — so this is the interface catching up with them.',
+  },
+  {
+    date: '2026-09-11',
     title: 'Paste it, or type it and watch',
     body:
       'Everything here needed a file, which is an odd thing to ask of somebody holding the '

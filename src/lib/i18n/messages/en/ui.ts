@@ -222,6 +222,22 @@ export const ui: Content['ui'] = {
 
   /* The list of everything converted: its header, its filters, its rows and its columns. */
   'history.title': 'History',
+  /*
+   * Saving, which is now something a person does rather than something that happens to them.
+   *
+   * A conversion stays in this browser; the account gets a document when the button is pressed. So
+   * the list has two kinds of row, and `history.mixed` is what the page says when it holds both.
+   */
+  'converter.save': 'Save',
+  'converter.saved': 'Saved',
+  'converter.save.hint': 'Keeps it in your account, on every device.',
+  'converter.save.hint.signedout':
+    'Sign in to keep it in your account. Until then it stays in this browser.',
+  'converter.save.done': 'Saved to your account',
+  'converter.share.hint.unsaved': 'Save it first — a link needs the document in your account.',
+  'history.row.unsaved': 'Not saved',
+  'history.mixed': 'Saved documents, and what this browser converted',
+
   'history.synced': 'Saved to your account',
   'history.local': 'Kept in this browser — sign in to reach them anywhere',
   'history.usage':

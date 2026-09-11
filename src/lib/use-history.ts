@@ -20,9 +20,16 @@ interface NewEntry {
 }
 
 /**
- * One history API over two backends: the account (Neon, shared across devices)
- * when signed in, this browser's localStorage otherwise. Local entries are
- * migrated into the account on first sign-in.
+ * One history API over two stores, and they mean different things.
+ *
+ * This browser's localStorage holds what has been converted here: everything, signed in or not,
+ * twenty-five rows deep. The account holds what somebody chose to keep — and nothing arrives there
+ * on its own. A conversion is a thing you looked at; a document in the account is a thing you
+ * decided to have, and until this change the app made that decision for you the moment a file was
+ * dropped.
+ *
+ * So `keep` writes locally and `save` writes to the account, and a signed-in reader's list is both
+ * at once: the saved documents, and the local rows that are not saved yet.
  *
  * What it says when something fails is the screen's language, so the screen hands it a `t`. It is
  * kept in a ref and not read from the closure: `t` is a new function every time the catalogue
@@ -32,23 +39,38 @@ interface NewEntry {
 export function useHistory(isSignedIn: boolean, t: Translate) {
   const [entries, setEntries] = useState<HistoryEntry[]>([]);
   const [error, setError] = useState<string | null>(null);
-  const migratedFor = useRef<boolean | null>(null);
   const words = useRef(t);
+  /*
+   * The list as the callbacks see it. `remove` has to know which store a row is in, and reading
+   * that from the closure would rebuild every handler on every keystroke of the list.
+   */
+  const entriesRef = useRef<HistoryEntry[]>(entries);
+
+  useEffect(() => {
+    entriesRef.current = entries;
+  }, [entries]);
 
   useEffect(() => {
     words.current = t;
   }, [t]);
 
   const refresh = useCallback(async () => {
+    const local = loadHistory();
+
     if (!isSignedIn) {
-      setEntries(loadHistory());
+      setEntries(local);
       return;
     }
 
     try {
-      setEntries((await api.listDocuments()).sort(byNewest));
+      /*
+       * Both lists, newest first, and each row still says which store it came from. A local row
+       * whose text was also saved would appear twice, so `save` drops the local one as it goes.
+       */
+      setEntries([...(await api.listDocuments()), ...local].sort(byNewest));
       setError(null);
     } catch (cause) {
+      setEntries(local);
       setError(
         cause instanceof Error
           ? cause.message
@@ -57,57 +79,49 @@ export function useHistory(isSignedIn: boolean, t: Translate) {
     }
   }, [isSignedIn]);
 
-  // Move whatever this browser collected while signed out into the account.
-  useEffect(() => {
-    if (!isSignedIn || migratedFor.current === true) {
-      migratedFor.current = isSignedIn;
-      return;
-    }
-
-    migratedFor.current = true;
-
-    const local = loadHistory().filter((entry) => entry.markdown);
-
-    (async () => {
-      for (const entry of [...local].reverse()) {
-        await api
-          .createDocument({
-            name: entry.name,
-            kind: entry.kind ?? 'markdown-to-html',
-            size: entry.size,
-            markdown: entry.markdown as string,
-            stats: entry.stats,
-          })
-          .catch(() => undefined);
-      }
-
-      if (local.length > 0) {
-        clearHistory();
-      }
-
-      await refresh();
-    })();
-  }, [isSignedIn, refresh]);
+  /*
+   * Signing in used to empty this browser's history into the account, one document per row. It was
+   * the same decision made twice over: twenty-five things somebody had converted to look at became
+   * twenty-five documents they had never asked to keep. They stay here now, listed beside the
+   * saved ones and marked, and the person saves the ones they want.
+   */
 
   useEffect(() => {
     void refresh();
   }, [refresh]);
 
   /** Returns the stored entry, so the caller can hang account-only actions off its id. */
-  const add = useCallback(
-    async (entry: NewEntry): Promise<HistoryEntry | null> => {
-      if (!isSignedIn) {
-        const { entry: stored, history } = addHistoryEntry(entry);
+  /** What was converted here, in this browser. Called for every conversion, signed in or not. */
+  const keep = useCallback((entry: NewEntry): HistoryEntry => {
+    const { entry: stored, history } = addHistoryEntry(entry);
 
-        setEntries(history.sort(byNewest));
+    setEntries((current) => {
+      const remote = current.filter((one) => one.remote);
 
-        return stored;
-      }
+      return [...remote, ...history].sort(byNewest);
+    });
 
+    return stored;
+  }, []);
+
+  /**
+   * Into the account, because somebody asked.
+   *
+   * The local row it came from is dropped in the same breath: it is the same document, and a list
+   * showing it twice would invite deleting the saved one to tidy up.
+   */
+  const save = useCallback(
+    async (entry: NewEntry, localId?: string): Promise<HistoryEntry | null> => {
       try {
         const created = await api.createDocument(entry);
 
-        setEntries((current) => [created, ...current].sort(byNewest));
+        if (localId) {
+          removeHistoryEntry(localId);
+        }
+
+        setEntries((current) =>
+          [created, ...current.filter((one) => one.id !== localId)].sort(byNewest)
+        );
 
         return created;
       } catch (cause) {
@@ -120,7 +134,7 @@ export function useHistory(isSignedIn: boolean, t: Translate) {
         return null;
       }
     },
-    [isSignedIn]
+    []
   );
 
   const getSource = useCallback(
@@ -188,42 +202,64 @@ export function useHistory(isSignedIn: boolean, t: Translate) {
     [refresh]
   );
 
+  /*
+   * Which store a row lives in is a property of the row, not of the session: a signed-in person's
+   * list holds both, and deleting has to go to the right one or it silently does nothing.
+   */
+  const removeLocal = useCallback((ids: string[]) => {
+    let next: HistoryEntry[] = loadHistory();
+
+    for (const id of ids) {
+      next = removeHistoryEntry(id);
+    }
+
+    setEntries((current) => {
+      const remote = current.filter(
+        (one) => one.remote && !ids.includes(one.id)
+      );
+
+      return [...remote, ...next].sort(byNewest);
+    });
+  }, []);
+
   const remove = useCallback(
     async (id: string) => {
-      if (!isSignedIn) {
-        setEntries(removeHistoryEntry(id).sort(byNewest));
+      const row = entriesRef.current.find((one) => one.id === id);
+
+      if (!row?.remote) {
+        removeLocal([id]);
         return true;
       }
 
       return removeRemote([id]);
     },
-    [isSignedIn, removeRemote]
+    [removeLocal, removeRemote]
   );
 
   const removeMany = useCallback(
     async (ids: string[]) => {
-      if (!isSignedIn) {
-        let next: HistoryEntry[] = [];
+      const rows = entriesRef.current.filter((one) => ids.includes(one.id));
+      const local = rows.filter((one) => !one.remote).map((one) => one.id);
+      const remote = rows.filter((one) => one.remote).map((one) => one.id);
 
-        for (const id of ids) {
-          next = removeHistoryEntry(id);
-        }
-
-        setEntries(next.sort(byNewest));
-        return true;
+      if (local.length > 0) {
+        removeLocal(local);
       }
 
-      return removeRemote(ids);
+      return remote.length > 0 ? removeRemote(remote) : true;
     },
-    [isSignedIn, removeRemote]
+    [removeLocal, removeRemote]
   );
 
   const clear = useCallback(async () => {
+    clearHistory();
+
     if (!isSignedIn) {
-      setEntries(clearHistory());
+      setEntries([]);
       return true;
     }
 
+    // Both stores: the list said "clear", and the list is both.
     setEntries([]);
 
     try {
@@ -240,5 +276,15 @@ export function useHistory(isSignedIn: boolean, t: Translate) {
     }
   }, [isSignedIn, refresh]);
 
-  return { entries, error, add, remove, removeMany, clear, getSource, refresh };
+  return {
+    entries,
+    error,
+    keep,
+    save,
+    remove,
+    removeMany,
+    clear,
+    getSource,
+    refresh,
+  };
 }

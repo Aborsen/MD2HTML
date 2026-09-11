@@ -247,58 +247,37 @@ function Shell() {
         goToConversion(id);
 
         /*
-         * Too big to keep is not too big to convert. The document is on screen and downloadable
-         * either way; what changes is whether the account can hold it, and saying so here beats
-         * a success toast over a save that never happened.
+         * Kept in this browser, and nowhere else. Converting is looking at something; the account
+         * gets a document when the person presses Save, which is what `saveDoc` is for.
          */
-        const tooBigToKeep =
-          user !== null &&
-          new TextEncoder().encode(converted.markdown).length > KEEP_BYTES;
+        const kept = history.keep({
+          name: converted.name,
+          kind: converted.kind,
+          size: converted.size,
+          markdown: converted.markdown,
+          stats: converted.stats,
+        });
 
-        const stored = tooBigToKeep
-          ? null
-          : await history.add({
-              name: converted.name,
-              kind: converted.kind,
-              size: converted.size,
-              markdown: converted.markdown,
-              stats: converted.stats,
-            });
+        setDoc((current) =>
+          current?.id === converted.id
+            ? { ...current, localId: kept.id }
+            : current
+        );
 
-        if (stored?.remote) {
-          setDoc((current) =>
-            current?.id === converted.id
-              ? { ...current, remoteId: stored.id }
-              : current
-          );
-        }
-
-        if (tooBigToKeep) {
-          toast.warning(t('converter.notkept.title'), {
-            description: t('converter.notkept.detail', {
-              limit: formatBytes(KEEP_BYTES, sizes),
-              size: formatBytes(
-                new TextEncoder().encode(converted.markdown).length,
-                sizes
-              ),
-            }),
-          });
-        } else {
-          toast.success(
-            files.length > 1
-              ? t('common.chained', { count: files.length })
-              : t('converter.converted', {
+        toast.success(
+          files.length > 1
+            ? t('common.chained', { count: files.length })
+            : t('converter.converted', {
                   /*
                    * The right-hand half of "MD → HTML". The short name is an abbreviation and its
                    * arrow is punctuation, so it reads the same in all five catalogues; a locale
                    * that wrote it some other way gets the fallback rather than a wrong word.
                    */
-                  format:
-                    content.conversions[id].short.split(' → ')[1] ?? 'Markdown',
-                }),
-            { description: converted.name }
-          );
-        }
+                format:
+                  content.conversions[id].short.split(' → ')[1] ?? 'Markdown',
+              }),
+          { description: converted.name }
+        );
       } catch (cause) {
         /*
          * Say what went wrong. This used to be one sentence for every failure — "Could not read the
@@ -320,6 +299,62 @@ function Shell() {
     },
     [content, conversionId, history, sizes, t, user]
   );
+
+  /*
+   * Into the account, because the person pressed the button.
+   *
+   * Everything else about a document — converting it, reading it, downloading it — happens without
+   * an account and without a request. This is the one place the two meet, so it is the one place
+   * that has to say whether it worked.
+   */
+  const saveDoc = useCallback(async () => {
+    if (!doc || !user || doc.remoteId) {
+      return null;
+    }
+
+    const size = new TextEncoder().encode(doc.markdown).length;
+
+    /*
+     * Too big to keep is not too big to convert. It is on screen and downloadable either way; what
+     * a save would change is whether the account can hold it, and a refusal that says the two
+     * numbers beats a toast about a save that never happened.
+     */
+    if (size > KEEP_BYTES) {
+      toast.warning(t('converter.notkept.title'), {
+        description: t('converter.notkept.detail', {
+          limit: formatBytes(KEEP_BYTES, sizes),
+          size: formatBytes(size, sizes),
+        }),
+      });
+
+      return null;
+    }
+
+    const stored = await history.save(
+      {
+        name: doc.name,
+        kind: doc.kind,
+        size: doc.size,
+        markdown: doc.markdown,
+        stats: doc.stats,
+      },
+      doc.localId
+    );
+
+    if (!stored) {
+      return null;
+    }
+
+    setDoc((current) =>
+      current?.id === doc.id
+        ? { ...current, remoteId: stored.id, localId: undefined }
+        : current
+    );
+
+    toast.success(t('converter.save.done'), { description: doc.name });
+
+    return stored;
+  }, [doc, history, sizes, t, user]);
 
   const handleOpenFromHistory = useCallback(
     async (entry: HistoryEntry) => {
@@ -407,7 +442,7 @@ function Shell() {
         setDoc(converted);
         setView('converter');
 
-        const stored = await history.add({
+        const kept = history.keep({
           name: converted.name,
           kind: converted.kind,
           size: converted.size,
@@ -415,13 +450,11 @@ function Shell() {
           stats: converted.stats,
         });
 
-        if (stored?.remote) {
-          setDoc((current) =>
-            current?.id === converted.id
-              ? { ...current, remoteId: stored.id }
-              : current
-          );
-        }
+        setDoc((current) =>
+          current?.id === converted.id
+            ? { ...current, localId: kept.id }
+            : current
+        );
 
         toast.success(t('common.chained', { count: parts.length }), {
           description: converted.name,
@@ -551,6 +584,8 @@ function Shell() {
             onConversionChange={chooseConversion}
             onFiles={handleFiles}
             onReset={startOver}
+            canSave={Boolean(user)}
+            onSave={() => void saveDoc()}
             onGoToBlog={() => setView('blog')}
             onGoToLivePreview={(pasted) => {
               /*
