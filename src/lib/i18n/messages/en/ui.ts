@@ -403,6 +403,38 @@ export const ui: Content['ui'] = {
   'footer.tagline':
     'Markdown, HTML, Word, CSV and JSON documents, converted in your browser.',
   /*
+   * The live preview at /markdown-live-preview, and the paste box on the converter.
+   *
+   * `live.sample` is what the page opens with, so it is words rather than lorem: an empty editor
+   * shows nothing of what the page does, to a reader or to a search result.
+   */
+  'converter.paste.open': 'Or paste {extension} text',
+  'converter.paste.label': 'Paste {extension} text',
+  'converter.paste.close': 'Close',
+  'converter.paste.placeholder': 'Paste or type here, then convert.',
+  'converter.paste.convert': 'Convert',
+  'converter.paste.count': '{count} characters',
+  'footer.live': 'Live preview',
+  'live.menu.hint': 'Type and watch it render',
+  'converter.paste.live': 'Live preview instead',
+  'live.eyebrow': 'Live preview',
+  'live.title': 'Markdown live preview',
+  'live.lede':
+    'Type or paste Markdown on the left and watch the document build itself on the right. Nothing is uploaded: the text stays in this tab.',
+  'live.editor': 'Markdown',
+  'live.preview': 'Preview',
+  'live.copy': 'Copy HTML',
+  'live.download': 'Download .html',
+  'live.filename': 'preview',
+  'live.note':
+    'The same converter the rest of the site uses, so what you see here is what a downloaded file contains. Raw HTML in the source is sanitised.',
+  'live.seo.title': 'Markdown live preview',
+  'live.seo.description':
+    'Paste Markdown, see the rendered document beside it, copy the HTML or download a self-contained file. Nothing is uploaded.',
+  'live.sample':
+    '# Markdown live preview\n\nType on the left. The document on the right follows, and the styles are the ones a downloaded file **carries with it**.\n\n- Lists, tables, quotes and code all work.\n- GitHub Flavored Markdown, sanitised.\n\n| Format | Becomes |\n| --- | --- |\n| Markdown | HTML |\n\n```js\nconsole.log(\'hello\');\n```\n',
+
+  /*
    * The changelog page, at /changelog and linked from the footer's Resources.
    *
    * Only the chrome is here. The entries are `src/lib/changelog.ts`, in English, for the reason

@@ -32,6 +32,19 @@ export interface ChangelogEntry {
 const ENTRIES: ChangelogEntry[] = [
   {
     date: '2026-09-11',
+    title: 'Paste it, or type it and watch',
+    body:
+      'Everything here needed a file, which is an odd thing to ask of somebody holding the '
+      + 'Markdown in their clipboard. The converter now takes pasted text as well as a dropped '
+      + 'file — for every conversion except Word, where there is nothing to paste — and '
+      + 'what comes back is the same document, with the same preview, download, save and share.\n\n'
+      + 'And a page for the other question: `/markdown-live-preview` is Markdown on the left and '
+      + 'the document on the right, as it is typed. Nothing is uploaded and nothing is saved; the '
+      + 'text stays in the tab. It is the converter underneath, so what is on the right is what a '
+      + 'downloaded file contains.',
+  },
+  {
+    date: '2026-09-11',
     title: 'Every conversion, everywhere it can go',
     body:
       'The app converted five things and the other two ways in did not. An assistant could only '

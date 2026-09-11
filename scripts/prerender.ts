@@ -56,6 +56,7 @@ import {
   blogCrumbs,
   changelogCrumbs,
   crumbsForArticle,
+  livePreviewCrumbs,
   crumbsForConversion,
   crumbsForStaticPage,
   type CrumbSpec,
@@ -696,6 +697,36 @@ for (const locale of LOCALES) {
         catalogue.docs[id].summary
       )}</p></section>`
   ).join('')}`,
+  });
+}
+
+/*
+ * ---------------------------------------------------------------- the live preview
+ *
+ * A page whose whole point is typing, so there is nothing here a crawler can operate — but there is
+ * something it can read: the example the editor opens with, rendered by the converter the page
+ * demonstrates. That makes the prerendered version an honest still of the page rather than a title
+ * over an empty box, and it is the same `live.sample` the bundle puts in the textarea.
+ */
+for (const locale of LOCALES) {
+  const catalogue = CATALOGUES[locale];
+
+  pages.push({
+    locale,
+    path: localePath(locale, '/markdown-live-preview'),
+    title: `${catalogue.ui['live.seo.title']} — TransformPipe`,
+    description: catalogue.ui['live.seo.description'],
+    listed: true,
+    /*
+     * No `lastmod`. Nothing here has a date: the page is a tool, and the only thing that changes
+     * is the words around it.
+     */
+    head: breadcrumbs(livePreviewCrumbs(catalogue, locale)) + DOC_STYLE,
+    body: `<h1>${escapeHtml(catalogue.ui['live.title'])}</h1><p>${escapeHtml(
+      catalogue.ui['live.lede']
+    )}</p><div class="md-doc">${markdownToHtml(catalogue.ui['live.sample'])}</div><p>${escapeHtml(
+      catalogue.ui['live.note']
+    )}</p>`,
   });
 }
 

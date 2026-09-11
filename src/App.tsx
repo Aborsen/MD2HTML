@@ -16,6 +16,7 @@ import { DocsPage } from './features/DocsPage';
 import { EmbedPage } from './features/EmbedPage';
 import { HistoryPage } from './features/HistoryPage';
 import { ChangelogPage } from './features/ChangelogPage';
+import { LivePreviewPage } from './features/LivePreviewPage';
 import { NotFoundPage } from './features/NotFoundPage';
 import { SharedDocumentPage } from './features/SharedDocumentPage';
 import { StaticPage } from './features/StaticPage';
@@ -509,6 +510,8 @@ function Shell() {
               onGoToConverter={startOver}
             />
           )
+        ) : view === 'livePreview' ? (
+          <LivePreviewPage onGoToConverter={startOver} />
         ) : view === 'changelog' ? (
           <ChangelogPage onGoToConverter={startOver} />
         ) : view === 'notFound' ? (
@@ -526,6 +529,7 @@ function Shell() {
             onFiles={handleFiles}
             onReset={startOver}
             onGoToBlog={() => setView('blog')}
+            onGoToLivePreview={() => setView('livePreview')}
             onOpenArticle={openArticle}
           />
         ) : (

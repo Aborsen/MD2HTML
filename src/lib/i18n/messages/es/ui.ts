@@ -403,6 +403,38 @@ export const ui: Content['ui'] = {
   'footer.tagline':
     'Documentos Markdown, HTML, Word, CSV y JSON, convertidos en tu navegador.',
   /*
+   * The live preview at /markdown-live-preview, and the paste box on the converter.
+   *
+   * `live.sample` is what the page opens with, so it is words rather than lorem: an empty editor
+   * shows nothing of what the page does, to a reader or to a search result.
+   */
+  'converter.paste.open': 'O pegar texto {extension}',
+  'converter.paste.label': 'Pegar texto {extension}',
+  'converter.paste.close': 'Cerrar',
+  'converter.paste.placeholder': 'Pega o escribe aquí y convierte.',
+  'converter.paste.convert': 'Convertir',
+  'converter.paste.count': '{count} caracteres',
+  'footer.live': 'Vista en vivo',
+  'live.menu.hint': 'Escribe y velo renderizado',
+  'converter.paste.live': 'Mejor la vista en vivo',
+  'live.eyebrow': 'Vista en vivo',
+  'live.title': 'Vista previa de Markdown en vivo',
+  'live.lede':
+    'Escribe o pega Markdown a la izquierda y mira cómo se construye el documento a la derecha. No se sube nada: el texto se queda en esta pestaña.',
+  'live.editor': 'Markdown',
+  'live.preview': 'Vista previa',
+  'live.copy': 'Copiar HTML',
+  'live.download': 'Descargar .html',
+  'live.filename': 'vista-previa',
+  'live.note':
+    'El mismo conversor que usa el resto del sitio, así que lo que ves aquí es lo que contiene el archivo descargado. El HTML crudo se sanea.',
+  'live.seo.title': 'Vista previa de Markdown en vivo',
+  'live.seo.description':
+    'Pega Markdown, ve el documento al lado, copia el HTML o descarga un archivo autónomo. No se sube nada.',
+  'live.sample':
+    '# Vista previa de Markdown en vivo\n\nEscribe a la izquierda. El documento de la derecha sigue, con los estilos que un archivo descargado **lleva consigo**.\n\n- Listas, tablas, citas y código funcionan.\n- GitHub Flavored Markdown, saneado.\n\n| Formato | Se convierte en |\n| --- | --- |\n| Markdown | HTML |\n\n```js\nconsole.log(\'hello\');\n```\n',
+
+  /*
    * The changelog page, at /changelog and linked from the footer's Resources.
    *
    * Only the chrome is here. The entries are `src/lib/changelog.ts`, in English, for the reason

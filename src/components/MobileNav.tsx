@@ -4,6 +4,7 @@ import {
   History,
   Menu,
   Newspaper,
+  SquareSplitHorizontal,
   X,
   type LucideIcon,
 } from 'lucide-react';
@@ -39,10 +40,11 @@ interface MobileNavProps {
 
 /* The `label` is a catalogue key: the view and the glyph are the same in every language, the word is not. */
 const DESTINATIONS: Array<{
-  id: Extract<AppView, 'history' | 'docs' | 'blog'>;
+  id: Extract<AppView, 'history' | 'docs' | 'blog' | 'livePreview'>;
   label: string;
   icon: LucideIcon;
 }> = [
+  { id: 'livePreview', label: 'live.title', icon: SquareSplitHorizontal },
   { id: 'history', label: 'header.nav.history', icon: History },
   { id: 'docs', label: 'header.nav.documentation', icon: BookOpen },
   { id: 'blog', label: 'header.nav.blog', icon: Newspaper },

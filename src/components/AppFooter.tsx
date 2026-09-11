@@ -65,6 +65,11 @@ export function AppFooter({
           onNavigate: () => onViewChange('blog'),
         },
         {
+          label: t('footer.live'),
+          href: '/markdown-live-preview',
+          onNavigate: () => onViewChange('livePreview'),
+        },
+        {
           label: t('footer.changelog'),
           href: '/changelog',
           onNavigate: () => onViewChange('changelog'),

@@ -23,6 +23,7 @@ import { ConversionPicker } from '@/components/ConversionPicker';
 import { crumbsForConversion } from '@/lib/breadcrumbs';
 import { articleCardImage } from '@/lib/covers';
 import { Dropzone } from '@/components/Dropzone';
+import { PasteBox } from '@/components/PasteBox';
 import {
   type Conversion,
   type ConversionId,
@@ -76,6 +77,7 @@ interface ConverterPageProps {
   onFiles: (files: File[]) => void;
   onReset: () => void;
   onGoToBlog: () => void;
+  onGoToLivePreview: () => void;
   onOpenArticle: (slug: string) => void;
 }
 
@@ -87,6 +89,7 @@ export function ConverterPage({
   onFiles,
   onReset,
   onGoToBlog,
+  onGoToLivePreview,
   onOpenArticle,
 }: ConverterPageProps) {
   const t = useT();
@@ -193,6 +196,33 @@ export function ConverterPage({
           hint={words.hint}
           onFiles={onFiles}
         />
+
+        {/*
+         * Word is the exception, and the only one: a .docx is a zip, so there is nothing to paste.
+         * Every other conversion takes text, and the text becomes a file with this conversion's own
+         * extension so that `onFiles` does the converting, the size check and the rest exactly as
+         * it does for a dropped file.
+         */}
+        {conversion.id !== 'word-to-markdown' && (
+          <PasteBox
+            isBusy={isBusy}
+            extension={conversion.extensions[0]}
+            /*
+             * Only for Markdown: the live preview renders Markdown, so offering it beside a CSV
+             * would send somebody to a page that cannot do what they came for.
+             */
+            onGoToLivePreview={
+              conversion.id === DEFAULT_CONVERSION ? onGoToLivePreview : undefined
+            }
+            onText={(text) =>
+              onFiles([
+                new File([text], `pasted${conversion.extensions[0]}`, {
+                  type: 'text/plain',
+                }),
+              ])
+            }
+          />
+        )}
 
         <ConversionPicker
           current={conversion.id}

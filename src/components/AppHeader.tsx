@@ -17,6 +17,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/ui/components/DropdownMenu';
 import { Separator } from '@/ui/components/Separator';
@@ -185,6 +186,34 @@ export function AppHeader({
                   </span>
                 </DropdownMenuItem>
               ))}
+
+              {/*
+               * Under a rule, because it is not a sixth conversion: the five above turn a file into
+               * something, this one is a place to type. It belongs in this menu all the same —
+               * "Converter" is what a person opens when they want a different tool, and a page
+               * reachable only from the footer is a page nobody reaches.
+               */}
+              <DropdownMenuSeparator />
+
+              <DropdownMenuItem
+                onSelect={() => onViewChange('livePreview')}
+                className="flex items-start gap-2"
+              >
+                <Check
+                  className={cn(
+                    'mt-0.5 size-4 shrink-0',
+                    view === 'livePreview' ? 'text-brand-tertiary' : 'invisible'
+                  )}
+                />
+                <span className="flex min-w-0 flex-col">
+                  <Typography variant="span" weight="medium" textColor="primary">
+                    {t('live.title')}
+                  </Typography>
+                  <Typography variant="span" textColor="secondary" className="text-xs">
+                    {t('live.menu.hint')}
+                  </Typography>
+                </span>
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
 

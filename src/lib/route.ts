@@ -30,6 +30,7 @@ export type AppView =
   | 'page'
   | 'embed'
   | 'changelog'
+  | 'livePreview'
   | 'notFound';
 
 /**
@@ -116,6 +117,10 @@ function viewFor(path: string, hasPage: boolean, isShared: boolean): AppView {
     return 'changelog';
   }
 
+  if (/^\/markdown-live-preview\/?$/.test(path)) {
+    return 'livePreview';
+  }
+
   /*
    * The whole of /blog, an article that does not exist included. ArticlePage says "no such article"
    * with the index a click away, which is a better answer than a generic page — and the 404 status
@@ -144,6 +149,7 @@ const PATHS: Record<Exclude<Destination, 'converter' | 'page'>, string> = {
   history: '/history',
   docs: '/docs',
   changelog: '/changelog',
+  livePreview: '/markdown-live-preview',
   blog: '/blog',
   /* Reachable only by being framed; nothing in the app navigates to it. */
   embed: '/embed',
