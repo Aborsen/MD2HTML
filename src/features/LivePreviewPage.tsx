@@ -135,7 +135,7 @@ export function LivePreviewPage({
     downloadDoc(t('live.filename'), settled, Date.now(), theme, 'html');
 
   return (
-    /* No width of its own: the shell widens for this view, and two caps would fight. */
+    /* No width of its own: the shell sets it, the same 80rem every other page gets. */
     <div className="flex w-full flex-col gap-6">
       <AppBreadcrumbs
         items={livePreviewCrumbs(content, locale)}

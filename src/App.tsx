@@ -9,7 +9,6 @@ import {
   DEFAULT_CONVERSION,
 } from '@shared/conversions';
 import { convertFile, conversionForFiles } from './lib/convert';
-import { cn } from '@/ui/lib/utils';
 import { ConverterPage } from './features/ConverterPage';
 import { ArticlePage } from './features/ArticlePage';
 import { BlogPage } from './features/BlogPage';
@@ -500,17 +499,7 @@ function Shell() {
         onHome={startOver}
       />
 
-      {/*
-       * The shell is 80rem wide, except where the page is a workspace rather than a document. The
-       * live preview is two panes somebody works in, and on a wide screen 80rem leaves a third of
-       * the window as margin beside the thing being written.
-       */}
-      <main
-        className={cn(
-          'mx-auto w-full flex-1 px-6 py-8',
-          view === 'livePreview' ? 'max-w-content-wide' : 'max-w-content'
-        )}
-      >
+      <main className="mx-auto w-full max-w-content flex-1 px-6 py-8">
         {view === 'page' && pageId ? (
           <StaticPage page={staticPage(pageId)} onGoToConverter={startOver} />
         ) : view === 'docs' ? (
