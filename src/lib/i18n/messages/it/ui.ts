@@ -409,6 +409,9 @@ export const ui: Content['ui'] = {
   'live.title': 'Anteprima Markdown dal vivo',
   'live.lede':
     'Scrivi o incolla Markdown a sinistra e guarda il documento costruirsi a destra. Niente viene caricato: il testo resta in questa scheda.',
+  'live.save': 'Converti e tieni',
+  'live.save.hint':
+    'Lo apre come documento: nella cronologia, pronto da condividere o da scaricare in un altro formato.',
   'live.editor': 'Markdown',
   'live.preview': 'Anteprima',
   'live.copy': 'Copia l’HTML',

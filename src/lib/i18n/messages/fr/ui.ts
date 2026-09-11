@@ -420,6 +420,9 @@ export const ui: Content['ui'] = {
   'live.title': 'Aperçu Markdown en direct',
   'live.lede':
     'Tapez ou collez du Markdown à gauche, le document se construit à droite. Rien n’est envoyé : le texte reste dans cet onglet.',
+  'live.save': 'Convertir et garder',
+  'live.save.hint':
+    'L’ouvre comme document : dans l’historique, prêt à partager ou à télécharger dans un autre format.',
   'live.editor': 'Markdown',
   'live.preview': 'Aperçu',
   'live.copy': 'Copier le HTML',

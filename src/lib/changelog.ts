@@ -41,7 +41,12 @@ const ENTRIES: ChangelogEntry[] = [
       + 'And a page for the other question: `/markdown-live-preview` is Markdown on the left and '
       + 'the document on the right, as it is typed. Nothing is uploaded and nothing is saved; the '
       + 'text stays in the tab. It is the converter underneath, so what is on the right is what a '
-      + 'downloaded file contains.',
+      + 'downloaded file contains.\n\n'
+      + 'Both panes take their height from the window, and the page is wider than the rest of the '
+      + 'site because this one is worked in rather than read; there is a fullscreen for when that '
+      + 'is still not enough. Text pasted on the converter arrives here already rendered, and '
+      + '`Convert and keep` sends it back the other way — to the document screen, with the '
+      + 'history, the share link and the other formats.',
   },
   {
     date: '2026-09-11',

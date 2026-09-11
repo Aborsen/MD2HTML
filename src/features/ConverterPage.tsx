@@ -77,7 +77,7 @@ interface ConverterPageProps {
   onFiles: (files: File[]) => void;
   onReset: () => void;
   onGoToBlog: () => void;
-  onGoToLivePreview: () => void;
+  onGoToLivePreview: (markdown: string) => void;
   onOpenArticle: (slug: string) => void;
 }
 

@@ -434,6 +434,9 @@ export const ui: Content['ui'] = {
   'live.title': 'Markdown-Live-Vorschau',
   'live.lede':
     'Links Markdown tippen oder einfügen, rechts entsteht das Dokument. Nichts wird hochgeladen: der Text bleibt in diesem Tab.',
+  'live.save': 'Umwandeln und behalten',
+  'live.save.hint':
+    'Öffnet es als Dokument: im Verlauf, bereit zum Teilen oder als anderes Format zu laden.',
   'live.editor': 'Markdown',
   'live.preview': 'Vorschau',
   'live.copy': 'HTML kopieren',

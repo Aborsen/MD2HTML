@@ -421,6 +421,9 @@ export const ui: Content['ui'] = {
   'live.title': 'Markdown live preview',
   'live.lede':
     'Type or paste Markdown on the left and watch the document build itself on the right. Nothing is uploaded: the text stays in this tab.',
+  'live.save': 'Convert and keep',
+  'live.save.hint':
+    'Opens it as a document: in your history, ready to share or download in another format.',
   'live.editor': 'Markdown',
   'live.preview': 'Preview',
   'live.copy': 'Copy HTML',

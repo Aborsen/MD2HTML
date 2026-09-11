@@ -9,6 +9,7 @@ import {
   DEFAULT_CONVERSION,
 } from '@shared/conversions';
 import { convertFile, conversionForFiles } from './lib/convert';
+import { cn } from '@/ui/lib/utils';
 import { ConverterPage } from './features/ConverterPage';
 import { ArticlePage } from './features/ArticlePage';
 import { BlogPage } from './features/BlogPage';
@@ -155,6 +156,15 @@ function Shell() {
   }, []);
   const [doc, setDoc] = useState<ConvertedDoc | null>(null);
   const [isBusy, setIsBusy] = useState(false);
+  /*
+   * What the live preview is showing, kept here rather than inside the page.
+   *
+   * Two things need that. Text pasted on the converter has to arrive there already rendered — a
+   * button that says "live preview instead" and then shows the example has thrown the work away —
+   * and going to the documentation and back has to find the writing where it was left. `null` is
+   * nobody having typed anything yet, which is when the example is shown.
+   */
+  const [liveMarkdown, setLiveMarkdown] = useState<string | null>(null);
 
   const history = useHistory(Boolean(user), t);
 
@@ -490,7 +500,17 @@ function Shell() {
         onHome={startOver}
       />
 
-      <main className="mx-auto w-full max-w-content flex-1 px-6 py-8">
+      {/*
+       * The shell is 80rem wide, except where the page is a workspace rather than a document. The
+       * live preview is two panes somebody works in, and on a wide screen 80rem leaves a third of
+       * the window as margin beside the thing being written.
+       */}
+      <main
+        className={cn(
+          'mx-auto w-full flex-1 px-6 py-8',
+          view === 'livePreview' ? 'max-w-content-wide' : 'max-w-content'
+        )}
+      >
         {view === 'page' && pageId ? (
           <StaticPage page={staticPage(pageId)} onGoToConverter={startOver} />
         ) : view === 'docs' ? (
@@ -511,7 +531,21 @@ function Shell() {
             />
           )
         ) : view === 'livePreview' ? (
-          <LivePreviewPage onGoToConverter={startOver} />
+          <LivePreviewPage
+            markdown={liveMarkdown}
+            onMarkdownChange={setLiveMarkdown}
+            /*
+             * The same synthesised file the paste box makes, through the same handler: it converts,
+             * puts the document on screen, writes it to the history and saves it to the account
+             * when there is one. Nothing here knows how any of that works, which is the point.
+             */
+            onConvert={(text) =>
+              void handleFiles([
+                new File([text], 'live-preview.md', { type: 'text/plain' }),
+              ])
+            }
+            onGoToConverter={startOver}
+          />
         ) : view === 'changelog' ? (
           <ChangelogPage onGoToConverter={startOver} />
         ) : view === 'notFound' ? (
@@ -529,7 +563,17 @@ function Shell() {
             onFiles={handleFiles}
             onReset={startOver}
             onGoToBlog={() => setView('blog')}
-            onGoToLivePreview={() => setView('livePreview')}
+            onGoToLivePreview={(pasted) => {
+              /*
+               * Empty is not a handover: the button is beside an empty box until somebody types,
+               * and arriving with '' would clear whatever the preview already held.
+               */
+              if (pasted.trim()) {
+                setLiveMarkdown(pasted);
+              }
+
+              setView('livePreview');
+            }}
             onOpenArticle={openArticle}
           />
         ) : (

@@ -26,8 +26,14 @@ export function PasteBox({
   /** This conversion's first extension, with the dot: what the pasted text is called. */
   extension: string;
   onText: (text: string) => void;
-  /** Offered only where it is the better tool: Markdown, and only once the box is open. */
-  onGoToLivePreview?: () => void;
+  /**
+   * Offered only where it is the better tool: Markdown, and only once the box is open.
+   *
+   * It takes the text with it. Somebody who has typed three paragraphs and then asks for the live
+   * preview is asking to see *those* paragraphs; landing them on the example instead throws their
+   * work away and makes the button a trap.
+   */
+  onGoToLivePreview?: (markdown: string) => void;
 }) {
   const t = useT();
   const [isOpen, setIsOpen] = useState(false);
@@ -101,7 +107,11 @@ export function PasteBox({
          * here rather than on the page above, because this is the moment the want appears.
          */}
         {onGoToLivePreview && (
-          <Button variant="tertiary" size="sm" onClick={onGoToLivePreview}>
+          <Button
+            variant="tertiary"
+            size="sm"
+            onClick={() => onGoToLivePreview(text)}
+          >
             {t('converter.paste.live')}
           </Button>
         )}
