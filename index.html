@@ -4,6 +4,51 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!--
+      Google Tag Manager, container GTM-KX9MB6RW. As high in the head as Google asks for, and it
+      lands on all 152 prerendered pages too: every one of them is built from this shell.
+
+      It loads whatever the container is told to load, which is the point and also the catch — see
+      the privacy and cookies pages, which currently say this site has no analytics, no third-party
+      script and no optional cookies. Those sentences and this tag cannot both be true.
+    -->
+    <!--
+      Consent, before the tag manager rather than after it.
+
+      The cookies page promises that anything optional gets a real control BEFORE it is set. There
+      is no banner yet, so the defaults are denied: Google's tags then write nothing to the browser
+      and send cookieless pings at most. When a banner exists it calls gtag('consent', 'update').
+      Until then this is what keeps that promise true.
+    -->
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag() {
+        dataLayer.push(arguments);
+      }
+      gtag('consent', 'default', {
+        ad_storage: 'denied',
+        ad_user_data: 'denied',
+        ad_personalization: 'denied',
+        analytics_storage: 'denied',
+        functionality_storage: 'granted',
+        security_storage: 'granted',
+        wait_for_update: 500,
+      });
+    </script>
+
+    <script>
+      (function (w, d, s, l, i) {
+        w[l] = w[l] || [];
+        w[l].push({ 'gtm.start': new Date().getTime(), event: 'gtm.js' });
+        var f = d.getElementsByTagName(s)[0],
+          j = d.createElement(s),
+          dl = l != 'dataLayer' ? '&l=' + l : '';
+        j.async = true;
+        j.src = 'https://www.googletagmanager.com/gtm.js?id=' + i + dl;
+        f.parentNode.insertBefore(j, f);
+      })(window, document, 'script', 'dataLayer', 'GTM-KX9MB6RW');
+    </script>
     <meta name="color-scheme" content="dark light" />
     <meta name="theme-color" content="#0f0e14" />
     <meta
@@ -34,6 +79,16 @@
     </style>
   </head>
   <body>
+    <!-- Google Tag Manager, for a browser with no scripts. -->
+    <noscript
+      ><iframe
+        src="https://www.googletagmanager.com/ns.html?id=GTM-KX9MB6RW"
+        height="0"
+        width="0"
+        style="display: none; visibility: hidden"
+      ></iframe
+    ></noscript>
+
     <div id="root"></div>
     <script>
       // Both of these run before first paint: one so a remembered light theme does not flash dark,
